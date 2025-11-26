@@ -96,3 +96,16 @@ export interface ButtonProps extends BaseComponentProps {
   loading?: boolean;
   onClick?: () => void;
 }
+
+// Invite page types
+export interface InvitePageProps {
+  params: Promise<{
+    id: string;
+  }>;
+}
+
+export interface InviteDetails extends WeddingInvitation {
+  plusOne?: number;
+  dietaryRestrictions?: string;
+  message?: string;
+}
