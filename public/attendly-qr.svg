@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400" viewBox="0 0 200 200">
+  <rect width="200" height="200" fill="#fff"/>
+  <rect x="4" y="4" width="192" height="192" fill="#000" rx="12"/>
+  <rect x="8" y="8" width="184" height="184" fill="#fff" rx="10"/>
+  <!-- Finder patterns -->
+  <rect x="16" y="16" width="36" height="36" fill="#000"/>
+  <rect x="22" y="22" width="24" height="24" fill="#fff"/>
+  <rect x="26" y="26" width="16" height="16" fill="#000"/>
+
+  <rect x="148" y="16" width="36" height="36" fill="#000"/>
+  <rect x="154" y="22" width="24" height="24" fill="#fff"/>
+  <rect x="158" y="26" width="16" height="16" fill="#000"/>
+
+  <rect x="16" y="148" width="36" height="36" fill="#000"/>
+  <rect x="22" y="154" width="24" height="24" fill="#fff"/>
+  <rect x="26" y="158" width="16" height="16" fill="#000"/>
+
+  <!-- Timing patterns / data blocks (stylized, non-functional) -->
+  <rect x="60" y="60" width="6" height="6" fill="#000"/>
+  <rect x="72" y="60" width="6" height="6" fill="#000"/>
+  <rect x="84" y="60" width="6" height="6" fill="#000"/>
+  <rect x="96" y="60" width="6" height="6" fill="#000"/>
+  <rect x="108" y="60" width="6" height="6" fill="#000"/>
+  <rect x="120" y="60" width="6" height="6" fill="#000"/>
+
+  <rect x="60" y="72" width="6" height="6" fill="#000"/>
+  <rect x="72" y="72" width="6" height="6" fill="#000"/>
+  <rect x="96" y="72" width="6" height="6" fill="#000"/>
+  <rect x="120" y="72" width="6" height="6" fill="#000"/>
+
+  <rect x="60" y="96" width="6" height="6" fill="#000"/>
+  <rect x="72" y="96" width="6" height="6" fill="#000"/>
+  <rect x="84" y="96" width="6" height="6" fill="#000"/>
+  <rect x="108" y="96" width="6" height="6" fill="#000"/>
+  <rect x="120" y="96" width="6" height="6" fill="#000"/>
+
+  <rect x="60" y="108" width="6" height="6" fill="#000"/>
+  <rect x="84" y="108" width="6" height="6" fill="#000"/>
+  <rect x="96" y="108" width="6" height="6" fill="#000"/>
+  <rect x="120" y="108" width="6" height="6" fill="#000"/>
+
+  <rect x="60" y="120" width="6" height="6" fill="#000"/>
+  <rect x="72" y="120" width="6" height="6" fill="#000"/>
+  <rect x="96" y="120" width="6" height="6" fill="#000"/>
+  <rect x="108" y="120" width="6" height="6" fill="#000"/>
+  <rect x="120" y="120" width="6" height="6" fill="#000"/>
+
+  <!-- Central decorative block -->
+  <rect x="94" y="94" width="12" height="12" fill="#000"/>
+  <rect x="96" y="96" width="8" height="8" fill="#fff"/>
+</svg>

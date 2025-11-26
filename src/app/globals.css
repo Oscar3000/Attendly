@@ -1,0 +1,95 @@
+@import "tailwindcss";
+
+/* CSS Custom Properties for Attendly theme */
+:root {
+  /* Attendly Brand Colors */
+  --color-cream-bg: #FFF9F4; /* Soft cream background */
+  --color-warm-brown: #C07A54; /* Warm brown for buttons */
+  --color-black: #000000; /* Pure black for headers */
+  --color-dark-gray: #333333; /* Dark gray for body text */
+  
+  /* Legacy colors for compatibility */
+  --color-primary: 37 99 235; /* Blue-600 */
+  --color-primary-dark: 29 78 216; /* Blue-700 */
+  --color-background: 255 255 255; /* White */
+  --color-foreground: 17 24 39; /* Gray-900 */
+  --color-muted: 107 114 128; /* Gray-500 */
+  --color-success: 34 197 94; /* Green-500 */
+  --color-warning: 245 158 11; /* Amber-500 */
+  --color-error: 239 68 68; /* Red-500 */
+  
+  /* Typography */
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-background: 3 7 18; /* Slate-950 */
+    --color-foreground: 241 245 249; /* Slate-100 */
+    --color-muted: 148 163 184; /* Slate-400 */
+  }
+}
+
+/* Base styles */
+* {
+  border-color: rgb(229 231 235); /* Gray-200 */
+}
+
+/* Focus styles for accessibility */
+*:focus-visible {
+  outline: 2px solid rgb(var(--color-primary));
+  outline-offset: 2px;
+}
+
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Remove default button styles */
+button {
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+/* Custom font weight classes for Inter */
+.font-inter {
+  font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+}
+
+.font-semibold {
+  font-weight: 600;
+}
+
+.font-medium {
+  font-weight: 500;
+}
+
+.font-normal {
+  font-weight: 400;
+}
+
+.font-bold {
+  font-weight: 700;
+}
+
+/* Responsive Scan Button */
+.attendly-scan-button {
+  /* Mobile styles (default) */
+  height: 60px;
+  font-size: 18px;
+  min-width: 280px;
+  max-width: 100%;
+}
+
+/* Tablet and desktop styles */
+@media (min-width: 640px) {
+  .attendly-scan-button {
+    height: 70px;
+    font-size: 22px;
+    width: 300px;
+    min-width: 300px;
+    max-width: 300px;
+  }
+}
