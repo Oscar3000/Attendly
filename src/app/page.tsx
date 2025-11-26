@@ -63,7 +63,7 @@ export default function HomePage() {
           style={{ marginTop: '40px' }}
         >
           <QrCode 
-            src="/attendly-qr.svg"
+            src="/free-qr.png"
             size={200}
             alt="Wedding invitation QR code for attendance confirmation"
             className="rounded-xl shadow-lg"
