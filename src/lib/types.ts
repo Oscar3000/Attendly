@@ -74,7 +74,7 @@ export interface WeddingInvitation {
   updatedAt: Date;
 }
 
-export type RsvpStatus = "pending" | "confirmed" | "declined";
+export type RsvpStatus = "pending" | "confirmed" | "declined" | "rescinded";
 
 export interface QrScanResult {
   success: boolean;
@@ -90,11 +90,19 @@ export interface BaseComponentProps {
 }
 
 export interface ButtonProps extends BaseComponentProps {
-  variant?: "primary" | "secondary" | "danger";
-  size?: "sm" | "md" | "lg";
+  variant?: "primary" | "secondary" | "danger" | "attendly";
+  size?: "sm" | "md" | "lg" | "custom";
   disabled?: boolean;
   loading?: boolean;
   onClick?: () => void;
+  // Custom styling props for attendly variant
+  width?: string | number;
+  height?: string | number;
+  fontSize?: string | number;
+  fontWeight?: string | number;
+  borderRadius?: string | number;
+  backgroundColor?: string;
+  textColor?: string;
 }
 
 // Invite page types
@@ -108,4 +116,38 @@ export interface InviteDetails extends WeddingInvitation {
   plusOne?: number;
   dietaryRestrictions?: string;
   message?: string;
+}
+
+// Admin dashboard types
+export interface DashboardMetrics {
+  totalInvitations: number;
+  pendingCount: number;
+  confirmedCount: number;
+  rescindedCount: number;
+}
+
+export interface StatusUpdate {
+  id: string;
+  guestName: string;
+  status: RsvpStatus;
+  timestamp: Date;
+}
+
+export interface InvitationTableEntry {
+  id: string;
+  name: string;
+  status: RsvpStatus;
+  email?: string;
+  createdAt: Date;
+}
+
+// Invitation form types
+export interface CreateInviteForm {
+  name: string;
+  numberOfGuests: number;
+  status: RsvpStatus;
+}
+
+export interface EditInviteForm extends CreateInviteForm {
+  id: string;
 }

@@ -214,23 +214,9 @@ export default function InvitePage({ params }: InvitePageProps) {
                   className="flex justify-center"
                   style={{ marginTop: '50px' }}
                 >
-                  <button
-                    onClick={() => handleRsvp('confirmed')}
-                    className="text-white transition-colors hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2"
-                    style={{
-                      width: '300px',
-                      height: '70px',
-                      borderRadius: '18px',
-                      backgroundColor: '#C07A54',
-                      fontFamily: 'Inter',
-                      fontWeight: '500',
-                      fontSize: '22px',
-                      border: 'none',
-                      cursor: 'pointer'
-                    }}
-                  >
+                  <Button variant="attendly" onClick={() => handleRsvp('confirmed')}>
                     Confirm Invitation
-                  </button>
+                  </Button>
                 </div>
               )}
 

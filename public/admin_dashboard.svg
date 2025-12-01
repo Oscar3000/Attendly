@@ -1,0 +1,66 @@
+
+<svg width="1200" height="800" viewBox="0 0 1200 800" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1200" height="800" fill="#f5f6f8"/>
+  <text x="60" y="80" font-size="48" font-weight="600" fill="#1a1a1a">Admin Dashboard</text>
+
+  <!-- Card 1 -->
+  <rect x="60" y="120" width="500" height="180" rx="16" fill="white"/>
+  <text x="90" y="170" font-size="28" font-weight="600">Invitations Counter</text>
+  <text x="90" y="230" font-size="64" font-weight="700">287</text>
+  <text x="90" y="260" font-size="20" fill="#666">Invitations</text>
+
+  <!-- Card 2 -->
+  <rect x="600" y="120" width="500" height="180" rx="16" fill="white"/>
+  <text x="630" y="170" font-size="28" font-weight="600">Status Updates</text>
+  <text x="630" y="220" font-size="22">John Doe</text>
+  <text x="630" y="245" font-size="18" fill="#666">Confirmed</text>
+  <text x="1030" y="220" font-size="18" fill="#666">2 hours ago</text>
+
+  <text x="630" y="290" font-size="22">John Doe</text>
+  <text x="630" y="315" font-size="18" fill="#666">Rescinded</text>
+  <text x="1030" y="290" font-size="18" fill="#666">Yesterday</text>
+
+  <!-- Metrics card -->
+  <rect x="60" y="340" width="500" height="300" rx="16" fill="white"/>
+  <text x="90" y="390" font-size="28" font-weight="600">Metrics</text>
+
+  <rect x="130" y="520" width="80" height="150" fill="#74a7ff"/>
+  <text x="140" y="545" font-size="18" transform="rotate(-90 140,545)">Pending</text>
+
+  <rect x="290" y="560" width="80" height="110" fill="#74a7ff"/>
+  <text x="300" y="585" font-size="18" transform="rotate(-90 300,585)">Confirmed</text>
+
+  <rect x="450" y="600" width="80" height="70" fill="#74a7ff"/>
+  <text x="460" y="620" font-size="18" transform="rotate(-90 460,620)">Rescinded</text>
+
+  <!-- All invites card -->
+  <rect x="600" y="340" width="500" height="300" rx="16" fill="white"/>
+  <text x="630" y="390" font-size="28" font-weight="600">All Invitations</text>
+
+  <text x="630" y="430" font-size="20" font-weight="600">Name</text>
+  <text x="820" y="430" font-size="20" font-weight="600">Status</text>
+  <text x="1000" y="430" font-size="20" font-weight="600">Actions</text>
+
+  <text x="630" y="470" font-size="20">Anna Smith</text>
+  <text x="820" y="470" font-size="20">Confirmed</text>
+  <rect x="1000" y="450" width="70" height="30" rx="8" fill="#e0e4e7"/>
+  <text x="1018" y="471" font-size="16" font-weight="600">Edit</text>
+
+  <text x="630" y="515" font-size="20">John Doe</text>
+  <text x="820" y="515" font-size="20">Pending</text>
+  <rect x="1000" y="495" width="70" height="30" rx="8" fill="#e0e4e7"/>
+  <text x="1018" y="516" font-size="16" font-weight="600">Edit</text>
+
+  <text x="630" y="560" font-size="20">Jane Doe</text>
+  <text x="820" y="560" font-size="20">Rescinded</text>
+  <rect x="1000" y="540" width="70" height="30" rx="8" fill="#e0e4e7"/>
+  <text x="1018" y="561" font-size="16" font-weight="600">Edit</text>
+
+  <text x="630" y="605" font-size="20">Mark Spencer</text>
+  <text x="820" y="605" font-size="20">Pending</text>
+  <rect x="1000" y="585" width="70" height="30" rx="8" fill="#e0e4e7"/>
+  <text x="1018" y="606" font-size="16" font-weight="600">Edit</text>
+
+  <rect x="940" y="40" width="160" height="50" rx="10" fill="#333b4f"/>
+  <text x="970" y="73" font-size="20" fill="white">Create Invite</text>
+</svg>
