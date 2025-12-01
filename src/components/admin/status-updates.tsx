@@ -1,4 +1,4 @@
-import { StatusUpdate } from '@/lib/types';
+import { StatusUpdate } from "@/lib/types";
 
 interface StatusUpdatesProps {
   updates: StatusUpdate[];
@@ -12,33 +12,31 @@ export default function StatusUpdates({ updates }: StatusUpdatesProps) {
     const diffDays = Math.floor(diffHours / 24);
 
     if (diffDays > 0) {
-      if (diffDays === 1) return 'Yesterday';
+      if (diffDays === 1) return "Yesterday";
       return `${diffDays} days ago`;
     } else if (diffHours > 0) {
-      return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
+      return `${diffHours} hour${diffHours > 1 ? "s" : ""} ago`;
     } else {
-      return 'Just now';
+      return "Just now";
     }
   };
 
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
-      case 'confirmed':
-        return 'text-green-600';
-      case 'rescinded':
-        return 'text-red-600';
-      case 'pending':
-        return 'text-yellow-600';
+      case "confirmed":
+        return "text-green-600";
+      case "rescinded":
+        return "text-red-600";
+      case "pending":
+        return "text-yellow-600";
       default:
-        return 'text-gray-600';
+        return "text-gray-600";
     }
   };
 
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-      <h2 className="text-lg font-medium text-gray-900 mb-4">
-        Status Updates
-      </h2>
+      <h2 className="text-lg font-medium text-gray-900 mb-4">Status Updates</h2>
       <div className="space-y-4">
         {updates.map((update) => (
           <div key={update.id} className="flex justify-between items-start">

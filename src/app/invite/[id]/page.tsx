@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import { useEffect, useState, use } from 'react';
-import { InvitePageProps, InviteDetails, RsvpStatus } from '@/lib/types';
-import { Button } from '@/components/button';
-import InviteNotFound from '@/components/invite-not-found';
+import { useEffect, useState, use } from "react";
+import { InvitePageProps, InviteDetails, RsvpStatus } from "@/lib/types";
+import { Button } from "@/components/button";
+import InviteNotFound from "@/components/invite-not-found";
 
 export default function InvitePage({ params }: InvitePageProps) {
   const resolvedParams = use(params) as { id: string };
@@ -11,7 +11,7 @@ export default function InvitePage({ params }: InvitePageProps) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [inviteNotFound, setInviteNotFound] = useState(false);
-  const [rsvpStatus, setRsvpStatus] = useState<RsvpStatus>('pending');
+  const [rsvpStatus, setRsvpStatus] = useState<RsvpStatus>("pending");
 
   useEffect(() => {
     // Simulate API call to fetch invite details
@@ -19,35 +19,35 @@ export default function InvitePage({ params }: InvitePageProps) {
       try {
         setLoading(true);
         // TODO: Replace with actual API call
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+
         // Simulate invite not found for certain IDs
-        const deletedIds = ['deleted', 'rescinded', '404', 'notfound'];
+        const deletedIds = ["deleted", "rescinded", "404", "notfound"];
         if (deletedIds.includes(resolvedParams.id.toLowerCase())) {
           setInviteNotFound(true);
           return;
         }
-        
+
         // Mock data based on ID
         const mockInvite: InviteDetails = {
           id: resolvedParams.id,
-          guestName: 'Sarah & John Smith',
-          guestEmail: 'sarah.smith@example.com',
-          qrCode: 'QR_CODE_DATA',
-          eventDate: new Date('2026-05-23T15:00:00'),
-          venue: 'Canary World, Lagos, Nigeria',
-          rsvpStatus: 'pending',
+          guestName: "Sarah & John Smith",
+          guestEmail: "sarah.smith@example.com",
+          qrCode: "QR_CODE_DATA",
+          eventDate: new Date("2026-05-23T15:00:00"),
+          venue: "Canary World, Lagos, Nigeria",
+          rsvpStatus: "pending",
           plusOne: 2,
-          dietaryRestrictions: '',
-          message: 'We are so excited to celebrate with you!',
+          dietaryRestrictions: "",
+          message: "We are so excited to celebrate with you!",
           createdAt: new Date(),
-          updatedAt: new Date()
+          updatedAt: new Date(),
         };
 
         setInvite(mockInvite);
         setRsvpStatus(mockInvite.rsvpStatus);
       } catch {
-        setError('Failed to load invitation. Please try again.');
+        setError("Failed to load invitation. Please try again.");
       } finally {
         setLoading(false);
       }
@@ -59,21 +59,21 @@ export default function InvitePage({ params }: InvitePageProps) {
   const handleRsvp = async (status: RsvpStatus) => {
     try {
       // TODO: Replace with actual API call
-      await new Promise(resolve => setTimeout(resolve, 500));
+      await new Promise((resolve) => setTimeout(resolve, 500));
       setRsvpStatus(status);
       if (invite) {
         setInvite({ ...invite, rsvpStatus: status });
       }
     } catch {
-      setError('Failed to update RSVP. Please try again.');
+      setError("Failed to update RSVP. Please try again.");
     }
   };
 
   if (loading) {
     return (
-      <div 
+      <div
         className="min-h-screen flex items-center justify-center"
-        style={{ backgroundColor: '#FFF9F4' }}
+        style={{ backgroundColor: "#FFF9F4" }}
       >
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto mb-4"></div>
@@ -85,29 +85,29 @@ export default function InvitePage({ params }: InvitePageProps) {
 
   if (inviteNotFound) {
     return (
-      <InviteNotFound 
+      <InviteNotFound
         inviteId={resolvedParams.id}
-        onGoHome={() => window.location.href = '/'}
+        onGoHome={() => (window.location.href = "/")}
       />
     );
   }
 
   if (error || !invite) {
     return (
-      <div 
+      <div
         className="min-h-screen flex items-center justify-center"
-        style={{ backgroundColor: '#FFF9F4' }}
+        style={{ backgroundColor: "#FFF9F4" }}
       >
         <div className="text-center max-w-md mx-auto p-6">
           <h1 className="text-2xl font-bold text-gray-900 mb-4">
             Error Loading Invitation
           </h1>
           <p className="text-gray-600 mb-6">
-            {error || 'Something went wrong while loading your invitation.'}
+            {error || "Something went wrong while loading your invitation."}
           </p>
-          <Button 
+          <Button
             variant="primary"
-            onClick={() => window.location.href = '/'}
+            onClick={() => (window.location.href = "/")}
           >
             Go Home
           </Button>
@@ -117,36 +117,31 @@ export default function InvitePage({ params }: InvitePageProps) {
   }
 
   const formatDate = (date: Date) => {
-    return date.toLocaleDateString('en-US', {
-      weekday: 'long',
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
+    return date.toLocaleDateString("en-US", {
+      weekday: "long",
+      year: "numeric",
+      month: "long",
+      day: "numeric",
     });
   };
 
   const formatTime = (date: Date) => {
-    return date.toLocaleTimeString('en-US', {
-      hour: 'numeric',
-      minute: '2-digit',
-      hour12: true
+    return date.toLocaleTimeString("en-US", {
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
     });
   };
 
   return (
-    <div 
-      className="min-h-screen"
-      style={{ backgroundColor: '#FFF9F4' }}
-    >
+    <div className="min-h-screen" style={{ backgroundColor: "#FFF9F4" }}>
       <div className="max-w-2xl mx-auto p-6">
         {/* Header */}
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold text-gray-900 mb-2">
             You&apos;re Invited!
           </h1>
-          <p className="text-lg text-gray-600">
-            Wedding Celebration
-          </p>
+          <p className="text-lg text-gray-600">Wedding Celebration</p>
         </div>
 
         {/* Invitation Card */}
@@ -155,9 +150,7 @@ export default function InvitePage({ params }: InvitePageProps) {
             <h2 className="text-2xl font-semibold text-gray-900 mb-2">
               Dear {invite.guestName}
             </h2>
-            <p className="text-gray-600">
-              {invite.message}
-            </p>
+            <p className="text-gray-600">{invite.message}</p>
           </div>
 
           {/* Event Details */}
@@ -169,11 +162,15 @@ export default function InvitePage({ params }: InvitePageProps) {
               <div className="space-y-2">
                 <div className="flex justify-between">
                   <span className="text-gray-600">Date:</span>
-                  <span className="font-medium">{formatDate(invite.eventDate)}</span>
+                  <span className="font-medium">
+                    {formatDate(invite.eventDate)}
+                  </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">Time:</span>
-                  <span className="font-medium">{formatTime(invite.eventDate)}</span>
+                  <span className="font-medium">
+                    {formatTime(invite.eventDate)}
+                  </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">Venue:</span>
@@ -183,7 +180,8 @@ export default function InvitePage({ params }: InvitePageProps) {
                   <div className="flex justify-between">
                     <span className="text-gray-600">Additional Guests:</span>
                     <span className="font-medium text-green-600">
-                      {invite.plusOne} {invite.plusOne === 1 ? 'person' : 'people'}
+                      {invite.plusOne}{" "}
+                      {invite.plusOne === 1 ? "person" : "people"}
                     </span>
                   </div>
                 )}
@@ -196,31 +194,36 @@ export default function InvitePage({ params }: InvitePageProps) {
             <h3 className="text-lg font-semibold text-gray-900 mb-4">
               RSVP Status
             </h3>
-            
+
             <div className="space-y-4">
               <div className="flex items-center gap-4">
                 <span className="text-gray-600">Current Status:</span>
-                <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-                  rsvpStatus === 'confirmed' 
-                    ? 'bg-green-100 text-green-800'
-                    : 'bg-yellow-100 text-yellow-800'
-                }`}>
-                  {rsvpStatus === 'confirmed' ? 'Confirmed' : 'Pending'}
+                <span
+                  className={`px-3 py-1 rounded-full text-sm font-medium ${
+                    rsvpStatus === "confirmed"
+                      ? "bg-green-100 text-green-800"
+                      : "bg-yellow-100 text-yellow-800"
+                  }`}
+                >
+                  {rsvpStatus === "confirmed" ? "Confirmed" : "Pending"}
                 </span>
               </div>
 
-              {rsvpStatus === 'pending' && (
-                <div 
+              {rsvpStatus === "pending" && (
+                <div
                   className="flex justify-center"
-                  style={{ marginTop: '50px' }}
+                  style={{ marginTop: "50px" }}
                 >
-                  <Button variant="attendly" onClick={() => handleRsvp('confirmed')}>
+                  <Button
+                    variant="attendly"
+                    onClick={() => handleRsvp("confirmed")}
+                  >
                     Confirm Invitation
                   </Button>
                 </div>
               )}
 
-              {rsvpStatus === 'confirmed' && (
+              {rsvpStatus === "confirmed" && (
                 <div className="text-center">
                   <p className="text-green-600 text-lg font-medium">
                     ✓ Your invitation has been confirmed!

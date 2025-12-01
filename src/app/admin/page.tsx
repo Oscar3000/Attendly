@@ -1,17 +1,21 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import DashboardHeader from '@/components/admin/dashboard-header';
-import InvitationCounter from '@/components/admin/invitation-counter';
-import StatusUpdates from '@/components/admin/status-updates';
-import MetricsChart from '@/components/admin/metrics-chart';
-import InvitationsTable from '@/components/admin/invitations-table';
-import { DashboardMetrics, StatusUpdate, InvitationTableEntry } from '@/lib/types';
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import DashboardHeader from "@/components/admin/dashboard-header";
+import InvitationCounter from "@/components/admin/invitation-counter";
+import StatusUpdates from "@/components/admin/status-updates";
+import MetricsChart from "@/components/admin/metrics-chart";
+import InvitationsTable from "@/components/admin/invitations-table";
+import {
+  DashboardMetrics,
+  StatusUpdate,
+  InvitationTableEntry,
+} from "@/lib/types";
 
 // Create static timestamps to avoid impure Date.now() calls during render
-const twoHoursAgo = new Date('2025-12-01T10:00:00Z');
-const yesterday = new Date('2025-11-30T12:00:00Z');
+const twoHoursAgo = new Date("2025-12-01T10:00:00Z");
+const yesterday = new Date("2025-11-30T12:00:00Z");
 
 export default function AdminDashboard() {
   const router = useRouter();
@@ -19,57 +23,57 @@ export default function AdminDashboard() {
     totalInvitations: 287,
     pendingCount: 160,
     confirmedCount: 110,
-    rescindedCount: 60
+    rescindedCount: 60,
   });
 
   const [statusUpdates] = useState<StatusUpdate[]>([
     {
-      id: '1',
-      guestName: 'John Doe',
-      status: 'confirmed',
-      timestamp: twoHoursAgo
+      id: "1",
+      guestName: "John Doe",
+      status: "confirmed",
+      timestamp: twoHoursAgo,
     },
     {
-      id: '2',
-      guestName: 'John Doe',
-      status: 'rescinded',
-      timestamp: yesterday
-    }
+      id: "2",
+      guestName: "John Doe",
+      status: "rescinded",
+      timestamp: yesterday,
+    },
   ]);
 
   const [invitations] = useState<InvitationTableEntry[]>([
     {
-      id: '1',
-      name: 'Anna Smith',
-      status: 'confirmed',
-      email: 'anna@example.com',
-      createdAt: new Date()
+      id: "1",
+      name: "Anna Smith",
+      status: "confirmed",
+      email: "anna@example.com",
+      createdAt: new Date(),
     },
     {
-      id: '2',
-      name: 'John Doe',
-      status: 'pending',
-      email: 'john@example.com',
-      createdAt: new Date()
+      id: "2",
+      name: "John Doe",
+      status: "pending",
+      email: "john@example.com",
+      createdAt: new Date(),
     },
     {
-      id: '3',
-      name: 'Jane Doe',
-      status: 'rescinded',
-      email: 'jane@example.com',
-      createdAt: new Date()
+      id: "3",
+      name: "Jane Doe",
+      status: "rescinded",
+      email: "jane@example.com",
+      createdAt: new Date(),
     },
     {
-      id: '4',
-      name: 'Mark Spencer',
-      status: 'pending',
-      email: 'mark@example.com',
-      createdAt: new Date()
-    }
+      id: "4",
+      name: "Mark Spencer",
+      status: "pending",
+      email: "mark@example.com",
+      createdAt: new Date(),
+    },
   ]);
 
   const handleCreateInvite = () => {
-    router.push('/admin/create-invite');
+    router.push("/admin/create-invite");
   };
 
   const handleEditInvitation = (id: string) => {
@@ -77,10 +81,7 @@ export default function AdminDashboard() {
   };
 
   return (
-    <div 
-      className="min-h-screen p-6"
-      style={{ backgroundColor: '#FFF9F4' }}
-    >
+    <div className="min-h-screen p-6" style={{ backgroundColor: "#FFF9F4" }}>
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <DashboardHeader onCreateInvite={handleCreateInvite} />
@@ -105,7 +106,7 @@ export default function AdminDashboard() {
 
         {/* Bottom Row - Invitations Table */}
         <div>
-          <InvitationsTable 
+          <InvitationsTable
             invitations={invitations}
             onEdit={handleEditInvitation}
           />

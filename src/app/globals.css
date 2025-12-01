@@ -3,11 +3,11 @@
 /* CSS Custom Properties for Attendly theme */
 :root {
   /* Attendly Brand Colors */
-  --color-cream-bg: #FFF9F4; /* Soft cream background */
-  --color-warm-brown: #C07A54; /* Warm brown for buttons */
+  --color-cream-bg: #fff9f4; /* Soft cream background */
+  --color-warm-brown: #c07a54; /* Warm brown for buttons */
   --color-black: #000000; /* Pure black for headers */
   --color-dark-gray: #333333; /* Dark gray for body text */
-  
+
   /* Legacy colors for compatibility */
   --color-primary: 37 99 235; /* Blue-600 */
   --color-primary-dark: 29 78 216; /* Blue-700 */
@@ -17,7 +17,7 @@
   --color-success: 34 197 94; /* Green-500 */
   --color-warning: 245 158 11; /* Amber-500 */
   --color-error: 239 68 68; /* Red-500 */
-  
+
   /* Typography */
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
 }

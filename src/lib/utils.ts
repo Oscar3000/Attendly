@@ -17,7 +17,7 @@ export function formatDate(
     year: "numeric",
     month: "long",
     day: "numeric",
-  }
+  },
 ): string {
   return new Intl.DateTimeFormat("en-US", options).format(date);
 }
@@ -71,11 +71,11 @@ export function capitalize(str: string): string {
 export function getAttendanceStatusColor(status: AttendanceStatus): string {
   const statusColors: Record<AttendanceStatus, string> = {
     present: "text-green-600 bg-green-50",
-    absent: "text-red-600 bg-red-50", 
+    absent: "text-red-600 bg-red-50",
     late: "text-yellow-600 bg-yellow-50",
     excused: "text-blue-600 bg-blue-50",
   };
-  
+
   return statusColors[status];
 }
 
@@ -87,10 +87,10 @@ export function getAttendanceStatusColor(status: AttendanceStatus): string {
  */
 export function debounce<TArgs extends unknown[]>(
   func: (...args: TArgs) => void,
-  wait: number
+  wait: number,
 ): (...args: TArgs) => void {
   let timeout: NodeJS.Timeout;
-  
+
   return (...args: TArgs) => {
     clearTimeout(timeout);
     timeout = setTimeout(() => func(...args), wait);
@@ -111,13 +111,15 @@ export function delay(ms: number): Promise<void> {
  * @param status - The RSVP status
  * @returns Tailwind color class
  */
-export function getRsvpStatusColor(status: "pending" | "confirmed" | "declined"): string {
+export function getRsvpStatusColor(
+  status: "pending" | "confirmed" | "declined",
+): string {
   const statusColors = {
     pending: "text-yellow-600 bg-yellow-50",
-    confirmed: "text-green-600 bg-green-50", 
+    confirmed: "text-green-600 bg-green-50",
     declined: "text-red-600 bg-red-50",
   } as const;
-  
+
   return statusColors[status];
 }
 
@@ -129,7 +131,7 @@ export function getRsvpStatusColor(status: "pending" | "confirmed" | "declined")
 export function formatEventDate(date: Date): string {
   return new Intl.DateTimeFormat("en-US", {
     weekday: "long",
-    year: "numeric", 
+    year: "numeric",
     month: "long",
     day: "numeric",
     hour: "numeric",

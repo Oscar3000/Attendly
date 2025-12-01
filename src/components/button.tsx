@@ -15,7 +15,7 @@ const buttonVariants = {
 
 const buttonSizes = {
   sm: "px-3 py-1.5 text-sm",
-  md: "px-4 py-2 text-base", 
+  md: "px-4 py-2 text-base",
   lg: "px-6 py-3 text-lg",
   custom: "",
 } as const;
@@ -42,33 +42,40 @@ export function Button({
 }: ButtonProps & React.ButtonHTMLAttributes<HTMLButtonElement>) {
   const isDisabled = disabled || loading;
   const isAttendlyVariant = variant === "attendly";
-  
+
   // Custom styles for attendly variant
-  const customStyles = isAttendlyVariant ? {
-    width: typeof width === 'number' ? `${width}px` : width || '300px',
-    height: typeof height === 'number' ? `${height}px` : height || '70px',
-    borderRadius: typeof borderRadius === 'number' ? `${borderRadius}px` : borderRadius || '18px',
-    backgroundColor: backgroundColor || '#C07A54',
-    color: textColor || 'white',
-    fontFamily: 'Inter',
-    fontWeight: typeof fontWeight === 'number' ? fontWeight : fontWeight || '500',
-    fontSize: typeof fontSize === 'number' ? `${fontSize}px` : fontSize || '22px',
-    border: 'none',
-  } : {};
+  const customStyles = isAttendlyVariant
+    ? {
+        width: typeof width === "number" ? `${width}px` : width || "300px",
+        height: typeof height === "number" ? `${height}px` : height || "70px",
+        borderRadius:
+          typeof borderRadius === "number"
+            ? `${borderRadius}px`
+            : borderRadius || "18px",
+        backgroundColor: backgroundColor || "#C07A54",
+        color: textColor || "white",
+        fontFamily: "Inter",
+        fontWeight:
+          typeof fontWeight === "number" ? fontWeight : fontWeight || "500",
+        fontSize:
+          typeof fontSize === "number" ? `${fontSize}px` : fontSize || "22px",
+        border: "none",
+      }
+    : {};
 
   return (
     <button
       className={cn(
         // Base styles (conditional for attendly variant)
-        isAttendlyVariant 
+        isAttendlyVariant
           ? "transition-colors focus:outline-none focus:ring-2"
           : "inline-flex items-center justify-center rounded-lg font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed",
         // Variant styles
         buttonVariants[variant],
-        // Size styles  
+        // Size styles
         buttonSizes[size],
         // Custom className
-        className
+        className,
       )}
       style={isAttendlyVariant ? customStyles : undefined}
       disabled={isDisabled}

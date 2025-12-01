@@ -4,13 +4,13 @@
     "target": "ES2022",
     "lib": ["dom", "dom.iterable", "esnext"],
     "jsx": "react-jsx",
-    
+
     /* Modules */
     "module": "esnext",
     "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "allowJs": true,
-    
+
     /* Type Checking */
     "strict": true,
     "noUnusedLocals": true,
@@ -19,13 +19,13 @@
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
     "noUncheckedIndexedAccess": true,
-    
+
     /* Emit */
     "noEmit": true,
     "isolatedModules": true,
     "skipLibCheck": true,
     "incremental": true,
-    
+
     /* Interop Constraints */
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,

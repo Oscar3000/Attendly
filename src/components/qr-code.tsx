@@ -14,8 +14,12 @@ interface QrCodeProps extends BaseComponentProps {
   alt?: string;
 }
 
-export function QrCode({ className, src, size = 200, alt = "QR Code" }: QrCodeProps) {
-
+export function QrCode({
+  className,
+  src,
+  size = 200,
+  alt = "QR Code",
+}: QrCodeProps) {
   const containerStyle: React.CSSProperties = {
     width: size,
     height: size,
@@ -27,7 +31,7 @@ export function QrCode({ className, src, size = 200, alt = "QR Code" }: QrCodePr
       <div
         className={cn(
           "flex items-center justify-center bg-white border-2 border-gray-200 shadow-sm",
-          className
+          className,
         )}
         style={containerStyle}
       >
@@ -50,7 +54,7 @@ export function QrCode({ className, src, size = 200, alt = "QR Code" }: QrCodePr
     <div
       className={cn(
         "flex items-center justify-center bg-white border-2 border-gray-200 shadow-sm",
-        className
+        className,
       )}
       style={containerStyle}
       role="img"
@@ -79,4 +83,3 @@ export function QrCode({ className, src, size = 200, alt = "QR Code" }: QrCodePr
     </div>
   );
 }
-

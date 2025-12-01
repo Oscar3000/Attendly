@@ -9,6 +9,7 @@ This document provides guidelines for GitHub Copilot to assist with code generat
 Attendly is a Next.js-based attendance management system for tracking and managing attendance records.
 
 ### Tech Stack
+
 - **Frontend**: Next.js 16 with App Router
 - **Language**: TypeScript
 - **Styling**: Tailwind CSS
@@ -29,18 +30,21 @@ Attendly is a Next.js-based attendance management system for tracking and managi
 ## Coding Standards for Attendly
 
 ### TypeScript Guidelines
+
 - Use strict TypeScript with proper typing
 - Prefer interfaces over types for object shapes
 - Use meaningful variable and function names
 - Export types and interfaces for reusability
 
 ### React/Next.js Best Practices
+
 - Use App Router conventions
 - Implement Server Components when possible
 - Use proper file naming: kebab-case for files, PascalCase for components
 - Keep components small and focused on single responsibility
 
 ### Styling Guidelines
+
 - Use Tailwind CSS utility classes
 - Follow mobile-first responsive design
 - Use semantic HTML elements

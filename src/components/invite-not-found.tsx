@@ -3,11 +3,14 @@ interface InviteNotFoundProps {
   onGoHome: () => void;
 }
 
-export default function InviteNotFound({ inviteId, onGoHome }: InviteNotFoundProps) {
+export default function InviteNotFound({
+  inviteId,
+  onGoHome,
+}: InviteNotFoundProps) {
   return (
-    <div 
+    <div
       className="min-h-screen flex items-center justify-center"
-      style={{ backgroundColor: '#FFF9F4' }}
+      style={{ backgroundColor: "#FFF9F4" }}
     >
       <div className="text-center max-w-md mx-auto p-6">
         {/* Icon */}
@@ -40,7 +43,10 @@ export default function InviteNotFound({ inviteId, onGoHome }: InviteNotFoundPro
         {/* Description */}
         <div className="space-y-3 mb-8">
           <p className="text-gray-600 leading-relaxed">
-            We couldn&apos;t find an invitation with ID: <span className="font-mono text-sm bg-gray-100 px-2 py-1 rounded">{inviteId}</span>
+            We couldn&apos;t find an invitation with ID:{" "}
+            <span className="font-mono text-sm bg-gray-100 px-2 py-1 rounded">
+              {inviteId}
+            </span>
           </p>
           <p className="text-gray-600 leading-relaxed">
             This invitation may have been:
@@ -67,26 +73,22 @@ export default function InviteNotFound({ inviteId, onGoHome }: InviteNotFoundPro
             onClick={onGoHome}
             className="w-full text-white transition-colors hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2"
             style={{
-              height: '50px',
-              borderRadius: '12px',
-              backgroundColor: '#C07A54',
-              fontFamily: 'Inter',
-              fontWeight: '500',
-              fontSize: '16px',
-              border: 'none',
-              cursor: 'pointer'
+              height: "50px",
+              borderRadius: "12px",
+              backgroundColor: "#C07A54",
+              fontFamily: "Inter",
+              fontWeight: "500",
+              fontSize: "16px",
+              border: "none",
+              cursor: "pointer",
             }}
           >
             Go to Home Page
           </button>
-          
+
           <div className="text-center">
-            <p className="text-sm text-gray-500 mb-2">
-              Need help?
-            </p>
-            <p 
-              className="text-blue-600 text-sm font-medium"
-            >
+            <p className="text-sm text-gray-500 mb-2">Need help?</p>
+            <p className="text-blue-600 text-sm font-medium">
               Please reach out to the coordinator for assistance.
             </p>
           </div>
