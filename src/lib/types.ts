@@ -143,9 +143,14 @@ export interface InvitationTableEntry {
 
 // Invitation form types
 export interface CreateInviteForm {
-  name: string;
-  numberOfGuests: number;
-  status: RsvpStatus;
+  guestName: string;
+  guestEmail: string;
+  eventDate: string;
+  venue: string;
+  rsvpStatus: RsvpStatus;
+  plusOne: number;
+  dietaryRestrictions: string;
+  message: string;
 }
 
 export interface EditInviteForm extends CreateInviteForm {

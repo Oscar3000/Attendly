@@ -6,9 +6,14 @@ import { Button } from "@/components/button";
 
 export default function CreateInvitePage() {
   const [form, setForm] = useState<CreateInviteForm>({
-    name: "",
-    numberOfGuests: 0,
-    status: "pending",
+    guestName: "",
+    guestEmail: "",
+    eventDate: "2026-05-23T15:00",
+    venue: "Canary World, Lagos, Nigeria",
+    rsvpStatus: "pending",
+    plusOne: 0,
+    dietaryRestrictions: "",
+    message: "",
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -18,14 +23,26 @@ export default function CreateInvitePage() {
     setIsSubmitting(true);
 
     try {
-      // TODO: Replace with actual API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      console.log("Creating invite:", form);
+      const response = await fetch('/api/invitations', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(form),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to create invitation');
+      }
+
+      const result = await response.json();
+      console.log("Created invite:", result.invitation);
 
       // Redirect back to admin dashboard
       window.location.href = "/admin";
     } catch (error) {
       console.error("Error creating invite:", error);
+      alert("Failed to create invitation. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
@@ -60,20 +77,20 @@ export default function CreateInvitePage() {
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Name Field */}
+          {/* Guest Name Field */}
           <div>
             <label
-              htmlFor="name"
+              htmlFor="guestName"
               className="block text-lg font-medium text-gray-900 mb-3"
             >
-              Name
+              Guest Name
             </label>
             <input
               type="text"
-              id="name"
-              value={form.name}
-              onChange={(e) => handleInputChange("name", e.target.value)}
-              placeholder="Enter name"
+              id="guestName"
+              value={form.guestName}
+              onChange={(e) => handleInputChange("guestName", e.target.value)}
+              placeholder="Enter guest name"
               className="w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               style={{
                 fontFamily: "Inter",
@@ -83,50 +100,161 @@ export default function CreateInvitePage() {
             />
           </div>
 
-          {/* Number of Guests Field */}
+          {/* Guest Email Field */}
           <div>
             <label
-              htmlFor="numberOfGuests"
+              htmlFor="guestEmail"
               className="block text-lg font-medium text-gray-900 mb-3"
             >
-              Number of guests
+              Email Address
+            </label>
+            <input
+              type="email"
+              id="guestEmail"
+              value={form.guestEmail}
+              onChange={(e) => handleInputChange("guestEmail", e.target.value)}
+              placeholder="Enter email address"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              style={{
+                fontFamily: "Inter",
+                fontSize: "16px",
+              }}
+              required
+            />
+          </div>
+
+          {/* Event Date Field */}
+          <div>
+            <label
+              htmlFor="eventDate"
+              className="block text-lg font-medium text-gray-900 mb-3"
+            >
+              Event Date & Time
+            </label>
+            <input
+              type="datetime-local"
+              id="eventDate"
+              value={form.eventDate}
+              onChange={(e) => handleInputChange("eventDate", e.target.value)}
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              style={{
+                fontFamily: "Inter",
+                fontSize: "16px",
+              }}
+              required
+            />
+          </div>
+
+          {/* Venue Field */}
+          <div>
+            <label
+              htmlFor="venue"
+              className="block text-lg font-medium text-gray-900 mb-3"
+            >
+              Venue
+            </label>
+            <input
+              type="text"
+              id="venue"
+              value={form.venue}
+              onChange={(e) => handleInputChange("venue", e.target.value)}
+              placeholder="Enter venue"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              style={{
+                fontFamily: "Inter",
+                fontSize: "16px",
+              }}
+              required
+            />
+          </div>
+
+          {/* Plus One Field */}
+          <div>
+            <label
+              htmlFor="plusOne"
+              className="block text-lg font-medium text-gray-900 mb-3"
+            >
+              Plus One (Number of additional guests)
             </label>
             <input
               type="number"
-              id="numberOfGuests"
-              value={form.numberOfGuests}
+              id="plusOne"
+              value={form.plusOne}
               onChange={(e) =>
                 handleInputChange(
-                  "numberOfGuests",
-                  parseInt(e.target.value) || 1,
+                  "plusOne",
+                  parseInt(e.target.value) || 0,
                 )
               }
               placeholder="Enter number"
               min="0"
-              max="100"
+              max="10"
               className="w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               style={{
                 fontFamily: "Inter",
                 fontSize: "16px",
               }}
-              required
             />
           </div>
 
-          {/* Invite Status Field */}
+          {/* Dietary Restrictions Field */}
           <div>
             <label
-              htmlFor="status"
+              htmlFor="dietaryRestrictions"
               className="block text-lg font-medium text-gray-900 mb-3"
             >
-              Invite Status
+              Dietary Restrictions
+            </label>
+            <textarea
+              id="dietaryRestrictions"
+              value={form.dietaryRestrictions}
+              onChange={(e) => handleInputChange("dietaryRestrictions", e.target.value)}
+              placeholder="Enter any dietary restrictions"
+              rows={3}
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+              style={{
+                fontFamily: "Inter",
+                fontSize: "16px",
+              }}
+            />
+          </div>
+
+          {/* Message Field */}
+          <div>
+            <label
+              htmlFor="message"
+              className="block text-lg font-medium text-gray-900 mb-3"
+            >
+              Personal Message
+            </label>
+            <textarea
+              id="message"
+              value={form.message}
+              onChange={(e) => handleInputChange("message", e.target.value)}
+              placeholder="Enter a personal message"
+              rows={3}
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+              style={{
+                fontFamily: "Inter",
+                fontSize: "16px",
+              }}
+            />
+          </div>
+
+          {/* RSVP Status Field */}
+          <div>
+            <label
+              htmlFor="rsvpStatus"
+              className="block text-lg font-medium text-gray-900 mb-3"
+            >
+              Initial RSVP Status
             </label>
             <div className="relative">
               <select
-                id="status"
-                value={form.status}
+                id="rsvpStatus"
+                value={form.rsvpStatus}
                 onChange={(e) =>
-                  handleInputChange("status", e.target.value as RsvpStatus)
+                  handleInputChange("rsvpStatus", e.target.value as RsvpStatus)
                 }
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none"
                 style={{
@@ -137,7 +265,6 @@ export default function CreateInvitePage() {
                 <option value="pending">Pending</option>
                 <option value="confirmed">Confirmed</option>
                 <option value="declined">Declined</option>
-                <option value="rescinded">Rescinded</option>
               </select>
               {/* Custom dropdown arrow */}
               <div className="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none">

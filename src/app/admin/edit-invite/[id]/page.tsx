@@ -14,9 +14,14 @@ export default function EditInvitePage({ params }: EditInvitePageProps) {
   const resolvedParams = use(params) as { id: string };
   const [form, setForm] = useState<EditInviteForm>({
     id: resolvedParams.id,
-    name: "",
-    numberOfGuests: 1,
-    status: "pending",
+    guestName: "",
+    guestEmail: "",
+    eventDate: "",
+    venue: "",
+    rsvpStatus: "pending",
+    plusOne: 0,
+    dietaryRestrictions: "",
+    message: "",
   });
 
   const [loading, setLoading] = useState(true);
@@ -27,23 +32,25 @@ export default function EditInvitePage({ params }: EditInvitePageProps) {
     const fetchInvitation = async () => {
       try {
         setLoading(true);
-        // TODO: Replace with actual API call
-        await new Promise((resolve) => setTimeout(resolve, 1000));
+        const response = await fetch(`/api/invitations/${resolvedParams.id}`);
+        
+        if (!response.ok) {
+          throw new Error('Failed to fetch invitation');
+        }
 
-        // Mock data based on ID
-        const mockInvitation: InvitationTableEntry = {
-          id: resolvedParams.id,
-          name: "John Smith",
-          status: "pending",
-          email: "john@example.com",
-          createdAt: new Date(),
-        };
+        const data = await response.json();
+        const invitation = data.invitation;
 
         setForm({
-          id: mockInvitation.id,
-          name: mockInvitation.name,
-          numberOfGuests: 2, // Mock number of guests
-          status: mockInvitation.status,
+          id: invitation.id,
+          guestName: invitation.guestName,
+          guestEmail: invitation.guestEmail,
+          eventDate: new Date(invitation.eventDate).toISOString().slice(0, 16),
+          venue: invitation.venue,
+          rsvpStatus: invitation.rsvpStatus,
+          plusOne: invitation.plusOne,
+          dietaryRestrictions: invitation.dietaryRestrictions,
+          message: invitation.message,
         });
       } catch (err) {
         setError("Failed to load invitation");
@@ -60,15 +67,35 @@ export default function EditInvitePage({ params }: EditInvitePageProps) {
     setIsSubmitting(true);
 
     try {
-      // TODO: Replace with actual API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      console.log("Updating invite:", form);
+      const response = await fetch(`/api/invitations/${resolvedParams.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          guestName: form.guestName,
+          guestEmail: form.guestEmail,
+          eventDate: form.eventDate,
+          venue: form.venue,
+          rsvpStatus: form.rsvpStatus,
+          plusOne: form.plusOne,
+          dietaryRestrictions: form.dietaryRestrictions,
+          message: form.message,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update invitation');
+      }
+
+      const result = await response.json();
+      console.log("Updated invite:", result.invitation);
 
       // Redirect back to admin dashboard
       window.location.href = "/admin";
     } catch (error) {
       console.error("Error updating invite:", error);
-      setError("Failed to update invitation");
+      alert("Failed to update invitation. Please try again.");
     } finally {
       setIsSubmitting(false);
     }

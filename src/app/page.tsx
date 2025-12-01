@@ -1,6 +1,6 @@
 "use client";
 
-import { QrCode } from "@/components/qr-code";
+import QrCode from "@/components/qr-code";
 
 /**
  * Home page component - QR Code scan verification page

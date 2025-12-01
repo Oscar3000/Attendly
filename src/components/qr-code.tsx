@@ -83,3 +83,5 @@ export function QrCode({
     </div>
   );
 }
+
+export default QrCode;

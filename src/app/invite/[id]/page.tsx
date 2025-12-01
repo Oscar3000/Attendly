@@ -14,38 +14,24 @@ export default function InvitePage({ params }: InvitePageProps) {
   const [rsvpStatus, setRsvpStatus] = useState<RsvpStatus>("pending");
 
   useEffect(() => {
-    // Simulate API call to fetch invite details
+    // Fetch invite details from API
     const fetchInvite = async () => {
       try {
         setLoading(true);
-        // TODO: Replace with actual API call
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-
-        // Simulate invite not found for certain IDs
-        const deletedIds = ["deleted", "rescinded", "404", "notfound"];
-        if (deletedIds.includes(resolvedParams.id.toLowerCase())) {
+        const response = await fetch(`/api/invitations/${resolvedParams.id}`);
+        
+        if (response.status === 404) {
           setInviteNotFound(true);
           return;
         }
 
-        // Mock data based on ID
-        const mockInvite: InviteDetails = {
-          id: resolvedParams.id,
-          guestName: "Sarah & John Smith",
-          guestEmail: "sarah.smith@example.com",
-          qrCode: "QR_CODE_DATA",
-          eventDate: new Date("2026-05-23T15:00:00"),
-          venue: "Canary World, Lagos, Nigeria",
-          rsvpStatus: "pending",
-          plusOne: 2,
-          dietaryRestrictions: "",
-          message: "We are so excited to celebrate with you!",
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        };
+        if (!response.ok) {
+          throw new Error('Failed to fetch invitation');
+        }
 
-        setInvite(mockInvite);
-        setRsvpStatus(mockInvite.rsvpStatus);
+        const data = await response.json();
+        setInvite(data.invitation);
+        setRsvpStatus(data.invitation.rsvpStatus);
       } catch {
         setError("Failed to load invitation. Please try again.");
       } finally {
@@ -58,12 +44,21 @@ export default function InvitePage({ params }: InvitePageProps) {
 
   const handleRsvp = async (status: RsvpStatus) => {
     try {
-      // TODO: Replace with actual API call
-      await new Promise((resolve) => setTimeout(resolve, 500));
-      setRsvpStatus(status);
-      if (invite) {
-        setInvite({ ...invite, rsvpStatus: status });
+      const response = await fetch(`/api/invitations/${resolvedParams.id}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ rsvpStatus: status }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update RSVP status');
       }
+
+      const data = await response.json();
+      setRsvpStatus(data.invitation.rsvpStatus);
+      setInvite(data.invitation);
     } catch {
       setError("Failed to update RSVP. Please try again.");
     }
@@ -116,8 +111,9 @@ export default function InvitePage({ params }: InvitePageProps) {
     );
   }
 
-  const formatDate = (date: Date) => {
-    return date.toLocaleDateString("en-US", {
+  const formatDate = (date: Date | string) => {
+    const dateObj = typeof date === 'string' ? new Date(date) : date;
+    return dateObj.toLocaleDateString("en-US", {
       weekday: "long",
       year: "numeric",
       month: "long",
@@ -125,8 +121,9 @@ export default function InvitePage({ params }: InvitePageProps) {
     });
   };
 
-  const formatTime = (date: Date) => {
-    return date.toLocaleTimeString("en-US", {
+  const formatTime = (date: Date | string) => {
+    const dateObj = typeof date === 'string' ? new Date(date) : date;
+    return dateObj.toLocaleTimeString("en-US", {
       hour: "numeric",
       minute: "2-digit",
       hour12: true,

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import DashboardHeader from "@/components/admin/dashboard-header";
 import InvitationCounter from "@/components/admin/invitation-counter";
@@ -11,6 +11,8 @@ import {
   DashboardMetrics,
   StatusUpdate,
   InvitationTableEntry,
+  AdminMetrics,
+  AdminInvitation,
 } from "@/lib/types";
 
 // Create static timestamps to avoid impure Date.now() calls during render
@@ -19,13 +21,17 @@ const yesterday = new Date("2025-11-30T12:00:00Z");
 
 export default function AdminDashboard() {
   const router = useRouter();
-  const [metrics] = useState<DashboardMetrics>({
-    totalInvitations: 287,
-    pendingCount: 160,
-    confirmedCount: 110,
-    rescindedCount: 60,
+  const [metrics, setMetrics] = useState<DashboardMetrics>({
+    totalInvitations: 0,
+    pendingCount: 0,
+    confirmedCount: 0,
+    rescindedCount: 0,
   });
+  const [invitations, setInvitations] = useState<InvitationTableEntry[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
+  // Mock status updates (these would typically come from a real-time feed)
   const [statusUpdates] = useState<StatusUpdate[]>([
     {
       id: "1",
@@ -41,36 +47,47 @@ export default function AdminDashboard() {
     },
   ]);
 
-  const [invitations] = useState<InvitationTableEntry[]>([
-    {
-      id: "1",
-      name: "Anna Smith",
-      status: "confirmed",
-      email: "anna@example.com",
-      createdAt: new Date(),
-    },
-    {
-      id: "2",
-      name: "John Doe",
-      status: "pending",
-      email: "john@example.com",
-      createdAt: new Date(),
-    },
-    {
-      id: "3",
-      name: "Jane Doe",
-      status: "rescinded",
-      email: "jane@example.com",
-      createdAt: new Date(),
-    },
-    {
-      id: "4",
-      name: "Mark Spencer",
-      status: "pending",
-      email: "mark@example.com",
-      createdAt: new Date(),
-    },
-  ]);
+  useEffect(() => {
+    const fetchAdminData = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch('/api/admin');
+        
+        if (!response.ok) {
+          throw new Error('Failed to fetch admin data');
+        }
+
+        const data = await response.json();
+        
+        // Transform API metrics to dashboard metrics format
+        const dashboardMetrics: DashboardMetrics = {
+          totalInvitations: data.metrics.totalInvitations,
+          pendingCount: data.metrics.pendingRsvps,
+          confirmedCount: data.metrics.confirmedRsvps,
+          rescindedCount: data.metrics.declinedRsvps,
+        };
+        
+        // Transform API invitations to table format
+        const tableInvitations: InvitationTableEntry[] = data.invitations.map((inv: AdminInvitation) => ({
+          id: inv.id,
+          name: inv.guestName,
+          status: inv.status === 'declined' ? 'rescinded' : inv.status, // Map declined to rescinded for UI
+          email: inv.email,
+          createdAt: new Date(inv.createdAt),
+        }));
+
+        setMetrics(dashboardMetrics);
+        setInvitations(tableInvitations);
+      } catch (err) {
+        setError('Failed to load admin data');
+        console.error('Error fetching admin data:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchAdminData();
+  }, []);
 
   const handleCreateInvite = () => {
     router.push("/admin/create-invite");
@@ -79,6 +96,33 @@ export default function AdminDashboard() {
   const handleEditInvitation = (id: string) => {
     router.push(`/admin/edit-invite/${id}`);
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: "#FFF9F4" }}>
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading admin dashboard...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: "#FFF9F4" }}>
+        <div className="text-center">
+          <p className="text-red-600 mb-4">{error}</p>
+          <button 
+            onClick={() => window.location.reload()} 
+            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen p-6" style={{ backgroundColor: "#FFF9F4" }}>
