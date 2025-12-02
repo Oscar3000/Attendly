@@ -19,19 +19,19 @@ export default function InvitePage({ params }: InvitePageProps) {
       try {
         setLoading(true);
         const response = await fetch(`/api/invitations/${resolvedParams.id}`);
-        
+
         if (response.status === 404) {
           setInviteNotFound(true);
           return;
         }
 
         if (!response.ok) {
-          throw new Error('Failed to fetch invitation');
+          throw new Error("Failed to fetch invitation");
         }
 
         const data = await response.json();
         setInvite(data.invitation);
-        setRsvpStatus(data.invitation.rsvpStatus);
+        setRsvpStatus(data.invitation.status);
       } catch {
         setError("Failed to load invitation. Please try again.");
       } finally {
@@ -45,19 +45,19 @@ export default function InvitePage({ params }: InvitePageProps) {
   const handleRsvp = async (status: RsvpStatus) => {
     try {
       const response = await fetch(`/api/invitations/${resolvedParams.id}`, {
-        method: 'PATCH',
+        method: "PATCH",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
-        body: JSON.stringify({ rsvpStatus: status }),
+        body: JSON.stringify({ status: status }),
       });
 
       if (!response.ok) {
-        throw new Error('Failed to update RSVP status');
+        throw new Error("Failed to update RSVP status");
       }
 
       const data = await response.json();
-      setRsvpStatus(data.invitation.rsvpStatus);
+      setRsvpStatus(data.invitation.status);
       setInvite(data.invitation);
     } catch {
       setError("Failed to update RSVP. Please try again.");
@@ -112,7 +112,7 @@ export default function InvitePage({ params }: InvitePageProps) {
   }
 
   const formatDate = (date: Date | string) => {
-    const dateObj = typeof date === 'string' ? new Date(date) : date;
+    const dateObj = typeof date === "string" ? new Date(date) : date;
     return dateObj.toLocaleDateString("en-US", {
       weekday: "long",
       year: "numeric",
@@ -122,7 +122,7 @@ export default function InvitePage({ params }: InvitePageProps) {
   };
 
   const formatTime = (date: Date | string) => {
-    const dateObj = typeof date === 'string' ? new Date(date) : date;
+    const dateObj = typeof date === "string" ? new Date(date) : date;
     return dateObj.toLocaleTimeString("en-US", {
       hour: "numeric",
       minute: "2-digit",
@@ -145,9 +145,8 @@ export default function InvitePage({ params }: InvitePageProps) {
         <div className="bg-white rounded-2xl shadow-lg p-8 mb-6">
           <div className="text-center mb-6">
             <h2 className="text-2xl font-semibold text-gray-900 mb-2">
-              Dear {invite.guestName}
+              Dear {invite.name}
             </h2>
-            <p className="text-gray-600">{invite.message}</p>
           </div>
 
           {/* Event Details */}

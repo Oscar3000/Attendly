@@ -6,14 +6,11 @@ import { Button } from "@/components/button";
 
 export default function CreateInvitePage() {
   const [form, setForm] = useState<CreateInviteForm>({
-    guestName: "",
-    guestEmail: "",
+    name: "",
     eventDate: "2026-05-23T15:00",
     venue: "Canary World, Lagos, Nigeria",
-    rsvpStatus: "pending",
+    status: "pending",
     plusOne: 0,
-    dietaryRestrictions: "",
-    message: "",
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -23,16 +20,16 @@ export default function CreateInvitePage() {
     setIsSubmitting(true);
 
     try {
-      const response = await fetch('/api/invitations', {
-        method: 'POST',
+      const response = await fetch("/api/invitations", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(form),
       });
 
       if (!response.ok) {
-        throw new Error('Failed to create invitation');
+        throw new Error("Failed to create invitation");
       }
 
       const result = await response.json();
@@ -77,43 +74,20 @@ export default function CreateInvitePage() {
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Guest Name Field */}
+          {/* Name Field */}
           <div>
             <label
-              htmlFor="guestName"
+              htmlFor="name"
               className="block text-lg font-medium text-gray-900 mb-3"
             >
-              Guest Name
+              Name
             </label>
             <input
               type="text"
-              id="guestName"
-              value={form.guestName}
-              onChange={(e) => handleInputChange("guestName", e.target.value)}
-              placeholder="Enter guest name"
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              style={{
-                fontFamily: "Inter",
-                fontSize: "16px",
-              }}
-              required
-            />
-          </div>
-
-          {/* Guest Email Field */}
-          <div>
-            <label
-              htmlFor="guestEmail"
-              className="block text-lg font-medium text-gray-900 mb-3"
-            >
-              Email Address
-            </label>
-            <input
-              type="email"
-              id="guestEmail"
-              value={form.guestEmail}
-              onChange={(e) => handleInputChange("guestEmail", e.target.value)}
-              placeholder="Enter email address"
+              id="name"
+              value={form.name}
+              onChange={(e) => handleInputChange("name", e.target.value)}
+              placeholder="Enter name"
               className="w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               style={{
                 fontFamily: "Inter",
@@ -181,10 +155,7 @@ export default function CreateInvitePage() {
               id="plusOne"
               value={form.plusOne}
               onChange={(e) =>
-                handleInputChange(
-                  "plusOne",
-                  parseInt(e.target.value) || 0,
-                )
+                handleInputChange("plusOne", parseInt(e.target.value) || 0)
               }
               placeholder="Enter number"
               min="0"
@@ -197,64 +168,20 @@ export default function CreateInvitePage() {
             />
           </div>
 
-          {/* Dietary Restrictions Field */}
+          {/* Status Field */}
           <div>
             <label
-              htmlFor="dietaryRestrictions"
+              htmlFor="status"
               className="block text-lg font-medium text-gray-900 mb-3"
             >
-              Dietary Restrictions
-            </label>
-            <textarea
-              id="dietaryRestrictions"
-              value={form.dietaryRestrictions}
-              onChange={(e) => handleInputChange("dietaryRestrictions", e.target.value)}
-              placeholder="Enter any dietary restrictions"
-              rows={3}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
-              style={{
-                fontFamily: "Inter",
-                fontSize: "16px",
-              }}
-            />
-          </div>
-
-          {/* Message Field */}
-          <div>
-            <label
-              htmlFor="message"
-              className="block text-lg font-medium text-gray-900 mb-3"
-            >
-              Personal Message
-            </label>
-            <textarea
-              id="message"
-              value={form.message}
-              onChange={(e) => handleInputChange("message", e.target.value)}
-              placeholder="Enter a personal message"
-              rows={3}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
-              style={{
-                fontFamily: "Inter",
-                fontSize: "16px",
-              }}
-            />
-          </div>
-
-          {/* RSVP Status Field */}
-          <div>
-            <label
-              htmlFor="rsvpStatus"
-              className="block text-lg font-medium text-gray-900 mb-3"
-            >
-              Initial RSVP Status
+              Initial Status
             </label>
             <div className="relative">
               <select
-                id="rsvpStatus"
-                value={form.rsvpStatus}
+                id="status"
+                value={form.status}
                 onChange={(e) =>
-                  handleInputChange("rsvpStatus", e.target.value as RsvpStatus)
+                  handleInputChange("status", e.target.value as RsvpStatus)
                 }
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none"
                 style={{

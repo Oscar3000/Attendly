@@ -14,14 +14,11 @@ export default function EditInvitePage({ params }: EditInvitePageProps) {
   const resolvedParams = use(params) as { id: string };
   const [form, setForm] = useState<EditInviteForm>({
     id: resolvedParams.id,
-    guestName: "",
-    guestEmail: "",
+    name: "",
     eventDate: "",
     venue: "",
-    rsvpStatus: "pending",
+    status: "pending",
     plusOne: 0,
-    dietaryRestrictions: "",
-    message: "",
   });
 
   const [loading, setLoading] = useState(true);
@@ -33,9 +30,9 @@ export default function EditInvitePage({ params }: EditInvitePageProps) {
       try {
         setLoading(true);
         const response = await fetch(`/api/invitations/${resolvedParams.id}`);
-        
+
         if (!response.ok) {
-          throw new Error('Failed to fetch invitation');
+          throw new Error("Failed to fetch invitation");
         }
 
         const data = await response.json();
@@ -43,14 +40,11 @@ export default function EditInvitePage({ params }: EditInvitePageProps) {
 
         setForm({
           id: invitation.id,
-          guestName: invitation.guestName,
-          guestEmail: invitation.guestEmail,
+          name: invitation.name,
           eventDate: new Date(invitation.eventDate).toISOString().slice(0, 16),
           venue: invitation.venue,
-          rsvpStatus: invitation.rsvpStatus,
+          status: invitation.status,
           plusOne: invitation.plusOne,
-          dietaryRestrictions: invitation.dietaryRestrictions,
-          message: invitation.message,
         });
       } catch (err) {
         setError("Failed to load invitation");
@@ -68,24 +62,21 @@ export default function EditInvitePage({ params }: EditInvitePageProps) {
 
     try {
       const response = await fetch(`/api/invitations/${resolvedParams.id}`, {
-        method: 'PUT',
+        method: "PUT",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          guestName: form.guestName,
-          guestEmail: form.guestEmail,
+          name: form.name,
           eventDate: form.eventDate,
           venue: form.venue,
-          rsvpStatus: form.rsvpStatus,
+          status: form.status,
           plusOne: form.plusOne,
-          dietaryRestrictions: form.dietaryRestrictions,
-          message: form.message,
         }),
       });
 
       if (!response.ok) {
-        throw new Error('Failed to update invitation');
+        throw new Error("Failed to update invitation");
       }
 
       const result = await response.json();
@@ -186,27 +177,42 @@ export default function EditInvitePage({ params }: EditInvitePageProps) {
             />
           </div>
 
-          {/* Number of Guests Field */}
+          {/* Event Date Field */}
           <div>
             <label
-              htmlFor="numberOfGuests"
+              htmlFor="eventDate"
               className="block text-lg font-medium text-gray-900 mb-3"
             >
-              Number of guests
+              Event Date & Time
             </label>
             <input
-              type="number"
-              id="numberOfGuests"
-              value={form.numberOfGuests}
-              onChange={(e) =>
-                handleInputChange(
-                  "numberOfGuests",
-                  parseInt(e.target.value) || 1,
-                )
-              }
-              placeholder="Enter number"
-              min="1"
-              max="10"
+              type="datetime-local"
+              id="eventDate"
+              value={form.eventDate}
+              onChange={(e) => handleInputChange("eventDate", e.target.value)}
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              style={{
+                fontFamily: "Inter",
+                fontSize: "16px",
+              }}
+              required
+            />
+          </div>
+
+          {/* Venue Field */}
+          <div>
+            <label
+              htmlFor="venue"
+              className="block text-lg font-medium text-gray-900 mb-3"
+            >
+              Venue
+            </label>
+            <input
+              type="text"
+              id="venue"
+              value={form.venue}
+              onChange={(e) => handleInputChange("venue", e.target.value)}
+              placeholder="Enter venue"
               className="w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               style={{
                 fontFamily: "Inter",
@@ -216,13 +222,42 @@ export default function EditInvitePage({ params }: EditInvitePageProps) {
             />
           </div>
 
-          {/* Invite Status Field */}
+          {/* Plus One Field */}
+          <div>
+            <label
+              htmlFor="plusOne"
+              className="block text-lg font-medium text-gray-900 mb-3"
+            >
+              Plus One (Additional Guests)
+            </label>
+            <input
+              type="number"
+              id="plusOne"
+              value={form.plusOne}
+              onChange={(e) =>
+                handleInputChange(
+                  "plusOne",
+                  parseInt(e.target.value) || 0,
+                )
+              }
+              placeholder="Enter number"
+              min="0"
+              max="10"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              style={{
+                fontFamily: "Inter",
+                fontSize: "16px",
+              }}
+            />
+          </div>
+
+          {/* Status Field */}
           <div>
             <label
               htmlFor="status"
               className="block text-lg font-medium text-gray-900 mb-3"
             >
-              Invite Status
+              Status
             </label>
             <div className="relative">
               <select

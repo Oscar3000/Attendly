@@ -15,13 +15,13 @@ export async function GET() {
         metrics,
         invitations,
       },
-      { status: 200 }
+      { status: 200 },
     );
   } catch (error) {
     console.error("Error fetching admin metrics:", error);
     return NextResponse.json(
       { error: "Failed to fetch admin metrics" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

@@ -2,7 +2,12 @@
  * Simple in-memory database for Attendly
  * In production, this would be replaced with a real database
  */
-import type { InviteDetails, AdminMetrics, AdminInvitation, RsvpStatus } from "./types";
+import type {
+  InviteDetails,
+  AdminMetrics,
+  RsvpStatus,
+  InvitationTableEntry,
+} from "./types";
 
 // In-memory storage
 let invitations: Map<string, InviteDetails> = new Map();
@@ -13,57 +18,45 @@ const initializeData = () => {
   const mockInvitations: InviteDetails[] = [
     {
       id: "1",
-      guestName: "Sarah & John Smith",
-      guestEmail: "sarah.smith@example.com",
+      name: "Sarah & John Smith",
       qrCode: "QR_CODE_DATA_1",
       eventDate: new Date("2026-05-23T15:00:00"),
       venue: "Canary World, Lagos, Nigeria",
-      rsvpStatus: "confirmed",
+      status: "confirmed",
       plusOne: 2,
-      dietaryRestrictions: "Vegetarian",
-      message: "We are so excited to celebrate with you!",
       createdAt: new Date("2025-01-15T10:00:00"),
       updatedAt: new Date("2025-01-20T14:30:00"),
     },
     {
       id: "2",
-      guestName: "Michael Johnson",
-      guestEmail: "michael.johnson@example.com",
+      name: "Michael Johnson",
       qrCode: "QR_CODE_DATA_2",
       eventDate: new Date("2026-05-23T15:00:00"),
       venue: "Canary World, Lagos, Nigeria",
-      rsvpStatus: "pending",
+      status: "pending",
       plusOne: 1,
-      dietaryRestrictions: "",
-      message: "Looking forward to celebrating!",
       createdAt: new Date("2025-01-10T09:00:00"),
       updatedAt: new Date("2025-01-10T09:00:00"),
     },
     {
       id: "3",
-      guestName: "Emily Davis",
-      guestEmail: "emily.davis@example.com",
+      name: "Emily Davis",
       qrCode: "QR_CODE_DATA_3",
       eventDate: new Date("2026-05-23T15:00:00"),
       venue: "Canary World, Lagos, Nigeria",
-      rsvpStatus: "declined",
+      status: "declined",
       plusOne: 0,
-      dietaryRestrictions: "",
-      message: "Thank you for the invitation!",
       createdAt: new Date("2025-01-12T11:00:00"),
       updatedAt: new Date("2025-01-18T16:45:00"),
     },
     {
       id: "1232",
-      guestName: "Test User",
-      guestEmail: "test@example.com",
+      name: "Test User",
       qrCode: "QR_CODE_DATA_TEST",
       eventDate: new Date("2026-05-23T15:00:00"),
       venue: "Canary World, Lagos, Nigeria",
-      rsvpStatus: "pending",
+      status: "pending",
       plusOne: 2,
-      dietaryRestrictions: "",
-      message: "We are so excited to celebrate with you!",
       createdAt: new Date(),
       updatedAt: new Date(),
     },
@@ -92,7 +85,7 @@ export const db = {
 
   // Create new invitation
   createInvitation(
-    invitation: Omit<InviteDetails, "id" | "createdAt" | "updatedAt">
+    invitation: Omit<InviteDetails, "id" | "createdAt" | "updatedAt">,
   ): InviteDetails {
     const id = nextId.toString();
     nextId++;
@@ -111,7 +104,7 @@ export const db = {
   // Update invitation
   updateInvitation(
     id: string,
-    updates: Partial<Omit<InviteDetails, "id" | "createdAt">>
+    updates: Partial<Omit<InviteDetails, "id" | "createdAt">>,
   ): InviteDetails | undefined {
     const existing = invitations.get(id);
     if (!existing) return undefined;
@@ -135,16 +128,22 @@ export const db = {
 
   // Update RSVP status
   updateRsvpStatus(id: string, status: RsvpStatus): InviteDetails | undefined {
-    return this.updateInvitation(id, { rsvpStatus: status });
+    return this.updateInvitation(id, { status: status });
   },
 
   // Get admin metrics
   getAdminMetrics(): AdminMetrics {
     const allInvitations = this.getAllInvitations();
     const total = allInvitations.length;
-    const confirmed = allInvitations.filter((inv) => inv.rsvpStatus === "confirmed").length;
-    const pending = allInvitations.filter((inv) => inv.rsvpStatus === "pending").length;
-    const declined = allInvitations.filter((inv) => inv.rsvpStatus === "declined").length;
+    const confirmed = allInvitations.filter(
+      (inv) => inv.status === "confirmed",
+    ).length;
+    const pending = allInvitations.filter(
+      (inv) => inv.status === "pending",
+    ).length;
+    const declined = allInvitations.filter(
+      (inv) => inv.status === "declined",
+    ).length;
 
     return {
       totalInvitations: total,
@@ -156,13 +155,11 @@ export const db = {
   },
 
   // Get admin invitation list
-  getAdminInvitations(): AdminInvitation[] {
+  getAdminInvitations(): InvitationTableEntry[] {
     return this.getAllInvitations().map((invitation) => ({
       id: invitation.id,
-      guestName: invitation.guestName,
-      email: invitation.guestEmail,
-      status: invitation.rsvpStatus,
-      plusOne: invitation.plusOne,
+      name: invitation.name,
+      status: invitation.status,
       createdAt: invitation.createdAt,
     }));
   },

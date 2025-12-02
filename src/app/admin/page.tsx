@@ -11,8 +11,6 @@ import {
   DashboardMetrics,
   StatusUpdate,
   InvitationTableEntry,
-  AdminMetrics,
-  AdminInvitation,
 } from "@/lib/types";
 
 // Create static timestamps to avoid impure Date.now() calls during render
@@ -35,13 +33,13 @@ export default function AdminDashboard() {
   const [statusUpdates] = useState<StatusUpdate[]>([
     {
       id: "1",
-      guestName: "John Doe",
+      name: "John Doe",
       status: "confirmed",
       timestamp: twoHoursAgo,
     },
     {
       id: "2",
-      guestName: "John Doe",
+      name: "John Doe",
       status: "rescinded",
       timestamp: yesterday,
     },
@@ -51,14 +49,14 @@ export default function AdminDashboard() {
     const fetchAdminData = async () => {
       try {
         setLoading(true);
-        const response = await fetch('/api/admin');
-        
+        const response = await fetch("/api/admin");
+
         if (!response.ok) {
-          throw new Error('Failed to fetch admin data');
+          throw new Error("Failed to fetch admin data");
         }
 
         const data = await response.json();
-        
+
         // Transform API metrics to dashboard metrics format
         const dashboardMetrics: DashboardMetrics = {
           totalInvitations: data.metrics.totalInvitations,
@@ -66,21 +64,22 @@ export default function AdminDashboard() {
           confirmedCount: data.metrics.confirmedRsvps,
           rescindedCount: data.metrics.declinedRsvps,
         };
-        
+
         // Transform API invitations to table format
-        const tableInvitations: InvitationTableEntry[] = data.invitations.map((inv: AdminInvitation) => ({
-          id: inv.id,
-          name: inv.guestName,
-          status: inv.status === 'declined' ? 'rescinded' : inv.status, // Map declined to rescinded for UI
-          email: inv.email,
-          createdAt: new Date(inv.createdAt),
-        }));
+        const tableInvitations: InvitationTableEntry[] = data.invitations.map(
+          (inv: InvitationTableEntry) => ({
+            id: inv.id,
+            name: inv.name,
+            status: inv.status === "declined" ? "rescinded" : inv.status, // Map declined to rescinded for UI
+            createdAt: new Date(inv.createdAt),
+          }),
+        );
 
         setMetrics(dashboardMetrics);
         setInvitations(tableInvitations);
       } catch (err) {
-        setError('Failed to load admin data');
-        console.error('Error fetching admin data:', err);
+        setError("Failed to load admin data");
+        console.error("Error fetching admin data:", err);
       } finally {
         setLoading(false);
       }
@@ -99,7 +98,10 @@ export default function AdminDashboard() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: "#FFF9F4" }}>
+      <div
+        className="min-h-screen flex items-center justify-center"
+        style={{ backgroundColor: "#FFF9F4" }}
+      >
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto mb-4"></div>
           <p className="text-gray-600">Loading admin dashboard...</p>
@@ -110,11 +112,14 @@ export default function AdminDashboard() {
 
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: "#FFF9F4" }}>
+      <div
+        className="min-h-screen flex items-center justify-center"
+        style={{ backgroundColor: "#FFF9F4" }}
+      >
         <div className="text-center">
           <p className="text-red-600 mb-4">{error}</p>
-          <button 
-            onClick={() => window.location.reload()} 
+          <button
+            onClick={() => window.location.reload()}
             className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
           >
             Retry

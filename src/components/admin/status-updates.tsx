@@ -41,9 +41,7 @@ export default function StatusUpdates({ updates }: StatusUpdatesProps) {
         {updates.map((update) => (
           <div key={update.id} className="flex justify-between items-start">
             <div>
-              <div className="font-medium text-gray-900">
-                {update.guestName}
-              </div>
+              <div className="font-medium text-gray-900">{update.name}</div>
               <div className={`text-sm ${getStatusColor(update.status)}`}>
                 {update.status.charAt(0).toUpperCase() + update.status.slice(1)}
               </div>

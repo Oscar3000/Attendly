@@ -64,12 +64,11 @@ export interface LoginForm {
 // Wedding attendance types
 export interface WeddingInvitation {
   readonly id: string;
-  guestName: string;
-  guestEmail?: string;
+  name: string;
   qrCode: string;
   eventDate: Date;
   venue: string;
-  rsvpStatus: RsvpStatus;
+  status: RsvpStatus;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -114,8 +113,6 @@ export interface InvitePageProps {
 
 export interface InviteDetails extends WeddingInvitation {
   plusOne?: number;
-  dietaryRestrictions?: string;
-  message?: string;
 }
 
 // Admin dashboard types
@@ -128,7 +125,7 @@ export interface DashboardMetrics {
 
 export interface StatusUpdate {
   id: string;
-  guestName: string;
+  name: string;
   status: RsvpStatus;
   timestamp: Date;
 }
@@ -137,20 +134,16 @@ export interface InvitationTableEntry {
   id: string;
   name: string;
   status: RsvpStatus;
-  email?: string;
   createdAt: Date;
 }
 
 // Invitation form types
 export interface CreateInviteForm {
-  guestName: string;
-  guestEmail: string;
+  name: string;
   eventDate: string;
   venue: string;
-  rsvpStatus: RsvpStatus;
+  status: RsvpStatus;
   plusOne: number;
-  dietaryRestrictions: string;
-  message: string;
 }
 
 export interface EditInviteForm extends CreateInviteForm {
