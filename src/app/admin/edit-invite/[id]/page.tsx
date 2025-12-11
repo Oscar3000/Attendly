@@ -1,8 +1,10 @@
 "use client";
 
-import { useState, useEffect, use } from "react";
-import { EditInviteForm, RsvpStatus, InvitationTableEntry } from "@/lib/types";
+import React, { useState, use, useEffect, useMemo } from "react";
+import { useRouter } from "next/navigation";
+import { EditInviteForm, RsvpStatus } from "@/lib/types";
 import { Button } from "@/components/button";
+import { useGetInvitationQuery, useUpdateInvitationMutation } from "@/store/invitationApi";
 
 interface EditInvitePageProps {
   params: Promise<{
@@ -12,83 +14,61 @@ interface EditInvitePageProps {
 
 export default function EditInvitePage({ params }: EditInvitePageProps) {
   const resolvedParams = use(params) as { id: string };
-  const [form, setForm] = useState<EditInviteForm>({
-    id: resolvedParams.id,
-    name: "",
-    eventDate: "",
-    venue: "",
-    status: "pending",
-    plusOne: 0,
-  });
+  const router = useRouter();
+  
+  const { data, isLoading: loading, error } = useGetInvitationQuery(resolvedParams.id);
+  const [updateInvitation, { isLoading: isSubmitting }] = useUpdateInvitationMutation();
 
-  const [loading, setLoading] = useState(true);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const invitation = data?.invitation;
 
-  useEffect(() => {
-    const fetchInvitation = async () => {
-      try {
-        setLoading(true);
-        const response = await fetch(`/api/invitations/${resolvedParams.id}`);
-
-        if (!response.ok) {
-          throw new Error("Failed to fetch invitation");
-        }
-
-        const data = await response.json();
-        const invitation = data.invitation;
-
-        setForm({
-          id: invitation.id,
-          name: invitation.name,
-          eventDate: new Date(invitation.eventDate).toISOString().slice(0, 16),
-          venue: invitation.venue,
-          status: invitation.status,
-          plusOne: invitation.plusOne,
-        });
-      } catch (err) {
-        setError("Failed to load invitation");
-      } finally {
-        setLoading(false);
-      }
+  // Initialize form with invitation data when available
+  const initialForm = useMemo(() => {
+    if (invitation) {
+      return {
+        id: invitation.id,
+        name: invitation.name,
+        eventDate: new Date(invitation.eventDate).toISOString().slice(0, 16),
+        venue: invitation.venue,
+        status: invitation.status,
+        plusOne: invitation.plusOne ?? 0,
+      };
+    }
+    return {
+      id: resolvedParams.id,
+      name: "",
+      eventDate: "",
+      venue: "",
+      status: "pending" as RsvpStatus,
+      plusOne: 0,
     };
+  }, [invitation, resolvedParams.id]);
 
-    fetchInvitation();
-  }, [resolvedParams.id]);
+  const [form, setForm] = useState<EditInviteForm>(initialForm);
+
+  // Update form when initialForm changes
+  useEffect(() => {
+    setForm(initialForm);
+  }, [initialForm]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsSubmitting(true);
 
     try {
-      const response = await fetch(`/api/invitations/${resolvedParams.id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
+      await updateInvitation({
+        id: resolvedParams.id,
+        data: {
           name: form.name,
           eventDate: form.eventDate,
           venue: form.venue,
           status: form.status,
           plusOne: form.plusOne,
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to update invitation");
-      }
-
-      const result = await response.json();
-      console.log("Updated invite:", result.invitation);
-
-      // Redirect back to admin dashboard
-      window.location.href = "/admin";
+        }
+      }).unwrap();
+      
+      router.push("/admin");
     } catch (error) {
       console.error("Error updating invite:", error);
       alert("Failed to update invitation. Please try again.");
-    } finally {
-      setIsSubmitting(false);
     }
   };
 
@@ -124,10 +104,10 @@ export default function EditInvitePage({ params }: EditInvitePageProps) {
       >
         <div className="text-center">
           <h1 className="text-2xl font-bold text-gray-900 mb-4">Error</h1>
-          <p className="text-gray-600 mb-6">{error}</p>
+          <p className="text-gray-600 mb-6">Failed to load invitation</p>
           <Button
             variant="primary"
-            onClick={() => (window.location.href = "/admin")}
+            onClick={() => router.push("/admin")}
           >
             Back to Dashboard
           </Button>

@@ -149,3 +149,12 @@ export interface CreateInviteForm {
 export interface EditInviteForm extends CreateInviteForm {
   id: string;
 }
+
+// Admin metrics interface
+export interface AdminMetrics {
+  totalInvitations: number;
+  confirmedRsvps: number;
+  pendingRsvps: number;
+  declinedRsvps: number;
+  attendanceRate: number;
+}

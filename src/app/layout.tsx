@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
+import { ReduxProvider } from "@/store/ReduxProvider";
 
 // Font optimization with Inter font family
 const inter = Inter({
@@ -37,7 +38,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
         className="min-h-screen font-sans antialiased"
         style={{ backgroundColor: "#FFF9F4" }}
       >
-        {children}
+        <ReduxProvider>{children}</ReduxProvider>
       </body>
     </html>
   );

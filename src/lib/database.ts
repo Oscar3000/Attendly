@@ -10,7 +10,7 @@ import type {
 } from "./types";
 
 // In-memory storage
-let invitations: Map<string, InviteDetails> = new Map();
+const invitations: Map<string, InviteDetails> = new Map();
 let nextId = 1;
 
 // Initialize with some mock data

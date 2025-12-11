@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import DashboardHeader from "@/components/admin/dashboard-header";
 import InvitationCounter from "@/components/admin/invitation-counter";
@@ -12,6 +12,7 @@ import {
   StatusUpdate,
   InvitationTableEntry,
 } from "@/lib/types";
+import { useGetAdminDataQuery } from "@/store/invitationApi";
 
 // Create static timestamps to avoid impure Date.now() calls during render
 const twoHoursAgo = new Date("2025-12-01T10:00:00Z");
@@ -19,15 +20,13 @@ const yesterday = new Date("2025-11-30T12:00:00Z");
 
 export default function AdminDashboard() {
   const router = useRouter();
-  const [metrics, setMetrics] = useState<DashboardMetrics>({
-    totalInvitations: 0,
-    pendingCount: 0,
-    confirmedCount: 0,
-    rescindedCount: 0,
-  });
-  const [invitations, setInvitations] = useState<InvitationTableEntry[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  
+  // RTK Query hook
+  const {
+    data: adminData,
+    isLoading: loading,
+    isError,
+  } = useGetAdminDataQuery();
 
   // Mock status updates (these would typically come from a real-time feed)
   const [statusUpdates] = useState<StatusUpdate[]>([
@@ -45,48 +44,24 @@ export default function AdminDashboard() {
     },
   ]);
 
-  useEffect(() => {
-    const fetchAdminData = async () => {
-      try {
-        setLoading(true);
-        const response = await fetch("/api/admin");
+  // Transform API data to dashboard format
+  const metrics: DashboardMetrics = adminData ? {
+    totalInvitations: adminData.metrics.totalInvitations,
+    pendingCount: adminData.metrics.pendingRsvps,
+    confirmedCount: adminData.metrics.confirmedRsvps,
+    rescindedCount: adminData.metrics.declinedRsvps,
+  } : {
+    totalInvitations: 0,
+    pendingCount: 0,
+    confirmedCount: 0,
+    rescindedCount: 0,
+  };
 
-        if (!response.ok) {
-          throw new Error("Failed to fetch admin data");
-        }
-
-        const data = await response.json();
-
-        // Transform API metrics to dashboard metrics format
-        const dashboardMetrics: DashboardMetrics = {
-          totalInvitations: data.metrics.totalInvitations,
-          pendingCount: data.metrics.pendingRsvps,
-          confirmedCount: data.metrics.confirmedRsvps,
-          rescindedCount: data.metrics.declinedRsvps,
-        };
-
-        // Transform API invitations to table format
-        const tableInvitations: InvitationTableEntry[] = data.invitations.map(
-          (inv: InvitationTableEntry) => ({
-            id: inv.id,
-            name: inv.name,
-            status: inv.status === "declined" ? "rescinded" : inv.status, // Map declined to rescinded for UI
-            createdAt: new Date(inv.createdAt),
-          }),
-        );
-
-        setMetrics(dashboardMetrics);
-        setInvitations(tableInvitations);
-      } catch (err) {
-        setError("Failed to load admin data");
-        console.error("Error fetching admin data:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchAdminData();
-  }, []);
+  const invitations: InvitationTableEntry[] = adminData ? 
+    adminData.invitations.map((inv) => ({
+      ...inv,
+      status: inv.status === 'declined' ? 'rescinded' : inv.status, // Map declined to rescinded for UI
+    })) : [];
 
   const handleCreateInvite = () => {
     router.push("/admin/create-invite");
@@ -110,14 +85,14 @@ export default function AdminDashboard() {
     );
   }
 
-  if (error) {
+  if (isError) {
     return (
       <div
         className="min-h-screen flex items-center justify-center"
         style={{ backgroundColor: "#FFF9F4" }}
       >
         <div className="text-center">
-          <p className="text-red-600 mb-4">{error}</p>
+          <p className="text-red-600 mb-4">Failed to load admin data</p>
           <button
             onClick={() => window.location.reload()}
             className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"

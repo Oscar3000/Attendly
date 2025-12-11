@@ -1,66 +1,37 @@
 "use client";
 
-import { useEffect, useState, use } from "react";
-import { InvitePageProps, InviteDetails, RsvpStatus } from "@/lib/types";
+import { use } from "react";
+import { InvitePageProps, RsvpStatus } from "@/lib/types";
 import { Button } from "@/components/button";
 import InviteNotFound from "@/components/invite-not-found";
+import { useGetInvitationQuery, useUpdateRsvpStatusMutation } from "@/store/invitationApi";
 
 export default function InvitePage({ params }: InvitePageProps) {
   const resolvedParams = use(params) as { id: string };
-  const [invite, setInvite] = useState<InviteDetails | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [inviteNotFound, setInviteNotFound] = useState(false);
-  const [rsvpStatus, setRsvpStatus] = useState<RsvpStatus>("pending");
+  
+  // RTK Query hooks
+  const {
+    data: invitationData,
+    isLoading: loading,
+    error,
+    isError,
+  } = useGetInvitationQuery(resolvedParams.id);
+  
+  const [updateRsvpStatus, { isLoading: isUpdating }] = useUpdateRsvpStatusMutation();
 
-  useEffect(() => {
-    // Fetch invite details from API
-    const fetchInvite = async () => {
-      try {
-        setLoading(true);
-        const response = await fetch(`/api/invitations/${resolvedParams.id}`);
-
-        if (response.status === 404) {
-          setInviteNotFound(true);
-          return;
-        }
-
-        if (!response.ok) {
-          throw new Error("Failed to fetch invitation");
-        }
-
-        const data = await response.json();
-        setInvite(data.invitation);
-        setRsvpStatus(data.invitation.status);
-      } catch {
-        setError("Failed to load invitation. Please try again.");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchInvite();
-  }, [resolvedParams.id]);
+  const invite = invitationData?.invitation;
+  const inviteNotFound = isError && 'status' in (error as object) && (error as { status: number }).status === 404;
+  const rsvpStatus = invite?.status || "pending";
 
   const handleRsvp = async (status: RsvpStatus) => {
     try {
-      const response = await fetch(`/api/invitations/${resolvedParams.id}`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ status: status }),
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to update RSVP status");
-      }
-
-      const data = await response.json();
-      setRsvpStatus(data.invitation.status);
-      setInvite(data.invitation);
-    } catch {
-      setError("Failed to update RSVP. Please try again.");
+      await updateRsvpStatus({ 
+        id: resolvedParams.id, 
+        status 
+      }).unwrap();
+    } catch (err) {
+      console.error('Failed to update RSVP status:', err);
+      // You could add a toast notification here
     }
   };
 
@@ -84,6 +55,25 @@ export default function InvitePage({ params }: InvitePageProps) {
         inviteId={resolvedParams.id}
         onGoHome={() => (window.location.href = "/")}
       />
+    );
+  }
+
+  if (isError) {
+    return (
+      <div
+        className="min-h-screen flex items-center justify-center"
+        style={{ backgroundColor: "#FFF9F4" }}
+      >
+        <div className="text-center">
+          <p className="text-red-600 mb-4">Failed to load invitation. Please try again.</p>
+          <button 
+            onClick={() => window.location.reload()} 
+            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+          >
+            Retry
+          </button>
+        </div>
+      </div>
     );
   }
 
@@ -213,8 +203,10 @@ export default function InvitePage({ params }: InvitePageProps) {
                   <Button
                     variant="attendly"
                     onClick={() => handleRsvp("confirmed")}
+                    disabled={isUpdating}
+                    loading={isUpdating}
                   >
-                    Confirm Invitation
+                    {isUpdating ? "Confirming..." : "Confirm Invitation"}
                   </Button>
                 </div>
               )}

@@ -3,8 +3,11 @@
 import { useState } from "react";
 import { CreateInviteForm, RsvpStatus } from "@/lib/types";
 import { Button } from "@/components/button";
+import { useCreateInvitationMutation } from "@/store/invitationApi";
+import { useRouter } from "next/navigation";
 
 export default function CreateInvitePage() {
+  const router = useRouter();
   const [form, setForm] = useState<CreateInviteForm>({
     name: "",
     eventDate: "2026-05-23T15:00",
@@ -13,35 +16,17 @@ export default function CreateInvitePage() {
     plusOne: 0,
   });
 
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [createInvitation, { isLoading: isSubmitting }] = useCreateInvitationMutation();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsSubmitting(true);
 
     try {
-      const response = await fetch("/api/invitations", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(form),
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to create invitation");
-      }
-
-      const result = await response.json();
-      console.log("Created invite:", result.invitation);
-
-      // Redirect back to admin dashboard
-      window.location.href = "/admin";
+      await createInvitation(form).unwrap();
+      router.push("/admin");
     } catch (error) {
       console.error("Error creating invite:", error);
       alert("Failed to create invitation. Please try again.");
-    } finally {
-      setIsSubmitting(false);
     }
   };
 

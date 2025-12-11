@@ -5,7 +5,7 @@
  */
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/database";
-import type { InviteDetails } from "@/lib/types";
+
 
 export async function GET() {
   try {
