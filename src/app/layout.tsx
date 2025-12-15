@@ -16,6 +16,26 @@ export const metadata: Metadata = {
     "A modern attendance management system built with Next.js. Track, manage, and analyze attendance records with ease.",
   keywords: ["attendance", "management", "tracking", "nextjs", "react"],
   authors: [{ name: "Attendly Team" }],
+  icons: {
+    icon: [
+      {
+        url: "/favicon.svg",
+        type: "image/svg+xml",
+      },
+      {
+        url: "/favicon-16x16.svg",
+        sizes: "16x16",
+        type: "image/svg+xml",
+      },
+    ],
+    apple: [
+      {
+        url: "/android-chrome-192x192.svg",
+        sizes: "192x192",
+        type: "image/svg+xml",
+      },
+    ],
+  },
 };
 
 export const viewport = {
