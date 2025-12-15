@@ -22,8 +22,8 @@ export default function CreateInvitePage() {
     e.preventDefault();
 
     try {
-      await createInvitation(form).unwrap();
-      router.push("/admin");
+      const result = await createInvitation(form).unwrap();
+      router.push(`/admin/create-invite/success?id=${result.invitation.id}`);
     } catch (error) {
       console.error("Error creating invite:", error);
       alert("Failed to create invitation. Please try again.");
