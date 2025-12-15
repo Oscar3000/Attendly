@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+
 import { useRouter } from "next/navigation";
 import DashboardHeader from "@/components/admin/dashboard-header";
 import InvitationCounter from "@/components/admin/invitation-counter";
@@ -9,40 +9,25 @@ import MetricsChart from "@/components/admin/metrics-chart";
 import InvitationsTable from "@/components/admin/invitations-table";
 import {
   DashboardMetrics,
-  StatusUpdate,
   InvitationTableEntry,
 } from "@/lib/types";
-import { useGetAdminDataQuery } from "@/store/invitationApi";
+import { useGetAdminDataQuery, useGetStatusUpdatesQuery } from "@/store/invitationApi";
 
-// Create static timestamps to avoid impure Date.now() calls during render
-const twoHoursAgo = new Date("2025-12-01T10:00:00Z");
-const yesterday = new Date("2025-11-30T12:00:00Z");
+
 
 export default function AdminDashboard() {
   const router = useRouter();
   
-  // RTK Query hook
+  // RTK Query hooks
   const {
     data: adminData,
     isLoading: loading,
     isError,
   } = useGetAdminDataQuery();
 
-  // Mock status updates (these would typically come from a real-time feed)
-  const [statusUpdates] = useState<StatusUpdate[]>([
-    {
-      id: "1",
-      name: "John Doe",
-      status: "confirmed",
-      timestamp: twoHoursAgo,
-    },
-    {
-      id: "2",
-      name: "John Doe",
-      status: "rescinded",
-      timestamp: yesterday,
-    },
-  ]);
+  const {
+    data: statusUpdatesData,
+  } = useGetStatusUpdatesQuery();
 
   // Transform API data to dashboard format
   const metrics: DashboardMetrics = adminData ? {
@@ -119,7 +104,7 @@ export default function AdminDashboard() {
 
           {/* Right Column - Status Updates */}
           <div>
-            <StatusUpdates updates={statusUpdates} />
+            <StatusUpdates updates={statusUpdatesData?.statusUpdates || []} />
           </div>
         </div>
 

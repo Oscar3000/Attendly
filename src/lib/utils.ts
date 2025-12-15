@@ -156,3 +156,70 @@ export function downloadQRCode(qrCodeDataUrl: string, fileName: string): void {
   link.href = qrCodeDataUrl;
   link.click();
 }
+
+/**
+ * Formats a date to show relative time (e.g., "2 minutes ago", "Yesterday")
+ * @param date - The date to format (Date object or string)
+ * @returns Human-readable relative time string
+ */
+export function formatTimeAgo(date: Date | string): string {
+  const now = new Date();
+  const dateObj = typeof date === 'string' ? new Date(date) : date;
+  const diffMs = now.getTime() - dateObj.getTime();
+  const diffMinutes = Math.floor(diffMs / (1000 * 60));
+  const diffHours = Math.floor(diffMinutes / 60);
+  const diffDays = Math.floor(diffHours / 24);
+
+  if (diffDays > 0) {
+    if (diffDays === 1) return "Yesterday";
+    return `${diffDays} days ago`;
+  } else if (diffHours > 0) {
+    return `${diffHours} hour${diffHours > 1 ? "s" : ""} ago`;
+  } else if (diffMinutes > 0) {
+    return `${diffMinutes} minute${diffMinutes > 1 ? "s" : ""} ago`;
+  } else {
+    return "Just now";
+  }
+}
+
+/**
+ * Gets the appropriate CSS color class for an RSVP status
+ * @param status - The RSVP status string
+ * @returns CSS class name for the status color
+ */
+export function getStatusColor(status: string): string {
+  switch (status.toLowerCase()) {
+    case "confirmed":
+      return "text-green-600";
+    case "rescinded":
+      return "text-red-600";
+    case "pending":
+      return "text-yellow-600";
+    case "declined":
+      return "text-gray-600";
+    default:
+      return "text-gray-600";
+  }
+}
+
+/**
+ * Gets status color classes with background for table badges
+ * @param status - The RSVP status string
+ * @returns CSS classes for text and background colors
+ */
+export function getTableStatusColor(status: string): string {
+  const baseColor = getStatusColor(status);
+  // Map text colors to background variants for table badges
+  switch (status.toLowerCase()) {
+    case "confirmed":
+      return `${baseColor} bg-green-50`;
+    case "rescinded":
+      return `${baseColor} bg-red-50`;
+    case "pending":
+      return `${baseColor} bg-yellow-50`;
+    case "declined":
+      return `${baseColor} bg-gray-50`;
+    default:
+      return `${baseColor} bg-gray-50`;
+  }
+}

@@ -1,6 +1,6 @@
 /**
  * API endpoint for admin metrics
- * GET /api/admin/metrics - Get admin dashboard metrics
+ * GET /api/admin - Get admin dashboard metrics and invitations
  */
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";

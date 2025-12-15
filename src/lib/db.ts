@@ -8,6 +8,7 @@ import type {
   AdminMetrics,
   InvitationTableEntry,
   RsvpStatus,
+  StatusUpdate,
 } from "./types";
 import QRCode from "qrcode";
 
@@ -88,6 +89,14 @@ type PrismaAdminInvitationResult = {
   eventDate: Date;
   venue: string;
   plusOne: number;
+};
+
+// Prisma select result type for status updates
+type PrismaStatusUpdateResult = {
+  id: string;
+  name: string;
+  status: string;
+  updatedAt: Date;
 };
 
 // Convert Prisma enum to our app enum
@@ -238,6 +247,27 @@ export const db = {
       declinedRsvps: declined,
       attendanceRate: total > 0 ? Math.round((confirmed / total) * 100) : 0,
     };
+  },
+
+  // Get recent status updates (last 5 invitations with recent updates)
+  async getRecentStatusUpdates(): Promise<StatusUpdate[]> {
+    const recentUpdates = await prisma.invitation.findMany({
+      orderBy: { updatedAt: 'desc' },
+      take: 5,
+      select: {
+        id: true,
+        name: true,
+        status: true,
+        updatedAt: true,
+      }
+    });
+
+    return recentUpdates.map((invitation: PrismaStatusUpdateResult) => ({
+      id: invitation.id,
+      name: invitation.name,
+      status: convertPrismaStatus(invitation.status as PrismaRsvpStatus),
+      timestamp: invitation.updatedAt,
+    }));
   },
 
   // Get admin invitation list

@@ -2,14 +2,14 @@
  * RTK Query API slice for managing invitation-related API calls
  */
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
-import type { InviteDetails, AdminMetrics, InvitationTableEntry, CreateInviteForm, RsvpStatus } from '@/lib/types';
+import type { InviteDetails, AdminMetrics, InvitationTableEntry, CreateInviteForm, RsvpStatus, StatusUpdate } from '@/lib/types';
 
 export const invitationApi = createApi({
   reducerPath: 'invitationApi',
   baseQuery: fetchBaseQuery({
     baseUrl: '/api/',
   }),
-  tagTypes: ['Invitation', 'AdminData'],
+  tagTypes: ['Invitation', 'AdminData', 'StatusUpdates'],
   endpoints: (builder) => ({
     // Get single invitation
     getInvitation: builder.query<{ invitation: InviteDetails }, string>({
@@ -32,6 +32,12 @@ export const invitationApi = createApi({
       providesTags: ['AdminData', 'Invitation'],
     }),
 
+    // Get recent status updates
+    getStatusUpdates: builder.query<{ statusUpdates: StatusUpdate[] }, void>({
+      query: () => 'admin/status',
+      providesTags: ['StatusUpdates'],
+    }),
+
     // Create invitation
     createInvitation: builder.mutation<{ invitation: InviteDetails }, CreateInviteForm>({
       query: (invitation) => ({
@@ -39,7 +45,7 @@ export const invitationApi = createApi({
         method: 'POST',
         body: invitation,
       }),
-      invalidatesTags: ['Invitation', 'AdminData'],
+      invalidatesTags: ['Invitation', 'AdminData', 'StatusUpdates'],
     }),
 
     // Update invitation
@@ -52,6 +58,7 @@ export const invitationApi = createApi({
       invalidatesTags: (_result, _error, { id }) => [
         { type: 'Invitation', id },
         'AdminData',
+        'StatusUpdates',
       ],
     }),
 
@@ -65,6 +72,7 @@ export const invitationApi = createApi({
       invalidatesTags: (_result, _error, { id }) => [
         { type: 'Invitation', id },
         'AdminData',
+        'StatusUpdates',
       ],
     }),
 
@@ -77,6 +85,7 @@ export const invitationApi = createApi({
       invalidatesTags: (_result, _error, id) => [
         { type: 'Invitation', id },
         'AdminData',
+        'StatusUpdates',
       ],
     }),
   }),
@@ -86,6 +95,7 @@ export const {
   useGetInvitationQuery,
   useGetAllInvitationsQuery,
   useGetAdminDataQuery,
+  useGetStatusUpdatesQuery,
   useCreateInvitationMutation,
   useUpdateInvitationMutation,
   useUpdateRsvpStatusMutation,

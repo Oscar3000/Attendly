@@ -1,6 +1,6 @@
 import { InvitationTableEntry } from "@/lib/types";
 import { QrCode } from "../qr-code";
-import { downloadQRCode } from "@/lib/utils";
+import { downloadQRCode, getTableStatusColor } from "@/lib/utils";
 
 interface InvitationsTableProps {
   invitations: InvitationTableEntry[];
@@ -14,18 +14,6 @@ export default function InvitationsTable({
   const handleDownloadQR = (invitation: InvitationTableEntry) => {
     if (invitation.qrCode) {
       downloadQRCode(invitation.qrCode, `invitation-qr-${invitation.name}`);
-    }
-  };
-  const getStatusColor = (status: string) => {
-    switch (status.toLowerCase()) {
-      case "confirmed":
-        return "text-green-600 bg-green-50";
-      case "rescinded":
-        return "text-red-600 bg-red-50";
-      case "pending":
-        return "text-yellow-600 bg-yellow-50";
-      default:
-        return "text-gray-600 bg-gray-50";
     }
   };
 
@@ -66,7 +54,7 @@ export default function InvitationsTable({
                 </td>
                 <td className="py-4 px-4">
                   <span
-                    className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(invitation.status)}`}
+                    className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${getTableStatusColor(invitation.status)}`}
                   >
                     {invitation.status.charAt(0).toUpperCase() +
                       invitation.status.slice(1)}
