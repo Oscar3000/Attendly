@@ -7,8 +7,8 @@ import { db } from "@/lib/database";
 
 export async function GET() {
   try {
-    const metrics = db.getAdminMetrics();
-    const invitations = db.getAdminInvitations();
+    const metrics = await db.getAdminMetrics();
+    const invitations = await db.getAdminInvitations();
 
     return NextResponse.json(
       {

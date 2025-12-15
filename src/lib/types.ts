@@ -135,6 +135,7 @@ export interface InvitationTableEntry {
   name: string;
   status: RsvpStatus;
   createdAt: Date;
+  qrCode: string;
 }
 
 // Invitation form types

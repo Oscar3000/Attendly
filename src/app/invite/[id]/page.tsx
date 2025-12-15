@@ -4,6 +4,7 @@ import { use } from "react";
 import { InvitePageProps, RsvpStatus } from "@/lib/types";
 import { Button } from "@/components/button";
 import InviteNotFound from "@/components/invite-not-found";
+import { QrCode } from "@/components/qr-code";
 import { useGetInvitationQuery, useUpdateRsvpStatusMutation } from "@/store/invitationApi";
 
 export default function InvitePage({ params }: InvitePageProps) {
@@ -217,6 +218,32 @@ export default function InvitePage({ params }: InvitePageProps) {
                     ✓ Your invitation has been confirmed!
                   </p>
                 </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* QR Code Section */}
+        <div className="bg-white rounded-2xl shadow-lg p-6 mb-6">
+          <div className="text-center">
+            <h3 className="text-lg font-semibold text-gray-900 mb-3">
+              Share Your Invitation
+            </h3>
+            <p className="text-gray-600 mb-4">
+              Share this QR code with others to view this invitation
+            </p>
+            <div className="flex justify-center">
+              {invite?.qrCode && invite.qrCode.startsWith('data:') ? (
+                <QrCode 
+                  src={invite.qrCode}
+                  size={150}
+                  alt="Share invitation QR code"
+                />
+              ) : (
+                <QrCode 
+                  size={150}
+                  alt="Share invitation QR code"
+                />
               )}
             </div>
           </div>

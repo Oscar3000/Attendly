@@ -9,7 +9,7 @@ import { db } from "@/lib/database";
 
 export async function GET() {
   try {
-    const invitations = db.getAllInvitations();
+    const invitations = await db.getAllInvitations();
     return NextResponse.json({ invitations }, { status: 200 });
   } catch (error) {
     console.error("Error fetching invitations:", error);
@@ -36,9 +36,8 @@ export async function POST(request: NextRequest) {
     }
 
     // Create the invitation
-    const newInvitation = db.createInvitation({
+    const newInvitation = await db.createInvitation({
       name: body.name,
-      qrCode: `QR_CODE_DATA_${Date.now()}`, // Generate unique QR code data
       eventDate: new Date(body.eventDate),
       venue: body.venue,
       status: body.status || "pending",

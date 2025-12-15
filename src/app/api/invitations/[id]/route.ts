@@ -16,7 +16,7 @@ interface RouteParams {
 export async function GET(_request: NextRequest, { params }: RouteParams) {
   try {
     const { id } = await params;
-    const invitation = db.getInvitationById(id);
+    const invitation = await db.getInvitationById(id);
 
     if (!invitation) {
       return NextResponse.json(
@@ -49,7 +49,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
     if (body.eventDate) {
       updateData.eventDate = new Date(body.eventDate);
     }
-    const updatedInvitation = db.updateInvitation(id, updateData);
+    const updatedInvitation = await db.updateInvitation(id, updateData);
 
     if (!updatedInvitation) {
       return NextResponse.json(
@@ -74,7 +74,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
 export async function DELETE(_request: NextRequest, { params }: RouteParams) {
   try {
     const { id } = await params;
-    const deleted = db.deleteInvitation(id);
+    const deleted = await db.deleteInvitation(id);
 
     if (!deleted) {
       return NextResponse.json(
@@ -108,7 +108,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
       );
     }
 
-    const updatedInvitation = db.updateRsvpStatus(id, body.status);
+    const updatedInvitation = await db.updateRsvpStatus(id, body.status);
 
     if (!updatedInvitation) {
       return NextResponse.json(

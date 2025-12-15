@@ -1,4 +1,5 @@
 import { InvitationTableEntry } from "@/lib/types";
+import { QrCode } from "../qr-code";
 
 interface InvitationsTableProps {
   invitations: InvitationTableEntry[];
@@ -39,6 +40,9 @@ export default function InvitationsTable({
                 Status
               </th>
               <th className="text-left py-3 px-4 font-medium text-gray-700">
+                QR Code
+              </th>
+              <th className="text-left py-3 px-4 font-medium text-gray-700">
                 Actions
               </th>
             </tr>
@@ -61,6 +65,20 @@ export default function InvitationsTable({
                     {invitation.status.charAt(0).toUpperCase() +
                       invitation.status.slice(1)}
                   </span>
+                </td>
+                <td className="py-4 px-4">
+                  {invitation.qrCode.startsWith('data:') ? (
+                    <QrCode 
+                      src={invitation.qrCode}
+                      size={60}
+                      alt={`QR Code for ${invitation.name}`}
+                    />
+                  ) : (
+                    <QrCode 
+                      size={60}
+                      alt={`QR Code for ${invitation.name}`}
+                    />
+                  )}
                 </td>
                 <td className="py-4 px-4">
                   <button
