@@ -3,7 +3,7 @@
  * GET /api/admin/metrics - Get admin dashboard metrics
  */
 import { NextResponse } from "next/server";
-import { db } from "@/lib/database";
+import { db } from "@/lib/db";
 
 export async function GET() {
   try {

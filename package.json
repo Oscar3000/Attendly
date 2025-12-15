@@ -11,12 +11,23 @@
     "type-check": "tsc --noEmit",
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,css,md}\"",
     "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,css,md}\"",
-    "clean": "rm -rf .next out"
+    "clean": "rm -rf .next out",
+    "db:migrate": "prisma migrate dev",
+    "db:seed": "prisma db seed",
+    "db:studio": "prisma studio",
+    "db:reset": "prisma migrate reset"
+  },
+  "prisma": {
+    "seed": "ts-node --compiler-options {\"module\":\"CommonJS\"} prisma/seed.ts"
   },
   "dependencies": {
+    "@prisma/client": "^5.19.1",
     "@reduxjs/toolkit": "^2.11.1",
+    "@types/pg": "^8.11.6",
     "@types/qrcode": "^1.5.6",
     "next": "16.0.4",
+    "pg": "^8.11.3",
+    "prisma": "^5.19.1",
     "qrcode": "^1.5.4",
     "react": "19.2.0",
     "react-dom": "19.2.0",
@@ -32,6 +43,7 @@
     "eslint-config-next": "16.0.4",
     "prettier": "^3",
     "tailwindcss": "^4",
+    "ts-node": "^10.9.2",
     "typescript": "^5"
   }
 }

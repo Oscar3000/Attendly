@@ -6,7 +6,7 @@
  * PATCH /api/invitations/[id] - Update RSVP status
  */
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/lib/database";
+import { db } from "@/lib/db";
 import type { InviteDetails } from "@/lib/types";
 
 interface RouteParams {

@@ -133,9 +133,14 @@ export interface StatusUpdate {
 export interface InvitationTableEntry {
   id: string;
   name: string;
+  eventDate: Date;
+  venue: string;
   status: RsvpStatus;
+  hasQrCode: boolean;
+  qrCode?: string;
+  plusOne: number;
   createdAt: Date;
-  qrCode: string;
+  updatedAt: Date;
 }
 
 // Invitation form types

@@ -12,7 +12,9 @@ export default function InvitationsTable({
   onEdit,
 }: InvitationsTableProps) {
   const handleDownloadQR = (invitation: InvitationTableEntry) => {
-    downloadQRCode(invitation.qrCode, `invitation-qr-${invitation.name}`);
+    if (invitation.qrCode) {
+      downloadQRCode(invitation.qrCode, `invitation-qr-${invitation.name}`);
+    }
   };
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
@@ -75,9 +77,9 @@ export default function InvitationsTable({
                     onClick={() => handleDownloadQR(invitation)}
                     className="group relative transition-transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded-lg"
                     title="Click to download QR code"
-                    disabled={!invitation.qrCode.startsWith('data:')}
+                    disabled={!invitation.hasQrCode}
                   >
-                    {invitation.qrCode.startsWith('data:') ? (
+                    {invitation.hasQrCode && invitation.qrCode ? (
                       <QrCode 
                         src={invitation.qrCode}
                         size={60}
@@ -90,7 +92,7 @@ export default function InvitationsTable({
                       />
                     )}
                     {/* Download overlay on hover */}
-                    {invitation.qrCode.startsWith('data:') && (
+                    {invitation.hasQrCode && (
                       <div className="absolute inset-0 bg-black bg-opacity-50 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center">
                         <svg 
                           className="w-6 h-6 text-white" 
