@@ -164,3 +164,39 @@ export interface AdminMetrics {
   declinedRsvps: number;
   attendanceRate: number;
 }
+
+// Prisma enum types
+export type PrismaRsvpStatus = 'PENDING' | 'CONFIRMED' | 'DECLINED' | 'RESCINDED';
+
+// Prisma model types
+export interface Invitation {
+  id: string;
+  name: string;
+  eventDate: Date;
+  venue: string;
+  status: PrismaRsvpStatus;
+  qrCode: string | null;
+  plusOne: number;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+// Prisma query result types (can be reused for different select operations)
+export interface InvitationSelect {
+  id: string;
+  name: string;
+  eventDate: Date;
+  venue: string;
+  status: string;
+  qrCode: string | null;
+  plusOne: number;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface StatusUpdateSelect {
+  id: string;
+  name: string;
+  status: string;
+  updatedAt: Date;
+}

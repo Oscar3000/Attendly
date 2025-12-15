@@ -9,6 +9,10 @@ import type {
   InvitationTableEntry,
   RsvpStatus,
   StatusUpdate,
+  PrismaRsvpStatus,
+  Invitation,
+  InvitationSelect,
+  StatusUpdateSelect,
 } from "./types";
 import QRCode from "qrcode";
 
@@ -30,9 +34,6 @@ if (process.env.NODE_ENV === 'production') {
   prisma = global.prisma;
 }
 
-// Prisma enum type (will be available after migration)
-type PrismaRsvpStatus = 'PENDING' | 'CONFIRMED' | 'DECLINED' | 'RESCINDED';
-
 // Utility function to generate QR code data URL
 async function generateQRCode(invitationId: string): Promise<string> {
   try {
@@ -52,52 +53,7 @@ async function generateQRCode(invitationId: string): Promise<string> {
   }
 }
 
-// Prisma Invitation type (will be available after migration)
-type PrismaInvitation = {
-  id: string;
-  name: string;
-  eventDate: Date;
-  venue: string;
-  status: PrismaRsvpStatus;
-  qrCode: string | null;
-  plusOne: number;
-  createdAt: Date;
-  updatedAt: Date;
-};
 
-// Prisma findMany result type
-type PrismaInvitationResult = {
-  id: string;
-  name: string;
-  eventDate: Date;
-  venue: string;
-  status: string;
-  qrCode: string | null;
-  plusOne: number;
-  createdAt: Date;
-  updatedAt: Date;
-};
-
-// Prisma select result type for admin list
-type PrismaAdminInvitationResult = {
-  id: string;
-  name: string;
-  status: string;
-  createdAt: Date;
-  updatedAt: Date;
-  qrCode: string | null;
-  eventDate: Date;
-  venue: string;
-  plusOne: number;
-};
-
-// Prisma select result type for status updates
-type PrismaStatusUpdateResult = {
-  id: string;
-  name: string;
-  status: string;
-  updatedAt: Date;
-};
 
 // Convert Prisma enum to our app enum
 function convertPrismaStatus(status: PrismaRsvpStatus): RsvpStatus {
@@ -122,7 +78,7 @@ function convertToToPrismaStatus(status: RsvpStatus): PrismaRsvpStatus {
 }
 
 // Convert Prisma model to our app type
-function convertToInviteDetails(invitation: PrismaInvitation): InviteDetails {
+function convertToInviteDetails(invitation: Invitation): InviteDetails {
   return {
     id: invitation.id,
     name: invitation.name,
@@ -142,7 +98,7 @@ export const db = {
     const invitations = await prisma.invitation.findMany({
       orderBy: { createdAt: 'desc' }
     });
-    return invitations.map((invitation: PrismaInvitationResult) => convertToInviteDetails(invitation as PrismaInvitation));
+    return invitations.map((invitation: InvitationSelect) => convertToInviteDetails(invitation as Invitation));
   },
 
   // Get invitation by ID
@@ -150,7 +106,7 @@ export const db = {
     const invitation = await prisma.invitation.findUnique({
       where: { id }
     });
-    return invitation ? convertToInviteDetails(invitation as PrismaInvitation) : undefined;
+    return invitation ? convertToInviteDetails(invitation as Invitation) : undefined;
   },
 
   // Create new invitation
@@ -178,7 +134,7 @@ export const db = {
       data: { qrCode }
     });
 
-    return convertToInviteDetails(updatedInvitation as PrismaInvitation);
+    return convertToInviteDetails(updatedInvitation as Invitation);
   },
 
   // Update invitation
@@ -206,7 +162,7 @@ export const db = {
         data: updateData
       });
 
-      return convertToInviteDetails(updatedInvitation as PrismaInvitation);
+      return convertToInviteDetails(updatedInvitation as Invitation);
     } catch (error) {
       console.error('Error updating invitation:', error);
       return undefined;
@@ -262,7 +218,7 @@ export const db = {
       }
     });
 
-    return recentUpdates.map((invitation: PrismaStatusUpdateResult) => ({
+    return recentUpdates.map((invitation: StatusUpdateSelect) => ({
       id: invitation.id,
       name: invitation.name,
       status: convertPrismaStatus(invitation.status as PrismaRsvpStatus),
@@ -287,7 +243,7 @@ export const db = {
       }
     });
 
-    return invitations.map((invitation: PrismaAdminInvitationResult) => ({
+    return invitations.map((invitation: InvitationSelect) => ({
       id: invitation.id,
       name: invitation.name,
       eventDate: invitation.eventDate,
