@@ -6,6 +6,7 @@ import { Button } from "@/components/button";
 import InviteNotFound from "@/components/invite-not-found";
 import { QrCode } from "@/components/qr-code";
 import { useGetInvitationQuery, useUpdateRsvpStatusMutation } from "@/store/invitationApi";
+import { downloadQRCode } from "@/lib/utils";
 
 export default function InvitePage({ params }: InvitePageProps) {
   const resolvedParams = use(params) as { id: string };
@@ -34,6 +35,11 @@ export default function InvitePage({ params }: InvitePageProps) {
       console.error('Failed to update RSVP status:', err);
       // You could add a toast notification here
     }
+  };
+
+  const handleDownloadQR = () => {
+    if (!invite?.qrCode) return;
+    downloadQRCode(invite.qrCode, `invitation-qr-${invite.name}`);
   };
 
   if (loading) {
@@ -232,7 +238,7 @@ export default function InvitePage({ params }: InvitePageProps) {
             <p className="text-gray-600 mb-4">
               Share this QR code with others to view this invitation
             </p>
-            <div className="flex justify-center">
+            <div className="flex justify-center mb-4">
               {invite?.qrCode && invite.qrCode.startsWith('data:') ? (
                 <QrCode 
                   src={invite.qrCode}
@@ -245,6 +251,18 @@ export default function InvitePage({ params }: InvitePageProps) {
                   alt="Share invitation QR code"
                 />
               )}
+            </div>
+            <div className="flex justify-center">
+              <Button
+                variant="secondary"
+                onClick={handleDownloadQR}
+                disabled={!invite?.qrCode?.startsWith('data:')}
+              >
+                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                Download QR Code
+              </Button>
             </div>
           </div>
         </div>

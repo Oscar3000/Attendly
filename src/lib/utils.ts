@@ -139,3 +139,20 @@ export function formatEventDate(date: Date): string {
     hour12: true,
   }).format(date);
 }
+
+/**
+ * Downloads a QR code as a PNG file
+ * @param qrCodeDataUrl - The QR code data URL (base64 encoded)
+ * @param fileName - The name for the downloaded file (without extension)
+ */
+export function downloadQRCode(qrCodeDataUrl: string, fileName: string): void {
+  if (!qrCodeDataUrl || !qrCodeDataUrl.startsWith("data:")) {
+    console.warn("Invalid QR code data URL provided");
+    return;
+  }
+  
+  const link = document.createElement("a");
+  link.download = `${fileName.replace(/\s+/g, "-")}.png`;
+  link.href = qrCodeDataUrl;
+  link.click();
+}

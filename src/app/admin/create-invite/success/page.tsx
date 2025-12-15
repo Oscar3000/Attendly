@@ -5,6 +5,7 @@ import { useSearchParams, useRouter } from "next/navigation";
 import { Button } from "@/components/button";
 import { QrCode } from "@/components/qr-code";
 import { useGetInvitationQuery } from "@/store/invitationApi";
+import { downloadQRCode } from "@/lib/utils";
 
 export default function InviteSuccessPage() {
   const searchParams = useSearchParams();
@@ -63,12 +64,8 @@ export default function InviteSuccessPage() {
   };
 
   const handleDownloadQR = () => {
-    if (!invitation?.qrCode || !invitation.qrCode.startsWith("data:")) return;
-    
-    const link = document.createElement("a");
-    link.download = `invitation-qr-${invitation.name.replace(/\s+/g, "-")}.png`;
-    link.href = invitation.qrCode;
-    link.click();
+    if (!invitation?.qrCode) return;
+    downloadQRCode(invitation.qrCode, `invitation-qr-${invitation.name}`);
   };
 
   if (isLoading) {
