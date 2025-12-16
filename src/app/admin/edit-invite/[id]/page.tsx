@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, use, useEffect, useMemo } from "react";
+import { useState, use, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { EditInviteForm, RsvpStatus } from "@/lib/types";
 import { Button } from "@/components/button";

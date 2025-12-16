@@ -3,52 +3,6 @@
  * Following TypeScript best practices with proper interfaces
  */
 
-// User-related types
-export interface User {
-  readonly id: string;
-  name: string;
-  email: string;
-  role: UserRole;
-  createdAt: Date;
-  updatedAt: Date;
-}
-
-export type UserRole = "admin" | "teacher" | "student";
-
-// Attendance-related types
-export interface AttendanceRecord {
-  readonly id: string;
-  userId: string;
-  date: Date;
-  status: AttendanceStatus;
-  notes?: string;
-  createdAt: Date;
-  updatedAt: Date;
-}
-
-export type AttendanceStatus = "present" | "absent" | "late" | "excused";
-
-// API response types
-export interface ApiResponse<T = unknown> {
-  data: T;
-  success: boolean;
-  message?: string;
-}
-
-export interface PaginationParams {
-  page: number;
-  limit: number;
-}
-
-export interface PaginatedResponse<T> extends ApiResponse<T[]> {
-  pagination: {
-    page: number;
-    limit: number;
-    total: number;
-    totalPages: number;
-  };
-}
-
 // Form-related types
 export interface FormField<T = string> {
   value: T;
