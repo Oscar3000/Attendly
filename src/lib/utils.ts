@@ -3,7 +3,14 @@
  * Following functional programming principles and TypeScript best practices
  */
 
-import type { AttendanceStatus } from "./types";
+import QRCode from "qrcode";
+import type { 
+  AttendanceStatus,
+  RsvpStatus,
+  PrismaRsvpStatus,
+  Invitation,
+  InviteDetails
+} from "./types";
 
 /**
  * Formats a date to a human-readable string
@@ -222,4 +229,76 @@ export function getTableStatusColor(status: string): string {
     default:
       return `${baseColor} bg-gray-50`;
   }
+}
+
+/**
+ * Generates QR code data URL for invitation links
+ * @param invitationId - The invitation ID to generate QR code for
+ * @returns Promise resolving to QR code data URL or placeholder
+ */
+export async function generateQRCode(invitationId: string): Promise<string> {
+  try {
+    const inviteUrl = `${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/invite/${invitationId}`;
+    const qrCodeDataURL = await QRCode.toDataURL(inviteUrl, {
+      width: 200,
+      margin: 2,
+      color: {
+        dark: '#000000',
+        light: '#FFFFFF'
+      }
+    });
+    return qrCodeDataURL;
+  } catch (error) {
+    console.error('Error generating QR code:', error);
+    return `QR_CODE_PLACEHOLDER_${invitationId}`;
+  }
+}
+
+/**
+ * Convert Prisma enum to our app enum
+ * @param status - Prisma RSVP status
+ * @returns Application RSVP status
+ */
+export function convertPrismaStatus(status: PrismaRsvpStatus): RsvpStatus {
+  const statusMap: Record<PrismaRsvpStatus, RsvpStatus> = {
+    PENDING: 'pending',
+    CONFIRMED: 'confirmed',
+    DECLINED: 'declined',
+    RESCINDED: 'rescinded'
+  };
+  return statusMap[status];
+}
+
+/**
+ * Convert our app enum to Prisma enum
+ * @param status - Application RSVP status
+ * @returns Prisma RSVP status
+ */
+export function convertToPrismaStatus(status: RsvpStatus): PrismaRsvpStatus {
+  const statusMap: Record<RsvpStatus, PrismaRsvpStatus> = {
+    'pending': 'PENDING',
+    'confirmed': 'CONFIRMED',
+    'declined': 'DECLINED',
+    'rescinded': 'RESCINDED'
+  };
+  return statusMap[status];
+}
+
+/**
+ * Convert Prisma model to our app type
+ * @param invitation - Prisma invitation object
+ * @returns Application invitation details
+ */
+export function convertToInviteDetails(invitation: Invitation): InviteDetails {
+  return {
+    id: invitation.id,
+    name: invitation.name,
+    qrCode: invitation.qrCode || "",
+    eventDate: invitation.eventDate,
+    venue: invitation.venue,
+    status: convertPrismaStatus(invitation.status),
+    plusOne: invitation.plusOne,
+    createdAt: invitation.createdAt,
+    updatedAt: invitation.updatedAt,
+  };
 }

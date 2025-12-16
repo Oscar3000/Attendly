@@ -1,6 +1,6 @@
 "use client";
 
-
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import DashboardHeader from "@/components/admin/dashboard-header";
 import InvitationCounter from "@/components/admin/invitation-counter";
@@ -13,17 +13,17 @@ import {
 } from "@/lib/types";
 import { useGetAdminDataQuery, useGetStatusUpdatesQuery } from "@/store/invitationApi";
 
-
-
 export default function AdminDashboard() {
   const router = useRouter();
+  const [currentPage, setCurrentPage] = useState(1);
+  const limit = 10;
   
   // RTK Query hooks
   const {
     data: adminData,
     isLoading: loading,
     isError,
-  } = useGetAdminDataQuery();
+  } = useGetAdminDataQuery({ page: currentPage, limit });
 
   const {
     data: statusUpdatesData,
@@ -118,6 +118,8 @@ export default function AdminDashboard() {
           <InvitationsTable
             invitations={invitations}
             onEdit={handleEditInvitation}
+            pagination={adminData?.pagination}
+            onPageChange={setCurrentPage}
           />
         </div>
       </div>

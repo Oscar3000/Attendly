@@ -5,11 +5,20 @@ import { downloadQRCode, getTableStatusColor } from "@/lib/utils";
 interface InvitationsTableProps {
   invitations: InvitationTableEntry[];
   onEdit: (id: string) => void;
+  pagination?: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  } | undefined;
+  onPageChange?: (page: number) => void;
 }
 
 export default function InvitationsTable({
   invitations,
   onEdit,
+  pagination,
+  onPageChange,
 }: InvitationsTableProps) {
   const handleDownloadQR = (invitation: InvitationTableEntry) => {
     if (invitation.qrCode) {
@@ -112,6 +121,64 @@ export default function InvitationsTable({
           </tbody>
         </table>
       </div>
+      
+      {/* Pagination Controls */}
+      {pagination && pagination.totalPages > 1 && (
+        <div className="flex items-center justify-between px-6 py-4 border-t border-gray-200">
+          <div className="text-sm text-gray-700">
+            Showing {((pagination.page - 1) * pagination.limit) + 1} to {Math.min(pagination.page * pagination.limit, pagination.total)} of {pagination.total} invitations
+          </div>
+          <div className="flex items-center space-x-2">
+            <button
+              onClick={() => onPageChange?.(pagination.page - 1)}
+              disabled={pagination.page <= 1}
+              className="px-3 py-1 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md enabled:hover:text-[rgb(192,122,84)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            >
+              Previous
+            </button>
+            
+            {/* Page numbers */}
+            {Array.from({ length: pagination.totalPages }, (_, i) => i + 1)
+              .filter(page => {
+                // Show current page, first/last pages, and pages around current
+                return page === 1 || 
+                       page === pagination.totalPages || 
+                       (page >= pagination.page - 1 && page <= pagination.page + 1);
+              })
+              .map((page, index, array) => {
+                // Add ellipsis if there's a gap
+                const previousPage = array[index - 1];
+                const showEllipsis = index > 0 && previousPage !== undefined && page - previousPage > 1;
+                return (
+                  <div key={page} className="flex items-center">
+                    {showEllipsis && (
+                      <span className="px-2 text-gray-500">...</span>
+                    )}
+                    <button
+                      onClick={() => onPageChange?.(page)}
+                      className={`px-3 py-1 text-sm font-medium rounded-md ${
+                        page === pagination.page
+                          ? 'text-white'
+                          : 'text-gray-700 bg-white border border-gray-300 hover:bg-gray-50'
+                      }`}
+                      style={page === pagination.page ? { backgroundColor: 'rgb(192, 122, 84)' } : undefined}
+                    >
+                      {page}
+                    </button>
+                  </div>
+                );
+              })}
+            
+            <button
+              onClick={() => onPageChange?.(pagination.page + 1)}
+              disabled={pagination.page >= pagination.totalPages}
+              className="px-3 py-1 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md enabled:hover:text-[rgb(192,122,84)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            >
+              Next
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

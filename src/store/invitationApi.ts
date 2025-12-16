@@ -27,8 +27,14 @@ export const invitationApi = createApi({
     getAdminData: builder.query<{
       metrics: AdminMetrics;
       invitations: InvitationTableEntry[];
-    }, void>({
-      query: () => 'admin',
+      pagination?: {
+        page: number;
+        limit: number;
+        total: number;
+        totalPages: number;
+      };
+    }, { page?: number; limit?: number }>({
+      query: ({ page = 1, limit = 10 } = {}) => `admin?page=${page}&limit=${limit}`,
       providesTags: ['AdminData', 'Invitation'],
     }),
 

@@ -14,7 +14,12 @@ import type {
   InvitationSelect,
   StatusUpdateSelect,
 } from "./types";
-import QRCode from "qrcode";
+import { 
+  generateQRCode,
+  convertPrismaStatus,
+  convertToPrismaStatus,
+  convertToInviteDetails
+} from "./utils";
 
 // Global type for Prisma singleton
 declare global {
@@ -34,63 +39,7 @@ if (process.env.NODE_ENV === 'production') {
   prisma = global.prisma;
 }
 
-// Utility function to generate QR code data URL
-async function generateQRCode(invitationId: string): Promise<string> {
-  try {
-    const inviteUrl = `${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/invite/${invitationId}`;
-    const qrCodeDataURL = await QRCode.toDataURL(inviteUrl, {
-      width: 200,
-      margin: 2,
-      color: {
-        dark: '#000000',
-        light: '#FFFFFF'
-      }
-    });
-    return qrCodeDataURL;
-  } catch (error) {
-    console.error('Error generating QR code:', error);
-    return `QR_CODE_PLACEHOLDER_${invitationId}`;
-  }
-}
 
-
-
-// Convert Prisma enum to our app enum
-function convertPrismaStatus(status: PrismaRsvpStatus): RsvpStatus {
-  const statusMap: Record<PrismaRsvpStatus, RsvpStatus> = {
-    PENDING: 'pending',
-    CONFIRMED: 'confirmed',
-    DECLINED: 'declined',
-    RESCINDED: 'rescinded'
-  };
-  return statusMap[status];
-}
-
-// Convert our app enum to Prisma enum
-function convertToToPrismaStatus(status: RsvpStatus): PrismaRsvpStatus {
-  const statusMap: Record<RsvpStatus, PrismaRsvpStatus> = {
-    'pending': 'PENDING',
-    'confirmed': 'CONFIRMED',
-    'declined': 'DECLINED',
-    'rescinded': 'RESCINDED'
-  };
-  return statusMap[status];
-}
-
-// Convert Prisma model to our app type
-function convertToInviteDetails(invitation: Invitation): InviteDetails {
-  return {
-    id: invitation.id,
-    name: invitation.name,
-    qrCode: invitation.qrCode || "",
-    eventDate: invitation.eventDate,
-    venue: invitation.venue,
-    status: convertPrismaStatus(invitation.status),
-    plusOne: invitation.plusOne,
-    createdAt: invitation.createdAt,
-    updatedAt: invitation.updatedAt,
-  };
-}
 
 export const db = {
   // Get all invitations
@@ -120,7 +69,7 @@ export const db = {
         qrCode: 'PLACEHOLDER', // Temporary placeholder
         eventDate: invitation.eventDate,
         venue: invitation.venue,
-        status: convertToToPrismaStatus(invitation.status),
+        status: convertToPrismaStatus(invitation.status),
         plusOne: invitation.plusOne,
       }
     });
@@ -155,7 +104,7 @@ export const db = {
       if (updates.venue !== undefined) updateData.venue = updates.venue;
       if (updates.eventDate !== undefined) updateData.eventDate = updates.eventDate;
       if (updates.plusOne !== undefined) updateData.plusOne = updates.plusOne;
-      if (updates.status !== undefined) updateData.status = convertToToPrismaStatus(updates.status);
+      if (updates.status !== undefined) updateData.status = convertToPrismaStatus(updates.status);
 
       const updatedInvitation = await prisma.invitation.update({
         where: { id },
@@ -226,35 +175,58 @@ export const db = {
     }));
   },
 
-  // Get admin invitation list
-  async getAdminInvitations(): Promise<InvitationTableEntry[]> {
-    const invitations = await prisma.invitation.findMany({
-      orderBy: { createdAt: 'desc' },
-      select: {
-        id: true,
-        name: true,
-        status: true,
-        createdAt: true,
-        updatedAt: true,
-        qrCode: true,
-        eventDate: true,
-        venue: true,
-        plusOne: true,
-      }
-    });
+  // Get admin invitation list with pagination
+  async getAdminInvitations(page: number = 1, limit: number = 10): Promise<{
+    invitations: InvitationTableEntry[];
+    pagination: {
+      page: number;
+      limit: number;
+      total: number;
+      totalPages: number;
+    };
+  }> {
+    const skip = (page - 1) * limit;
+    
+    const [invitations, total] = await Promise.all([
+      prisma.invitation.findMany({
+        orderBy: { updatedAt: 'desc' },
+        skip,
+        take: limit,
+        select: {
+          id: true,
+          name: true,
+          status: true,
+          createdAt: true,
+          updatedAt: true,
+          qrCode: true,
+          eventDate: true,
+          venue: true,
+          plusOne: true,
+        }
+      }),
+      prisma.invitation.count()
+    ]);
 
-    return invitations.map((invitation: InvitationSelect) => ({
-      id: invitation.id,
-      name: invitation.name,
-      eventDate: invitation.eventDate,
-      venue: invitation.venue,
-      status: convertPrismaStatus(invitation.status as PrismaRsvpStatus),
-      hasQrCode: Boolean(invitation.qrCode),
-      qrCode: invitation.qrCode || undefined,
-      plusOne: invitation.plusOne,
-      createdAt: invitation.createdAt,
-      updatedAt: invitation.updatedAt,
-    }));
+    return {
+      invitations: invitations.map((invitation: InvitationSelect) => ({
+        id: invitation.id,
+        name: invitation.name,
+        eventDate: invitation.eventDate,
+        venue: invitation.venue,
+        status: convertPrismaStatus(invitation.status as PrismaRsvpStatus),
+        hasQrCode: Boolean(invitation.qrCode),
+        qrCode: invitation.qrCode || undefined,
+        plusOne: invitation.plusOne,
+        createdAt: invitation.createdAt,
+        updatedAt: invitation.updatedAt,
+      })),
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit),
+      }
+    };
   },
 
   // Reset database (useful for testing)
