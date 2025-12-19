@@ -1,0 +1,63 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:16-alpine
+    container_name: attendly-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-attendly}
+      POSTGRES_USER: ${POSTGRES_USER:-attendly_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-attendly_password}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - attendly-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-attendly_user} -d ${POSTGRES_DB:-attendly}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Attendly Application
+  app:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    container_name: attendly-app
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      # Database Configuration (use external environment variables)
+      DATABASE_URL: ${DATABASE_URL:-postgresql://attendly_user:attendly_password@postgres:5432/attendly?schema=public}
+      
+      # Application Configuration
+      NEXT_PUBLIC_BASE_URL: ${NEXT_PUBLIC_BASE_URL:-http://localhost:3000}
+      NODE_ENV: ${NODE_ENV:-production}
+      PORT: ${PORT:-3000}
+      
+      # Disable Next.js telemetry
+      NEXT_TELEMETRY_DISABLED: 1
+    ports:
+      - "${PORT:-3000}:${PORT:-3000}"
+    networks:
+      - attendly-network
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:${PORT:-3000}/api/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  attendly-network:
+    driver: bridge

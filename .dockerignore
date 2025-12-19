@@ -1,0 +1,37 @@
+# Dependencies and build outputs
+node_modules
+.next
+npm-debug.log*
+*.log
+
+# Environment variables (passed at runtime)
+.env*
+
+# Development and build artifacts
+.eslintcache
+tsconfig.tsbuildinfo
+*.tsbuildinfo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor files
+.vscode/
+.idea/
+
+# Git
+.git
+.gitignore
+
+# Docker files (don't copy into container)
+Dockerfile*
+docker-compose*
+.dockerignore
+
+# Documentation
+README.md
+.github/
+
+# Development tools
+.tool-versions
