@@ -91,7 +91,7 @@ export interface InvitationTableEntry {
   venue: string;
   status: RsvpStatus;
   hasQrCode: boolean;
-  qrCode?: string;
+  qrCode?: string | undefined;
   plusOne: number;
   createdAt: Date;
   updatedAt: Date;

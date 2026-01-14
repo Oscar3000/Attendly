@@ -70,7 +70,7 @@ export const db = {
         eventDate: invitation.eventDate,
         venue: invitation.venue,
         status: convertToPrismaStatus(invitation.status),
-        plusOne: invitation.plusOne,
+        plusOne: invitation.plusOne ?? 0,
       }
     });
 
@@ -215,7 +215,7 @@ export const db = {
         venue: invitation.venue,
         status: convertPrismaStatus(invitation.status as PrismaRsvpStatus),
         hasQrCode: Boolean(invitation.qrCode),
-        qrCode: invitation.qrCode || undefined,
+        qrCode: invitation.qrCode ?? undefined,
         plusOne: invitation.plusOne,
         createdAt: invitation.createdAt,
         updatedAt: invitation.updatedAt,

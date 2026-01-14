@@ -1,5 +1,5 @@
 # Multi-stage build for production optimization
-FROM node:20-alpine AS base
+FROM node:20.15.0-alpine3.19 AS base
 
 # Install dependencies only when needed
 FROM base AS deps
@@ -7,9 +7,9 @@ FROM base AS deps
 RUN apk add --no-cache libc6-compat
 WORKDIR /app
 
-# Install dependencies based on the preferred package manager
+# Install all dependencies (including dev) for building
 COPY package.json package-lock.json* ./
-RUN npm ci --only=production
+RUN npm ci
 
 # Rebuild the source code only when needed
 FROM base AS builder
@@ -24,6 +24,13 @@ RUN npx prisma generate
 ENV NEXT_TELEMETRY_DISABLED 1
 RUN npm run build
 
+# Install production dependencies only for final image
+FROM base AS prod-deps
+RUN apk add --no-cache libc6-compat
+WORKDIR /app
+COPY package.json package-lock.json* ./
+RUN npm ci --only=production
+
 # Production image, copy all the files and run next
 FROM base AS runner
 WORKDIR /app
@@ -34,6 +41,9 @@ ENV NEXT_TELEMETRY_DISABLED 1
 # Create a non-root user
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
+
+# Copy production dependencies from prod-deps stage
+COPY --from=prod-deps /app/node_modules ./node_modules
 
 # Copy the public folder
 COPY --from=builder /app/public ./public
@@ -46,6 +56,9 @@ RUN chown nextjs:nodejs .next
 # https://nextjs.org/docs/advanced-features/output-file-tracing
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+
+# Install netcat and curl for database connection checking and health checks
+RUN apk add --no-cache netcat-openbsd curl ca-certificates
 
 # Copy Prisma files and generated client
 COPY --from=builder --chown=nextjs:nodejs /app/prisma ./prisma
