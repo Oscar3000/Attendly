@@ -1,38 +1,64 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 export function middleware(request: NextRequest) {
-  // Get auth token from cookies
+  // Get auth tokens from cookies
   const authToken = request.cookies.get('auth_token')?.value;
+  const inviteToken = request.cookies.get('invite_token')?.value;
 
   // Define protected routes
-  const protectedRoutes = ['/admin', '/api/admin', '/api/invitations'];
+  const adminRoutes = ['/admin', '/api/admin'];
+  const inviteRoutes = ['/invite'];
+  const apiInvitationsRoutes = ['/api/invitations'];
   
   // Check if current route is protected
-  const isProtectedRoute = protectedRoutes.some(route =>
+  const isAdminRoute = adminRoutes.some(route =>
+    request.nextUrl.pathname.startsWith(route)
+  );
+
+  const isInviteRoute = inviteRoutes.some(route =>
+    request.nextUrl.pathname.startsWith(route)
+  );
+
+  const isApiInvitationsRoute = apiInvitationsRoutes.some(route =>
     request.nextUrl.pathname.startsWith(route)
   );
 
   // Allow login and auth endpoints without authentication
   if (
     request.nextUrl.pathname.startsWith('/api/auth/') ||
-    request.nextUrl.pathname === '/login'
+    request.nextUrl.pathname.startsWith('/api/invite/verify-pin') ||
+    request.nextUrl.pathname === '/login' ||
+    request.nextUrl.pathname === '/invite-pin'
   ) {
     return NextResponse.next();
   }
 
-  // Check authentication for protected routes
-  if (isProtectedRoute && !authToken) {
-    // Redirect to login page
+  // Check admin authentication
+  if (isAdminRoute && !authToken) {
     if (request.nextUrl.pathname.startsWith('/api/')) {
-      // For API routes, return unauthorized
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
       );
     } else {
-      // For pages, redirect to login
       return NextResponse.redirect(new URL('/login', request.url));
     }
+  }
+
+  // Check API invitations authentication (either auth_token OR invite_token)
+  if (isApiInvitationsRoute && !authToken && !inviteToken) {
+    return NextResponse.json(
+      { error: 'Unauthorized' },
+      { status: 401 }
+    );
+  }
+
+  // Check invite authentication
+  if (isInviteRoute && !inviteToken) {
+    // Preserve the original URL as redirect parameter
+    const redirectUrl = new URL('/invite-pin', request.url);
+    redirectUrl.searchParams.set('redirect', request.nextUrl.pathname + request.nextUrl.search);
+    return NextResponse.redirect(redirectUrl);
   }
 
   return NextResponse.next();
@@ -40,5 +66,5 @@ export function middleware(request: NextRequest) {
 
 // Apply middleware to specific routes
 export const config = {
-  matcher: ['/admin/:path*', '/api/admin/:path*', '/api/invitations/:path*'],
+  matcher: ['/admin/:path*', '/api/admin/:path*', '/api/invitations/:path*', '/invite/:path*'],
 };
