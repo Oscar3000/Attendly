@@ -12,10 +12,19 @@ fi
 
 echo "✅ Configuration validated"
 
+# Extract database host and port from DATABASE_URL
+# Format: postgres://user:password@host:port/database?schema=public
+# Extract host (everything between @ and :port or /)
+DB_HOST=$(echo "$DATABASE_URL" | sed -E 's|.*@([^/:]+).*|\1|')
+# Extract port (everything between : and /)
+DB_PORT=$(echo "$DATABASE_URL" | sed -E 's|.*:([0-9]+)/.*|\1|' | grep -E '^[0-9]+$' || echo "5432")
+
+echo "📡 Database: $DB_HOST:$DB_PORT"
+
 # Wait for database using netcat
 echo "⏳ Waiting for database..."
 for i in $(seq 1 30); do
-    if nc -z postgres 5432 2>/dev/null; then
+    if nc -z "$DB_HOST" "$DB_PORT" 2>/dev/null; then
         echo "✅ Database is ready"
         sleep 2
         break
