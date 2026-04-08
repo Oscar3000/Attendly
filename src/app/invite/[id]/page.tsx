@@ -1,15 +1,14 @@
 "use client";
 
-import { use } from "react";
+import { use, useState } from "react";
 import { InvitePageProps, RsvpStatus } from "@/lib/types";
 import { Button } from "@/components/button";
 import InviteNotFound from "@/components/invite-not-found";
-import { QrCode } from "@/components/qr-code";
 import { useGetInvitationQuery, useUpdateRsvpStatusMutation } from "@/store/invitationApi";
-import { downloadQRCode } from "@/lib/utils";
 
 export default function InvitePage({ params }: InvitePageProps) {
   const resolvedParams = use(params) as { id: string };
+  const [justConfirmed, setJustConfirmed] = useState(false);
   
   // RTK Query hooks
   const {
@@ -24,6 +23,7 @@ export default function InvitePage({ params }: InvitePageProps) {
   const invite = invitationData?.invitation;
   const inviteNotFound = isError && 'status' in (error as object) && (error as { status: number }).status === 404;
   const rsvpStatus = invite?.status || "pending";
+  const isAlreadyConfirmed = rsvpStatus === "confirmed" && !justConfirmed;
 
   const handleRsvp = async (status: RsvpStatus) => {
     try {
@@ -31,15 +31,14 @@ export default function InvitePage({ params }: InvitePageProps) {
         id: resolvedParams.id, 
         status 
       }).unwrap();
+
+      if (status === "confirmed") {
+        setJustConfirmed(true);
+      }
     } catch (err) {
       console.error('Failed to update RSVP status:', err);
       // You could add a toast notification here
     }
-  };
-
-  const handleDownloadQR = () => {
-    if (!invite?.qrCode) return;
-    downloadQRCode(invite.qrCode, `invitation-qr-${invite.name}`, invite.name);
   };
 
   if (loading) {
@@ -140,15 +139,15 @@ export default function InvitePage({ params }: InvitePageProps) {
 
         {/* Invitation Card */}
         <div className="bg-white rounded-2xl shadow-lg p-5 sm:p-8 mb-6">
-          <div className="text-center mb-6">
+          {/* <div className="text-center mb-6">
             <h2 className="text-xl sm:text-2xl font-semibold text-gray-900 mb-2">
               Dear {invite.name}
             </h2>
-          </div>
+          </div> */}
 
           {/* Event Details */}
           <div className="space-y-4 mb-6">
-            <div className="border-t border-gray-200 pt-4">
+            <div className="border-gray-200 pt-4">
               <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-3">
                 Event Details
               </h3>
@@ -194,11 +193,17 @@ export default function InvitePage({ params }: InvitePageProps) {
                 <span
                   className={`px-3 py-1 rounded-full text-sm font-medium ${
                     rsvpStatus === "confirmed"
-                      ? "bg-green-100 text-green-800"
-                      : "bg-yellow-100 text-yellow-800"
+                      ? isAlreadyConfirmed
+                        ? "bg-red-100 text-red-800"
+                        : "bg-green-100 text-green-800"
+                      : rsvpStatus === "declined"
+                        ? "bg-gray-100 text-gray-800"
+                        : rsvpStatus === "rescinded"
+                          ? "bg-red-100 text-red-800"
+                          : "bg-yellow-100 text-yellow-800"
                   }`}
                 >
-                  {rsvpStatus === "confirmed" ? "Confirmed" : "Pending"}
+                  {rsvpStatus.charAt(0).toUpperCase() + rsvpStatus.slice(1)}
                 </span>
               </div>
 
@@ -218,10 +223,34 @@ export default function InvitePage({ params }: InvitePageProps) {
                 </div>
               )}
 
-              {rsvpStatus === "confirmed" && (
+              {rsvpStatus === "confirmed" && justConfirmed && (
                 <div className="text-center">
                   <p className="text-green-600 text-lg font-medium">
-                    ✓ Your invitation has been confirmed!
+                    Your invitation has been confirmed!
+                  </p>
+                </div>
+              )}
+
+              {isAlreadyConfirmed && (
+                <div className="text-center">
+                  <p className="text-red-600 text-lg font-medium">
+                    This invitation has already been confirmed.
+                  </p>
+                </div>
+              )}
+
+              {rsvpStatus === "declined" && (
+                <div className="text-center">
+                  <p className="text-gray-600 text-lg font-medium">
+                    This invitation has been declined.
+                  </p>
+                </div>
+              )}
+
+              {rsvpStatus === "rescinded" && (
+                <div className="text-center">
+                  <p className="text-red-600 text-lg font-medium">
+                    This invitation has been rescinded.
                   </p>
                 </div>
               )}
@@ -229,7 +258,7 @@ export default function InvitePage({ params }: InvitePageProps) {
           </div>
         </div>
 
-        {/* QR Code Section */}
+        {/* QR Code Section - commented out for now
         <div className="bg-white rounded-2xl shadow-lg p-4 sm:p-6 mb-6">
           <div className="text-center">
             <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-3">
@@ -240,13 +269,13 @@ export default function InvitePage({ params }: InvitePageProps) {
             </p>
             <div className="flex justify-center mb-4">
               {invite?.qrCode && invite.qrCode.startsWith('data:') ? (
-                <QrCode 
+                <QrCode
                   src={invite.qrCode}
                   size={150}
                   alt="Share invitation QR code"
                 />
               ) : (
-                <QrCode 
+                <QrCode
                   size={150}
                   alt="Share invitation QR code"
                 />
@@ -266,6 +295,7 @@ export default function InvitePage({ params }: InvitePageProps) {
             </div>
           </div>
         </div>
+        */}
 
         {/* Footer */}
         <div className="text-center text-gray-500 text-sm">
