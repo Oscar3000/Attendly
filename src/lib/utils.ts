@@ -101,19 +101,16 @@ export function downloadQRCode(qrCodeDataUrl: string, fileName: string, guestNam
     const canvasWidth = qrSize + padding * 2;
 
     // Measure text to calculate layout
-    ctx.font = "bold 22px Inter, system-ui, sans-serif";
-    const nameText = `Dear ${guestName},`;
-
+    const titleHeight = 30;
     ctx.font = "15px Inter, system-ui, sans-serif";
     const messageLines = wrapText(
       ctx,
-      "You have been invited to attend their union. Please show this code to the ushers to let you in.",
+      "You have been specially invited to witness and celebrate this beautiful union. Kindly present this code at the venue entrance.",
       canvasWidth - padding * 2,
     );
 
-    const nameHeight = 30;
     const messageHeight = messageLines.length * 22;
-    const topTextHeight = nameHeight + messageHeight + 20;
+    const topTextHeight = titleHeight + 12 + messageHeight + 10;
     const bottomTextHeight = 30;
     const canvasHeight = padding + topTextHeight + 16 + qrSize + 16 + bottomTextHeight + padding;
 
@@ -137,12 +134,12 @@ export function downloadQRCode(qrCodeDataUrl: string, fileName: string, guestNam
 
     let y = padding + 10;
 
-    // Guest name
+    // Title - #PamOscar2026
     ctx.fillStyle = "#C07A54";
     ctx.font = "bold 22px Inter, system-ui, sans-serif";
     ctx.textAlign = "center";
-    ctx.fillText(nameText, canvasWidth / 2, y);
-    y += nameHeight + 8;
+    ctx.fillText("#PamOscar2026", canvasWidth / 2, y);
+    y += titleHeight + 4;
 
     // Message
     ctx.fillStyle = "#4B5563";
