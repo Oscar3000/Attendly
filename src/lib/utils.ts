@@ -201,6 +201,107 @@ function wrapText(ctx: CanvasRenderingContext2D, text: string, maxWidth: number)
 }
 
 /**
+ * Generates the decorated invitation canvas as a Blob
+ */
+function generateInvitationBlob(qrCodeDataUrl: string): Promise<Blob> {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement("canvas");
+      const ctx = canvas.getContext("2d");
+      if (!ctx) { reject(new Error("No canvas context")); return; }
+
+      const padding = 40;
+      const qrSize = 280;
+      const canvasWidth = qrSize + padding * 2;
+      const titleHeight = 30;
+      ctx.font = "15px Inter, system-ui, sans-serif";
+      const messageLines = wrapText(
+        ctx,
+        "You have been specially invited to witness and celebrate this beautiful union. Kindly present this code at the venue entrance.",
+        canvasWidth - padding * 2,
+      );
+      const messageHeight = messageLines.length * 22;
+      const topTextHeight = titleHeight + 12 + messageHeight + 10;
+      const bottomTextHeight = 30;
+      const canvasHeight = padding + topTextHeight + 16 + qrSize + 16 + bottomTextHeight + padding;
+
+      canvas.width = canvasWidth;
+      canvas.height = canvasHeight;
+
+      ctx.fillStyle = "#FFF9F4";
+      ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+      ctx.strokeStyle = "#C07A54";
+      ctx.lineWidth = 3;
+      const borderInset = 12;
+      ctx.strokeRect(borderInset, borderInset, canvasWidth - borderInset * 2, canvasHeight - borderInset * 2);
+      ctx.strokeStyle = "#C07A5440";
+      ctx.lineWidth = 1;
+      ctx.strokeRect(borderInset + 6, borderInset + 6, canvasWidth - (borderInset + 6) * 2, canvasHeight - (borderInset + 6) * 2);
+
+      let y = padding + 10;
+      ctx.fillStyle = "#C07A54";
+      ctx.font = "bold 22px Inter, system-ui, sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText("#PamOscar2026", canvasWidth / 2, y);
+      y += titleHeight + 4;
+
+      ctx.fillStyle = "#4B5563";
+      ctx.font = "15px Inter, system-ui, sans-serif";
+      for (const line of messageLines) {
+        ctx.fillText(line, canvasWidth / 2, y);
+        y += 22;
+      }
+      y += 16;
+
+      const qrX = (canvasWidth - qrSize) / 2;
+      ctx.fillStyle = "#FFFFFF";
+      ctx.beginPath();
+      ctx.roundRect(qrX - 8, y - 8, qrSize + 16, qrSize + 16, 12);
+      ctx.fill();
+      ctx.strokeStyle = "#E5E7EB";
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.roundRect(qrX - 8, y - 8, qrSize + 16, qrSize + 16, 12);
+      ctx.stroke();
+      ctx.drawImage(img, qrX, y, qrSize, qrSize);
+      y += qrSize + 24;
+
+      ctx.fillStyle = "#C07A54";
+      ctx.font = "italic 13px Inter, system-ui, sans-serif";
+      ctx.fillText("We look forward to celebrating with you!", canvasWidth / 2, y);
+
+      canvas.toBlob((b) => {
+        if (b) resolve(b);
+        else reject(new Error("Failed to create blob"));
+      }, "image/png");
+    };
+    img.onerror = () => reject(new Error("Failed to load QR image"));
+    img.src = qrCodeDataUrl;
+  });
+}
+
+/**
+ * Shares the decorated QR code invitation as an image via the native share sheet.
+ * Requires HTTPS (secure context) to work on mobile.
+ * Falls back to downloading the image if sharing is not supported.
+ */
+export async function shareQRCodeAsImage(qrCodeDataUrl: string, guestName: string): Promise<void> {
+  if (!qrCodeDataUrl || !qrCodeDataUrl.startsWith("data:")) return;
+
+  const blob = await generateInvitationBlob(qrCodeDataUrl);
+  const fileName = `invitation-${guestName.replace(/\s+/g, "-")}.png`;
+  const file = new File([blob], fileName, { type: "image/png" });
+
+  try {
+    await navigator.share({ files: [file] });
+  } catch {
+    // Share not available (not HTTPS or user cancelled) — fall back to download
+    downloadQRCode(qrCodeDataUrl, `invitation-qr-${guestName}`, guestName);
+  }
+}
+
+/**
  * Formats a date to show relative time (e.g., "2 minutes ago", "Yesterday")
  * @param date - The date to format (Date object or string)
  * @returns Human-readable relative time string

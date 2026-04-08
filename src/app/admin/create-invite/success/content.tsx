@@ -6,7 +6,7 @@ import { useState } from "react";
 import { Button } from "@/components/button";
 import { QrCode } from "@/components/qr-code";
 import { useGetInvitationQuery } from "@/store/invitationApi";
-import { downloadQRCode } from "@/lib/utils";
+import { downloadQRCode, shareQRCodeAsImage } from "@/lib/utils";
 
 export function SuccessPageContent() {
   const searchParams = useSearchParams();
@@ -33,18 +33,11 @@ export function SuccessPageContent() {
   };
 
   const handleShare = async () => {
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: `Wedding Invitation - ${invitation?.name}`,
-          text: `You're invited! View your wedding invitation.`,
-          url: inviteUrl,
-        });
-      } catch (err) {
-        console.error("Share failed:", err);
-        handleCopyLink();
-      }
-    } else {
+    if (!invitation?.qrCode || !invitation?.name) return;
+    try {
+      await shareQRCodeAsImage(invitation.qrCode, invitation.name);
+    } catch (err) {
+      console.error("Share failed:", err);
       handleCopyLink();
     }
   };
@@ -57,11 +50,16 @@ export function SuccessPageContent() {
     window.open(`mailto:?subject=${subject}&body=${body}`, '_blank');
   };
 
-  const handleWhatsAppShare = () => {
-    const text = encodeURIComponent(
-      `You're invited to our wedding! 💒\n\nView your invitation: ${inviteUrl}\n\nWe can't wait to celebrate with you! 🎉`
-    );
-    window.open(`https://wa.me/?text=${text}`, '_blank');
+  const handleWhatsAppShare = async () => {
+    if (!invitation?.qrCode || !invitation?.name) return;
+    try {
+      await shareQRCodeAsImage(invitation.qrCode, invitation.name);
+    } catch {
+      const text = encodeURIComponent(
+        `You're invited to our wedding!\n\nView your invitation: ${inviteUrl}\n\nWe can't wait to celebrate with you!`
+      );
+      window.open(`https://wa.me/?text=${text}`, '_blank');
+    }
   };
 
   const handleDownloadQR = () => {
