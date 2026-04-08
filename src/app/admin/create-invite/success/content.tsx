@@ -66,7 +66,7 @@ export function SuccessPageContent() {
 
   const handleDownloadQR = () => {
     if (!invitation?.qrCode) return;
-    downloadQRCode(invitation.qrCode, `invitation-qr-${invitation.name}`);
+    downloadQRCode(invitation.qrCode, `invitation-qr-${invitation.name}`, invitation.name);
   };
 
   if (isLoading) {

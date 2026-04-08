@@ -70,20 +70,137 @@ export function capitalize(str: string): string {
 }
 
 /**
- * Debounce function to limit the rate of function execution
+ * Downloads a QR code as a decorated PNG with invitation text and guest name
  * @param qrCodeDataUrl - The QR code data URL (base64 encoded)
  * @param fileName - The name for the downloaded file (without extension)
+ * @param guestName - The guest's name to display on the image
  */
-export function downloadQRCode(qrCodeDataUrl: string, fileName: string): void {
+export function downloadQRCode(qrCodeDataUrl: string, fileName: string, guestName?: string): void {
   if (!qrCodeDataUrl || !qrCodeDataUrl.startsWith("data:")) {
     console.warn("Invalid QR code data URL provided");
     return;
   }
-  
-  const link = document.createElement("a");
-  link.download = `${fileName.replace(/\s+/g, "-")}.png`;
-  link.href = qrCodeDataUrl;
-  link.click();
+
+  if (!guestName) {
+    // Fallback: download raw QR code if no name provided
+    const link = document.createElement("a");
+    link.download = `${fileName.replace(/\s+/g, "-")}.png`;
+    link.href = qrCodeDataUrl;
+    link.click();
+    return;
+  }
+
+  const img = new Image();
+  img.onload = () => {
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    const padding = 40;
+    const qrSize = 280;
+    const canvasWidth = qrSize + padding * 2;
+
+    // Measure text to calculate layout
+    ctx.font = "bold 22px Inter, system-ui, sans-serif";
+    const nameText = `Dear ${guestName},`;
+
+    ctx.font = "15px Inter, system-ui, sans-serif";
+    const messageLines = wrapText(
+      ctx,
+      "You have been invited to attend their union. Please show this code to the ushers to let you in.",
+      canvasWidth - padding * 2,
+    );
+
+    const nameHeight = 30;
+    const messageHeight = messageLines.length * 22;
+    const topTextHeight = nameHeight + messageHeight + 20;
+    const bottomTextHeight = 30;
+    const canvasHeight = padding + topTextHeight + 16 + qrSize + 16 + bottomTextHeight + padding;
+
+    canvas.width = canvasWidth;
+    canvas.height = canvasHeight;
+
+    // Background
+    ctx.fillStyle = "#FFF9F4";
+    ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+
+    // Decorative border
+    ctx.strokeStyle = "#C07A54";
+    ctx.lineWidth = 3;
+    const borderInset = 12;
+    ctx.strokeRect(borderInset, borderInset, canvasWidth - borderInset * 2, canvasHeight - borderInset * 2);
+
+    // Inner accent line
+    ctx.strokeStyle = "#C07A5440";
+    ctx.lineWidth = 1;
+    ctx.strokeRect(borderInset + 6, borderInset + 6, canvasWidth - (borderInset + 6) * 2, canvasHeight - (borderInset + 6) * 2);
+
+    let y = padding + 10;
+
+    // Guest name
+    ctx.fillStyle = "#C07A54";
+    ctx.font = "bold 22px Inter, system-ui, sans-serif";
+    ctx.textAlign = "center";
+    ctx.fillText(nameText, canvasWidth / 2, y);
+    y += nameHeight + 8;
+
+    // Message
+    ctx.fillStyle = "#4B5563";
+    ctx.font = "15px Inter, system-ui, sans-serif";
+    for (const line of messageLines) {
+      ctx.fillText(line, canvasWidth / 2, y);
+      y += 22;
+    }
+    y += 16;
+
+    // QR code with white background
+    const qrX = (canvasWidth - qrSize) / 2;
+    ctx.fillStyle = "#FFFFFF";
+    ctx.beginPath();
+    ctx.roundRect(qrX - 8, y - 8, qrSize + 16, qrSize + 16, 12);
+    ctx.fill();
+    ctx.strokeStyle = "#E5E7EB";
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.roundRect(qrX - 8, y - 8, qrSize + 16, qrSize + 16, 12);
+    ctx.stroke();
+
+    ctx.drawImage(img, qrX, y, qrSize, qrSize);
+    y += qrSize + 24;
+
+    // Bottom text
+    ctx.fillStyle = "#C07A54";
+    ctx.font = "italic 13px Inter, system-ui, sans-serif";
+    ctx.fillText("We look forward to celebrating with you!", canvasWidth / 2, y);
+
+    // Download
+    const link = document.createElement("a");
+    link.download = `${fileName.replace(/\s+/g, "-")}.png`;
+    link.href = canvas.toDataURL("image/png");
+    link.click();
+  };
+  img.src = qrCodeDataUrl;
+}
+
+/**
+ * Wraps text into lines that fit within a given width
+ */
+function wrapText(ctx: CanvasRenderingContext2D, text: string, maxWidth: number): string[] {
+  const words = text.split(" ");
+  const lines: string[] = [];
+  let currentLine = "";
+
+  for (const word of words) {
+    const testLine = currentLine ? `${currentLine} ${word}` : word;
+    if (ctx.measureText(testLine).width > maxWidth && currentLine) {
+      lines.push(currentLine);
+      currentLine = word;
+    } else {
+      currentLine = testLine;
+    }
+  }
+  if (currentLine) lines.push(currentLine);
+  return lines;
 }
 
 /**

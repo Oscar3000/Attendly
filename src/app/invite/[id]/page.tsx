@@ -39,7 +39,7 @@ export default function InvitePage({ params }: InvitePageProps) {
 
   const handleDownloadQR = () => {
     if (!invite?.qrCode) return;
-    downloadQRCode(invite.qrCode, `invitation-qr-${invite.name}`);
+    downloadQRCode(invite.qrCode, `invitation-qr-${invite.name}`, invite.name);
   };
 
   if (loading) {
