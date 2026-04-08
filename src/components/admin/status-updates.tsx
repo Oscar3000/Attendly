@@ -8,8 +8,8 @@ interface StatusUpdatesProps {
 export default function StatusUpdates({ updates }: StatusUpdatesProps) {
 
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-      <h2 className="text-lg font-medium text-gray-900 mb-4">Status Updates</h2>
+    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 sm:p-6">
+      <h2 className="text-base sm:text-lg font-medium text-gray-900 mb-4">Status Updates</h2>
       <div className="space-y-4">
         {updates.length === 0 ? (
           <div className="text-gray-500 text-sm text-center py-4">

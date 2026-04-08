@@ -106,11 +106,11 @@ export function SuccessPageContent() {
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: "#FFF9F4" }}>
-      <div className="max-w-2xl mx-auto p-6 animate-in fade-in duration-500">
+      <div className="max-w-2xl mx-auto px-4 py-6 sm:p-6 animate-in fade-in duration-500">
         {/* Header */}
-        <div className="text-center mb-8">
+        <div className="text-center mb-6 sm:mb-8">
           <div className="mb-4">
-            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <div className="w-14 h-14 sm:w-16 sm:h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <svg
                 className="w-8 h-8 text-green-600"
                 fill="none"
@@ -126,27 +126,27 @@ export function SuccessPageContent() {
               </svg>
             </div>
           </div>
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">
+          <h1 className="text-2xl sm:text-4xl font-bold text-gray-900 mb-2">
             Invitation Created Successfully!
           </h1>
-          <p className="text-lg text-gray-600">
+          <p className="text-base sm:text-lg text-gray-600">
             Your invitation for <strong>{invitation.name}</strong> is ready to share
           </p>
         </div>
 
         {/* Invitation Summary */}
-        <div className="bg-white rounded-2xl shadow-lg p-6 mb-6">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">
+        <div className="bg-white rounded-2xl shadow-lg p-4 sm:p-6 mb-6">
+          <h2 className="text-lg sm:text-xl font-semibold text-gray-900 mb-4">
             Invitation Details
           </h2>
           <div className="space-y-3">
-            <div className="flex justify-between">
-              <span className="text-gray-600">Name:</span>
-              <span className="font-medium">{invitation.name}</span>
+            <div className="flex flex-col sm:flex-row sm:justify-between">
+              <span className="text-gray-600 text-sm sm:text-base">Name:</span>
+              <span className="font-medium text-sm sm:text-base">{invitation.name}</span>
             </div>
-            <div className="flex justify-between">
-              <span className="text-gray-600">Event Date:</span>
-              <span className="font-medium">
+            <div className="flex flex-col sm:flex-row sm:justify-between">
+              <span className="text-gray-600 text-sm sm:text-base">Event Date:</span>
+              <span className="font-medium text-sm sm:text-base">
                 {new Date(invitation.eventDate).toLocaleDateString("en-US", {
                   weekday: "long",
                   year: "numeric",
@@ -157,26 +157,26 @@ export function SuccessPageContent() {
                 })}
               </span>
             </div>
-            <div className="flex justify-between">
-              <span className="text-gray-600">Venue:</span>
-              <span className="font-medium">{invitation.venue}</span>
+            <div className="flex flex-col sm:flex-row sm:justify-between">
+              <span className="text-gray-600 text-sm sm:text-base">Venue:</span>
+              <span className="font-medium text-sm sm:text-base">{invitation.venue}</span>
             </div>
-            <div className="flex justify-between">
-              <span className="text-gray-600">Plus One:</span>
-              <span className="font-medium">
+            <div className="flex flex-col sm:flex-row sm:justify-between">
+              <span className="text-gray-600 text-sm sm:text-base">Plus One:</span>
+              <span className="font-medium text-sm sm:text-base">
                 {invitation.plusOne === 0 ? "No" : `Yes (+${invitation.plusOne})`}
               </span>
             </div>
-            <div className="flex justify-between">
-              <span className="text-gray-600">Status:</span>
-              <span className="font-medium capitalize">{invitation.status}</span>
+            <div className="flex flex-col sm:flex-row sm:justify-between">
+              <span className="text-gray-600 text-sm sm:text-base">Status:</span>
+              <span className="font-medium capitalize text-sm sm:text-base">{invitation.status}</span>
             </div>
           </div>
         </div>
 
         {/* Share Section */}
-        <div className="bg-white rounded-2xl shadow-lg p-6 mb-6">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">
+        <div className="bg-white rounded-2xl shadow-lg p-4 sm:p-6 mb-6">
+          <h2 className="text-lg sm:text-xl font-semibold text-gray-900 mb-4">
             Share Invitation
           </h2>
 
@@ -290,7 +290,7 @@ export function SuccessPageContent() {
         </div>
 
         {/* Actions */}
-        <div className="flex flex-col sm:flex-row gap-4 justify-center">
+        <div className="grid grid-cols-2 sm:flex sm:flex-row gap-3 sm:gap-4 sm:justify-center">
           <Button
             variant="secondary"
             onClick={() => window.open(`/invite/${invitation.id}`, '_blank')}

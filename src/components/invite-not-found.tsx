@@ -12,7 +12,7 @@ export default function InviteNotFound({
       className="min-h-screen flex items-center justify-center"
       style={{ backgroundColor: "#FFF9F4" }}
     >
-      <div className="text-center max-w-md mx-auto p-6">
+      <div className="text-center max-w-md mx-auto px-4 py-6 sm:p-6">
         {/* Icon */}
         <div className="mb-6">
           <svg
@@ -36,7 +36,7 @@ export default function InviteNotFound({
         </div>
 
         {/* Title */}
-        <h1 className="text-3xl font-bold text-gray-900 mb-4">
+        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-4">
           Invitation Not Found
         </h1>
 

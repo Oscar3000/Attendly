@@ -27,25 +27,25 @@ export default function InvitationsTable({
   };
 
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-      <h2 className="text-lg font-medium text-gray-900 mb-6">
+    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 sm:p-6">
+      <h2 className="text-base sm:text-lg font-medium text-gray-900 mb-4 sm:mb-6">
         All Invitations
       </h2>
 
-      <div className="overflow-hidden">
-        <table className="w-full">
+      <div className="overflow-x-auto -mx-4 sm:mx-0">
+        <table className="w-full min-w-[480px]">
           <thead>
             <tr className="border-b border-gray-200">
-              <th className="text-left py-3 px-4 font-medium text-gray-700">
+              <th className="text-left py-3 px-3 sm:px-4 font-medium text-gray-700 text-sm sm:text-base">
                 Name
               </th>
-              <th className="text-left py-3 px-4 font-medium text-gray-700">
+              <th className="text-left py-3 px-3 sm:px-4 font-medium text-gray-700 text-sm sm:text-base">
                 Status
               </th>
-              <th className="text-left py-3 px-4 font-medium text-gray-700">
+              <th className="text-left py-3 px-3 sm:px-4 font-medium text-gray-700 text-sm sm:text-base">
                 QR Code
               </th>
-              <th className="text-left py-3 px-4 font-medium text-gray-700">
+              <th className="text-left py-3 px-3 sm:px-4 font-medium text-gray-700 text-sm sm:text-base">
                 Actions
               </th>
             </tr>
@@ -56,12 +56,12 @@ export default function InvitationsTable({
                 key={invitation.id}
                 className={index % 2 === 0 ? "bg-gray-50" : "bg-white"}
               >
-                <td className="py-4 px-4">
-                  <div className="font-medium text-gray-900">
+                <td className="py-3 sm:py-4 px-3 sm:px-4">
+                  <div className="font-medium text-gray-900 text-sm sm:text-base">
                     {invitation.name}
                   </div>
                 </td>
-                <td className="py-4 px-4">
+                <td className="py-3 sm:py-4 px-3 sm:px-4">
                   <span
                     className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${getTableStatusColor(invitation.status)}`}
                   >
@@ -69,7 +69,7 @@ export default function InvitationsTable({
                       invitation.status.slice(1)}
                   </span>
                 </td>
-                <td className="py-4 px-4">
+                <td className="py-3 sm:py-4 px-3 sm:px-4">
                   <button
                     onClick={() => handleDownloadQR(invitation)}
                     className="group relative transition-transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded-lg"
@@ -108,10 +108,10 @@ export default function InvitationsTable({
                     )}
                   </button>
                 </td>
-                <td className="py-4 px-4">
+                <td className="py-3 sm:py-4 px-3 sm:px-4">
                   <button
                     onClick={() => onEdit(invitation.id)}
-                    className="text-blue-600 hover:text-blue-800 font-medium transition-colors"
+                    className="text-blue-600 hover:text-blue-800 font-medium transition-colors text-sm sm:text-base"
                   >
                     Edit
                   </button>
@@ -124,11 +124,11 @@ export default function InvitationsTable({
       
       {/* Pagination Controls */}
       {pagination && pagination.totalPages > 1 && (
-        <div className="flex items-center justify-between px-6 py-4 border-t border-gray-200">
-          <div className="text-sm text-gray-700">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-4 sm:px-6 py-4 border-t border-gray-200">
+          <div className="text-xs sm:text-sm text-gray-700">
             Showing {((pagination.page - 1) * pagination.limit) + 1} to {Math.min(pagination.page * pagination.limit, pagination.total)} of {pagination.total} invitations
           </div>
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-1 sm:space-x-2">
             <button
               onClick={() => onPageChange?.(pagination.page - 1)}
               disabled={pagination.page <= 1}

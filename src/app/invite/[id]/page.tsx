@@ -129,19 +129,19 @@ export default function InvitePage({ params }: InvitePageProps) {
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: "#FFF9F4" }}>
-      <div className="max-w-2xl mx-auto p-6">
+      <div className="max-w-2xl mx-auto px-4 py-6 sm:p-6">
         {/* Header */}
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">
+        <div className="text-center mb-6 sm:mb-8">
+          <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-2">
             You&apos;re Invited!
           </h1>
-          <p className="text-lg text-gray-600">Wedding Celebration</p>
+          <p className="text-base sm:text-lg text-gray-600">Wedding Celebration</p>
         </div>
 
         {/* Invitation Card */}
-        <div className="bg-white rounded-2xl shadow-lg p-8 mb-6">
+        <div className="bg-white rounded-2xl shadow-lg p-5 sm:p-8 mb-6">
           <div className="text-center mb-6">
-            <h2 className="text-2xl font-semibold text-gray-900 mb-2">
+            <h2 className="text-xl sm:text-2xl font-semibold text-gray-900 mb-2">
               Dear {invite.name}
             </h2>
           </div>
@@ -149,30 +149,30 @@ export default function InvitePage({ params }: InvitePageProps) {
           {/* Event Details */}
           <div className="space-y-4 mb-6">
             <div className="border-t border-gray-200 pt-4">
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">
+              <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-3">
                 Event Details
               </h3>
               <div className="space-y-2">
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Date:</span>
-                  <span className="font-medium">
+                <div className="flex flex-col sm:flex-row sm:justify-between">
+                  <span className="text-gray-600 text-sm sm:text-base">Date:</span>
+                  <span className="font-medium text-sm sm:text-base">
                     {formatDate(invite.eventDate)}
                   </span>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Time:</span>
-                  <span className="font-medium">
+                <div className="flex flex-col sm:flex-row sm:justify-between">
+                  <span className="text-gray-600 text-sm sm:text-base">Time:</span>
+                  <span className="font-medium text-sm sm:text-base">
                     {formatTime(invite.eventDate)}
                   </span>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Venue:</span>
-                  <span className="font-medium">{invite.venue}</span>
+                <div className="flex flex-col sm:flex-row sm:justify-between">
+                  <span className="text-gray-600 text-sm sm:text-base">Venue:</span>
+                  <span className="font-medium text-sm sm:text-base">{invite.venue}</span>
                 </div>
                 {invite.plusOne && invite.plusOne > 0 && (
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Additional Guests:</span>
-                    <span className="font-medium text-green-600">
+                  <div className="flex flex-col sm:flex-row sm:justify-between">
+                    <span className="text-gray-600 text-sm sm:text-base">Additional Guests:</span>
+                    <span className="font-medium text-green-600 text-sm sm:text-base">
                       {invite.plusOne}{" "}
                       {invite.plusOne === 1 ? "person" : "people"}
                     </span>
@@ -184,12 +184,12 @@ export default function InvitePage({ params }: InvitePageProps) {
 
           {/* RSVP Status */}
           <div className="border-t border-gray-200 pt-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">
+            <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-4">
               RSVP Status
             </h3>
 
             <div className="space-y-4">
-              <div className="flex items-center gap-4">
+              <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
                 <span className="text-gray-600">Current Status:</span>
                 <span
                   className={`px-3 py-1 rounded-full text-sm font-medium ${
@@ -230,9 +230,9 @@ export default function InvitePage({ params }: InvitePageProps) {
         </div>
 
         {/* QR Code Section */}
-        <div className="bg-white rounded-2xl shadow-lg p-6 mb-6">
+        <div className="bg-white rounded-2xl shadow-lg p-4 sm:p-6 mb-6">
           <div className="text-center">
-            <h3 className="text-lg font-semibold text-gray-900 mb-3">
+            <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-3">
               Share Your Invitation
             </h3>
             <p className="text-gray-600 mb-4">

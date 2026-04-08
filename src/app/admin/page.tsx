@@ -90,7 +90,7 @@ export default function AdminDashboard() {
   }
 
   return (
-    <div className="min-h-screen p-6" style={{ backgroundColor: "#FFF9F4" }}>
+    <div className="min-h-screen px-4 py-4 sm:p-6" style={{ backgroundColor: "#FFF9F4" }}>
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <DashboardHeader onCreateInvite={handleCreateInvite} />

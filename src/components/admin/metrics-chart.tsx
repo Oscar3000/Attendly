@@ -24,27 +24,21 @@ export default function MetricsChart({ metrics }: MetricsChartProps) {
   ];
 
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-      <h2 className="text-lg font-medium text-gray-900 mb-6">Metrics</h2>
+    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 sm:p-6">
+      <h2 className="text-base sm:text-lg font-medium text-gray-900 mb-4 sm:mb-6">Metrics</h2>
 
-      <div className="flex items-end justify-between space-x-8 h-48">
-        {bars.map((bar, index) => (
+      <div className="flex items-end justify-between space-x-3 sm:space-x-8 h-48">
+        {bars.map((bar) => (
           <div key={bar.label} className="flex flex-col items-center flex-1">
-            {/* Y-axis labels */}
-            {index === 0 && (
-              <div className="absolute left-0 flex flex-col justify-between h-40 text-xs text-gray-500 -ml-8">
-                <span>200</span>
-                <span>150</span>
-                <span>100</span>
-                <span>50</span>
-                <span>0</span>
-              </div>
-            )}
+            {/* Value label */}
+            <div className="text-xs sm:text-sm font-medium text-gray-600 mb-1">
+              {bar.value}
+            </div>
 
             {/* Bar */}
-            <div className="flex-1 flex items-end mb-2">
+            <div className="flex-1 flex items-end mb-2 w-full">
               <div
-                className="w-12 rounded-t transition-all duration-300"
+                className="w-full max-w-12 mx-auto rounded-t transition-all duration-300"
                 style={{
                   height: `${getBarHeight(bar.value)}px`,
                   backgroundColor: bar.color,
@@ -53,7 +47,7 @@ export default function MetricsChart({ metrics }: MetricsChartProps) {
             </div>
 
             {/* Label */}
-            <div className="text-sm font-medium text-gray-700 text-center">
+            <div className="text-xs sm:text-sm font-medium text-gray-700 text-center">
               {bar.label}
             </div>
           </div>

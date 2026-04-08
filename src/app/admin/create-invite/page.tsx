@@ -41,7 +41,7 @@ export default function CreateInvitePage() {
   };
 
   return (
-    <div className="min-h-screen p-6">
+    <div className="min-h-screen px-4 py-4 sm:p-6">
       <div
         className="max-w-2xl mx-auto"
         style={{
@@ -51,8 +51,8 @@ export default function CreateInvitePage() {
         }}
       >
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-6">
+        <div className="mb-6 sm:mb-8">
+          <h1 className="text-2xl sm:text-4xl font-bold text-gray-900 mb-4 sm:mb-6">
             Create Invite
           </h1>
         </div>
@@ -63,7 +63,7 @@ export default function CreateInvitePage() {
           <div>
             <label
               htmlFor="name"
-              className="block text-lg font-medium text-gray-900 mb-3"
+              className="block text-base sm:text-lg font-medium text-gray-900 mb-2 sm:mb-3"
             >
               Name
             </label>
@@ -86,7 +86,7 @@ export default function CreateInvitePage() {
           <div>
             <label
               htmlFor="eventDate"
-              className="block text-lg font-medium text-gray-900 mb-3"
+              className="block text-base sm:text-lg font-medium text-gray-900 mb-2 sm:mb-3"
             >
               Event Date & Time
             </label>
@@ -108,7 +108,7 @@ export default function CreateInvitePage() {
           <div>
             <label
               htmlFor="venue"
-              className="block text-lg font-medium text-gray-900 mb-3"
+              className="block text-base sm:text-lg font-medium text-gray-900 mb-2 sm:mb-3"
             >
               Venue
             </label>
@@ -131,7 +131,7 @@ export default function CreateInvitePage() {
           <div>
             <label
               htmlFor="plusOne"
-              className="block text-lg font-medium text-gray-900 mb-3"
+              className="block text-base sm:text-lg font-medium text-gray-900 mb-2 sm:mb-3"
             >
               Plus One (Number of additional guests)
             </label>
@@ -157,7 +157,7 @@ export default function CreateInvitePage() {
           <div>
             <label
               htmlFor="status"
-              className="block text-lg font-medium text-gray-900 mb-3"
+              className="block text-base sm:text-lg font-medium text-gray-900 mb-2 sm:mb-3"
             >
               Initial Status
             </label>

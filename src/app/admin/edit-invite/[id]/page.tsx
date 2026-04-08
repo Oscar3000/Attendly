@@ -117,7 +117,7 @@ export default function EditInvitePage({ params }: EditInvitePageProps) {
   }
 
   return (
-    <div className="min-h-screen p-6">
+    <div className="min-h-screen px-4 py-4 sm:p-6">
       <div
         className="max-w-2xl mx-auto"
         style={{
@@ -127,8 +127,8 @@ export default function EditInvitePage({ params }: EditInvitePageProps) {
         }}
       >
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-6">Edit Invite</h1>
+        <div className="mb-6 sm:mb-8">
+          <h1 className="text-2xl sm:text-4xl font-bold text-gray-900 mb-4 sm:mb-6">Edit Invite</h1>
           <p className="text-gray-600">Invitation ID: {form.id}</p>
         </div>
 
@@ -138,7 +138,7 @@ export default function EditInvitePage({ params }: EditInvitePageProps) {
           <div>
             <label
               htmlFor="name"
-              className="block text-lg font-medium text-gray-900 mb-3"
+              className="block text-base sm:text-lg font-medium text-gray-900 mb-2 sm:mb-3"
             >
               Name
             </label>
@@ -161,7 +161,7 @@ export default function EditInvitePage({ params }: EditInvitePageProps) {
           <div>
             <label
               htmlFor="eventDate"
-              className="block text-lg font-medium text-gray-900 mb-3"
+              className="block text-base sm:text-lg font-medium text-gray-900 mb-2 sm:mb-3"
             >
               Event Date & Time
             </label>
@@ -183,7 +183,7 @@ export default function EditInvitePage({ params }: EditInvitePageProps) {
           <div>
             <label
               htmlFor="venue"
-              className="block text-lg font-medium text-gray-900 mb-3"
+              className="block text-base sm:text-lg font-medium text-gray-900 mb-2 sm:mb-3"
             >
               Venue
             </label>
@@ -206,7 +206,7 @@ export default function EditInvitePage({ params }: EditInvitePageProps) {
           <div>
             <label
               htmlFor="plusOne"
-              className="block text-lg font-medium text-gray-900 mb-3"
+              className="block text-base sm:text-lg font-medium text-gray-900 mb-2 sm:mb-3"
             >
               Plus One (Additional Guests)
             </label>
@@ -235,7 +235,7 @@ export default function EditInvitePage({ params }: EditInvitePageProps) {
           <div>
             <label
               htmlFor="status"
-              className="block text-lg font-medium text-gray-900 mb-3"
+              className="block text-base sm:text-lg font-medium text-gray-900 mb-2 sm:mb-3"
             >
               Status
             </label>

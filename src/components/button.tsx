@@ -46,8 +46,9 @@ export function Button({
   // Custom styles for attendly variant
   const customStyles = isAttendlyVariant
     ? {
-        width: typeof width === "number" ? `${width}px` : width || "300px",
-        height: typeof height === "number" ? `${height}px` : height || "70px",
+        width: typeof width === "number" ? `${width}px` : width || "100%",
+        maxWidth: "300px",
+        height: typeof height === "number" ? `${height}px` : height || "56px",
         borderRadius:
           typeof borderRadius === "number"
             ? `${borderRadius}px`
@@ -58,7 +59,7 @@ export function Button({
         fontWeight:
           typeof fontWeight === "number" ? fontWeight : fontWeight || "500",
         fontSize:
-          typeof fontSize === "number" ? `${fontSize}px` : fontSize || "22px",
+          typeof fontSize === "number" ? `${fontSize}px` : fontSize || "17px",
         border: "none",
       }
     : {};

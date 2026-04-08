@@ -24,15 +24,15 @@ export default function DashboardHeader({
   };
 
   return (
-    <div className="flex justify-between items-center mb-8">
-      <h1 className="text-4xl font-bold text-gray-900">Dashboard</h1>
-      <div className="flex gap-4">
-        <Button variant="attendly" onClick={onCreateInvite}>
+    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6 sm:mb-8">
+      <h1 className="text-2xl sm:text-4xl font-bold text-gray-900">Dashboard</h1>
+      <div className="flex gap-3 sm:gap-4">
+        <Button variant="attendly" onClick={onCreateInvite} width="auto" height="44px" fontSize="15px" className="flex-1 sm:flex-none px-4">
           Create Invite
         </Button>
         <button
           onClick={handleLogout}
-          className="px-4 py-2 rounded-lg font-medium text-gray-700 border border-gray-300 hover:bg-gray-50 transition-colors"
+          className="flex-1 sm:flex-none px-4 py-2 rounded-lg font-medium text-gray-700 border border-gray-300 hover:bg-gray-50 transition-colors text-sm sm:text-base"
         >
           Logout
         </button>

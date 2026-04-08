@@ -48,12 +48,8 @@ export default function LoginPage() {
         {/* Header */}
         <div className="mb-8 text-center">
           <h1
-            className="font-inter font-semibold"
-            style={{
-              fontSize: '32px',
-              color: '#000000',
-              marginBottom: '8px',
-            }}
+            className="font-inter font-semibold text-2xl sm:text-3xl mb-2"
+            style={{ color: '#000000' }}
           >
             Attendly
           </h1>
@@ -77,11 +73,8 @@ export default function LoginPage() {
           }}
         >
           <h2
-            className="font-inter font-bold mb-6"
-            style={{
-              fontSize: '24px',
-              color: '#000000',
-            }}
+            className="font-inter font-bold mb-6 text-xl sm:text-2xl"
+            style={{ color: '#000000' }}
           >
             Login
           </h2>
