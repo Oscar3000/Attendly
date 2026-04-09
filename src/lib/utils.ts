@@ -70,116 +70,6 @@ export function capitalize(str: string): string {
 }
 
 /**
- * Downloads a QR code as a decorated PNG with invitation text and guest name
- * @param qrCodeDataUrl - The QR code data URL (base64 encoded)
- * @param fileName - The name for the downloaded file (without extension)
- * @param guestName - The guest's name to display on the image
- */
-export function downloadQRCode(qrCodeDataUrl: string, fileName: string, guestName?: string): void {
-  if (!qrCodeDataUrl || !qrCodeDataUrl.startsWith("data:")) {
-    console.warn("Invalid QR code data URL provided");
-    return;
-  }
-
-  if (!guestName) {
-    // Fallback: download raw QR code if no name provided
-    const link = document.createElement("a");
-    link.download = `${fileName.replace(/\s+/g, "-")}.png`;
-    link.href = qrCodeDataUrl;
-    link.click();
-    return;
-  }
-
-  const img = new Image();
-  img.onload = () => {
-    const canvas = document.createElement("canvas");
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
-
-    const padding = 40;
-    const qrSize = 280;
-    const canvasWidth = qrSize + padding * 2;
-
-    // Measure text to calculate layout
-    const titleHeight = 30;
-    ctx.font = "15px Inter, system-ui, sans-serif";
-    const messageLines = wrapText(
-      ctx,
-      "You have been specially invited to witness and celebrate this beautiful union. Kindly present this code at the venue entrance.",
-      canvasWidth - padding * 2,
-    );
-
-    const messageHeight = messageLines.length * 22;
-    const topTextHeight = titleHeight + 12 + messageHeight + 10;
-    const bottomTextHeight = 30;
-    const canvasHeight = padding + topTextHeight + 16 + qrSize + 16 + bottomTextHeight + padding;
-
-    canvas.width = canvasWidth;
-    canvas.height = canvasHeight;
-
-    // Background
-    ctx.fillStyle = "#FFF9F4";
-    ctx.fillRect(0, 0, canvasWidth, canvasHeight);
-
-    // Decorative border
-    ctx.strokeStyle = "#C07A54";
-    ctx.lineWidth = 3;
-    const borderInset = 12;
-    ctx.strokeRect(borderInset, borderInset, canvasWidth - borderInset * 2, canvasHeight - borderInset * 2);
-
-    // Inner accent line
-    ctx.strokeStyle = "#C07A5440";
-    ctx.lineWidth = 1;
-    ctx.strokeRect(borderInset + 6, borderInset + 6, canvasWidth - (borderInset + 6) * 2, canvasHeight - (borderInset + 6) * 2);
-
-    let y = padding + 10;
-
-    // Title - #PamOscar2026
-    ctx.fillStyle = "#C07A54";
-    ctx.font = "bold 22px Inter, system-ui, sans-serif";
-    ctx.textAlign = "center";
-    ctx.fillText("#PamOscar2026", canvasWidth / 2, y);
-    y += titleHeight + 4;
-
-    // Message
-    ctx.fillStyle = "#4B5563";
-    ctx.font = "15px Inter, system-ui, sans-serif";
-    for (const line of messageLines) {
-      ctx.fillText(line, canvasWidth / 2, y);
-      y += 22;
-    }
-    y += 16;
-
-    // QR code with white background
-    const qrX = (canvasWidth - qrSize) / 2;
-    ctx.fillStyle = "#FFFFFF";
-    ctx.beginPath();
-    ctx.roundRect(qrX - 8, y - 8, qrSize + 16, qrSize + 16, 12);
-    ctx.fill();
-    ctx.strokeStyle = "#E5E7EB";
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.roundRect(qrX - 8, y - 8, qrSize + 16, qrSize + 16, 12);
-    ctx.stroke();
-
-    ctx.drawImage(img, qrX, y, qrSize, qrSize);
-    y += qrSize + 24;
-
-    // Bottom text
-    ctx.fillStyle = "#C07A54";
-    ctx.font = "italic 13px Inter, system-ui, sans-serif";
-    ctx.fillText("We look forward to celebrating with you!", canvasWidth / 2, y);
-
-    // Download
-    const link = document.createElement("a");
-    link.download = `${fileName.replace(/\s+/g, "-")}.png`;
-    link.href = canvas.toDataURL("image/png");
-    link.click();
-  };
-  img.src = qrCodeDataUrl;
-}
-
-/**
  * Wraps text into lines that fit within a given width
  */
 function wrapText(ctx: CanvasRenderingContext2D, text: string, maxWidth: number): string[] {
@@ -201,6 +91,223 @@ function wrapText(ctx: CanvasRenderingContext2D, text: string, maxWidth: number)
 }
 
 /**
+ * Draws the full decorated invitation onto a canvas.
+ * The canvas dimensions are set inside this function.
+ */
+function drawInvitationCanvas(
+  canvas: HTMLCanvasElement,
+  qrImg: HTMLImageElement,
+): void {
+  const W = 500;
+  const qrSize = 240;
+  const sidePad = 48;
+  const ctx = canvas.getContext("2d")!;
+
+  // Measure wrapped message text before setting canvas size
+  ctx.font = "14px Inter, system-ui, sans-serif";
+  const msgLines = wrapText(
+    ctx,
+    "Kindly present this QR code at the venue entrance to confirm your attendance. We look forward to celebrating with you!",
+    W - sidePad * 2,
+  );
+  const msgHeight = msgLines.length * 22;
+
+  // Compute total canvas height
+  const H =
+    60 +   // top breathing room + monogram
+    30 +   // ornament line
+    38 +   // couple names
+    44 +   // date pill + gap
+    20 +   // "You are specially invited"
+    34 +   // "Dear [Name]"
+    20 +   // gap before QR
+    qrSize + 24 + // QR + padding inside white box
+    msgHeight + 16 + // message
+    28 +   // divider
+    20 +   // "Colours of the Day" label
+    42 +   // swatches
+    36 +   // hashtag
+    28;    // bottom breathing room
+
+  canvas.width = W;
+  canvas.height = H;
+
+  // Re-acquire context after resize
+  const c = canvas.getContext("2d")!;
+
+  // ── Background ──────────────────────────────────────────────────────────
+  c.fillStyle = "#FFF9F4";
+  c.fillRect(0, 0, W, H);
+
+  // ── Outer border ────────────────────────────────────────────────────────
+  c.strokeStyle = "#C07A54";
+  c.lineWidth = 3;
+  c.strokeRect(12, 12, W - 24, H - 24);
+
+  // ── Inner accent border ─────────────────────────────────────────────────
+  c.strokeStyle = "rgba(212,175,55,0.35)";
+  c.lineWidth = 1;
+  c.strokeRect(21, 21, W - 42, H - 42);
+
+  let y = 52;
+
+  // ── "P & O" Monogram ───────────────────────────────────────────────────
+  c.fillStyle = "#C07A54";
+  c.font = "bold 36px Georgia, serif";
+  c.textAlign = "center";
+  c.fillText("P & O", W / 2, y);
+  y += 18;
+
+  // ── Gold ornament divider ──────────────────────────────────────────────
+  c.strokeStyle = "#D4AF37";
+  c.lineWidth = 1;
+  c.beginPath();
+  c.moveTo(sidePad, y);
+  c.lineTo(W / 2 - 18, y);
+  c.stroke();
+  c.fillStyle = "#D4AF37";
+  c.font = "14px Georgia, serif";
+  c.fillText("❧", W / 2, y + 5);
+  c.beginPath();
+  c.moveTo(W / 2 + 18, y);
+  c.lineTo(W - sidePad, y);
+  c.stroke();
+  y += 28;
+
+  // ── Date pill ──────────────────────────────────────────────────────────
+  const pillW = 210;
+  const pillH = 28;
+  const pillX = (W - pillW) / 2;
+  c.fillStyle = "#C07A54";
+  c.beginPath();
+  c.roundRect(pillX, y, pillW, pillH, 14);
+  c.fill();
+  c.fillStyle = "#FFFFFF";
+  c.font = "bold 13px Inter, system-ui, sans-serif";
+  c.textAlign = "center";
+  c.fillText("May 23rd, 2026", W / 2, y + 18);
+  y += pillH + 20;
+
+  // ── Thin gold separator ────────────────────────────────────────────────
+  c.strokeStyle = "rgba(212,175,55,0.45)";
+  c.lineWidth = 1;
+  c.beginPath();
+  c.moveTo(sidePad + 20, y);
+  c.lineTo(W - sidePad - 20, y);
+  c.stroke();
+  y += 18;
+
+  // ── "You have been specially invited..." ──────────────────────────────
+  c.fillStyle = "#9A7B6B";
+  c.font = "italic 13px Inter, system-ui, sans-serif";
+  c.textAlign = "center";
+  const inviteLines = wrapText(
+    c,
+    "You have been specially invited to witness and celebrate this beautiful union. This is your personal invitation.",
+    W - sidePad * 2,
+  );
+  for (const line of inviteLines) {
+    c.fillText(line, W / 2, y);
+    y += 20;
+  }
+  y += 10;
+
+  // ── QR Code in white rounded card ─────────────────────────────────────
+  const qrBg = 14;
+  const qrX = (W - qrSize) / 2;
+  c.fillStyle = "#FFFFFF";
+  c.beginPath();
+  c.roundRect(qrX - qrBg, y - qrBg, qrSize + qrBg * 2, qrSize + qrBg * 2, 16);
+  c.fill();
+  c.strokeStyle = "#E8D5C4";
+  c.lineWidth = 1.5;
+  c.beginPath();
+  c.roundRect(qrX - qrBg, y - qrBg, qrSize + qrBg * 2, qrSize + qrBg * 2, 16);
+  c.stroke();
+  c.drawImage(qrImg, qrX, y, qrSize, qrSize);
+  y += qrSize + qrBg + 16;
+
+  // ── Venue message ─────────────────────────────────────────────────────
+  c.fillStyle = "#6B4A3A";
+  c.font = "14px Inter, system-ui, sans-serif";
+  c.textAlign = "center";
+  for (const line of msgLines) {
+    c.fillText(line, W / 2, y);
+    y += 22;
+  }
+  y += 16;
+
+  // ── Thin gold separator ────────────────────────────────────────────────
+  c.strokeStyle = "rgba(212,175,55,0.45)";
+  c.lineWidth = 1;
+  c.beginPath();
+  c.moveTo(sidePad + 20, y);
+  c.lineTo(W - sidePad - 20, y);
+  c.stroke();
+  y += 18;
+
+  // ── "Colours of the Day" ──────────────────────────────────────────────
+  c.fillStyle = "#9A7B6B";
+  c.font = "10px Inter, system-ui, sans-serif";
+  c.textAlign = "center";
+  c.fillText("COLOURS OF THE DAY", W / 2, y);
+  y += 16;
+
+  // Swatches
+  const swatchR = 11;
+  const swatchGap = 14;
+  const swatchColors = ["#D4AF37", "#8B4513", "#E8750A"];
+  const swatchTotalW = swatchColors.length * swatchR * 2 + (swatchColors.length - 1) * swatchGap;
+  let swatchX = (W - swatchTotalW) / 2 + swatchR;
+  for (const color of swatchColors) {
+    c.fillStyle = color;
+    c.beginPath();
+    c.arc(swatchX, y + swatchR, swatchR, 0, Math.PI * 2);
+    c.fill();
+    swatchX += swatchR * 2 + swatchGap;
+  }
+  y += swatchR * 2 + 14;
+
+  // ── Hashtag ────────────────────────────────────────────────────────────
+  c.fillStyle = "#C07A54";
+  c.font = "bold 15px Inter, system-ui, sans-serif";
+  c.textAlign = "center";
+  c.fillText("#PamOscar2026", W / 2, y);
+}
+
+/**
+ * Downloads a QR code as a decorated PNG with invitation text and guest name
+ * @param qrCodeDataUrl - The QR code data URL (base64 encoded)
+ * @param fileName - The name for the downloaded file (without extension)
+ * @param guestName - The guest's name to display on the image
+ */
+export function downloadQRCode(qrCodeDataUrl: string, fileName: string, guestName?: string): void {
+  if (!qrCodeDataUrl || !qrCodeDataUrl.startsWith("data:")) {
+    console.warn("Invalid QR code data URL provided");
+    return;
+  }
+
+  if (!guestName) {
+    const link = document.createElement("a");
+    link.download = `${fileName.replace(/\s+/g, "-")}.png`;
+    link.href = qrCodeDataUrl;
+    link.click();
+    return;
+  }
+
+  const img = new Image();
+  img.onload = () => {
+    const canvas = document.createElement("canvas");
+    drawInvitationCanvas(canvas, img);
+    const link = document.createElement("a");
+    link.download = `${fileName.replace(/\s+/g, "-")}.png`;
+    link.href = canvas.toDataURL("image/png");
+    link.click();
+  };
+  img.src = qrCodeDataUrl;
+}
+
+/**
  * Generates the decorated invitation canvas as a Blob
  */
 function generateInvitationBlob(qrCodeDataUrl: string): Promise<Blob> {
@@ -208,69 +315,7 @@ function generateInvitationBlob(qrCodeDataUrl: string): Promise<Blob> {
     const img = new Image();
     img.onload = () => {
       const canvas = document.createElement("canvas");
-      const ctx = canvas.getContext("2d");
-      if (!ctx) { reject(new Error("No canvas context")); return; }
-
-      const padding = 40;
-      const qrSize = 280;
-      const canvasWidth = qrSize + padding * 2;
-      const titleHeight = 30;
-      ctx.font = "15px Inter, system-ui, sans-serif";
-      const messageLines = wrapText(
-        ctx,
-        "You have been specially invited to witness and celebrate this beautiful union. Kindly present this code at the venue entrance.",
-        canvasWidth - padding * 2,
-      );
-      const messageHeight = messageLines.length * 22;
-      const topTextHeight = titleHeight + 12 + messageHeight + 10;
-      const bottomTextHeight = 30;
-      const canvasHeight = padding + topTextHeight + 16 + qrSize + 16 + bottomTextHeight + padding;
-
-      canvas.width = canvasWidth;
-      canvas.height = canvasHeight;
-
-      ctx.fillStyle = "#FFF9F4";
-      ctx.fillRect(0, 0, canvasWidth, canvasHeight);
-      ctx.strokeStyle = "#C07A54";
-      ctx.lineWidth = 3;
-      const borderInset = 12;
-      ctx.strokeRect(borderInset, borderInset, canvasWidth - borderInset * 2, canvasHeight - borderInset * 2);
-      ctx.strokeStyle = "#C07A5440";
-      ctx.lineWidth = 1;
-      ctx.strokeRect(borderInset + 6, borderInset + 6, canvasWidth - (borderInset + 6) * 2, canvasHeight - (borderInset + 6) * 2);
-
-      let y = padding + 10;
-      ctx.fillStyle = "#C07A54";
-      ctx.font = "bold 22px Inter, system-ui, sans-serif";
-      ctx.textAlign = "center";
-      ctx.fillText("#PamOscar2026", canvasWidth / 2, y);
-      y += titleHeight + 4;
-
-      ctx.fillStyle = "#4B5563";
-      ctx.font = "15px Inter, system-ui, sans-serif";
-      for (const line of messageLines) {
-        ctx.fillText(line, canvasWidth / 2, y);
-        y += 22;
-      }
-      y += 16;
-
-      const qrX = (canvasWidth - qrSize) / 2;
-      ctx.fillStyle = "#FFFFFF";
-      ctx.beginPath();
-      ctx.roundRect(qrX - 8, y - 8, qrSize + 16, qrSize + 16, 12);
-      ctx.fill();
-      ctx.strokeStyle = "#E5E7EB";
-      ctx.lineWidth = 1;
-      ctx.beginPath();
-      ctx.roundRect(qrX - 8, y - 8, qrSize + 16, qrSize + 16, 12);
-      ctx.stroke();
-      ctx.drawImage(img, qrX, y, qrSize, qrSize);
-      y += qrSize + 24;
-
-      ctx.fillStyle = "#C07A54";
-      ctx.font = "italic 13px Inter, system-ui, sans-serif";
-      ctx.fillText("We look forward to celebrating with you!", canvasWidth / 2, y);
-
+      drawInvitationCanvas(canvas, img);
       canvas.toBlob((b) => {
         if (b) resolve(b);
         else reject(new Error("Failed to create blob"));
