@@ -57,11 +57,12 @@ export default function CountdownSection() {
         ].map(({ label, value }) => (
           <div key={label} className="flex flex-col items-center">
             <div
-              className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl flex items-center justify-center text-2xl sm:text-3xl font-bold mb-2"
+              className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl flex items-center justify-center text-2xl sm:text-3xl font-bold mb-2 leading-none"
               style={{
                 backgroundColor: "#C07A54",
                 color: "#FFFFFF",
-                fontFamily: "Georgia, serif",
+                fontFamily: "'Palatino Linotype', Palatino, serif",
+                fontVariantNumeric: "lining-nums tabular-nums",
                 boxShadow: "0 4px 14px rgba(192,122,84,0.4)",
               }}
             >
