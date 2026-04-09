@@ -24,20 +24,30 @@ export default function QrScanner() {
   const handleScanSuccess = useCallback(
     async (decodedText: string) => {
       await stopScanner();
+
+      // Try parsing as a URL (prepend https:// if protocol is missing)
       try {
-        const url = new URL(decodedText);
+        const raw = /^https?:\/\//i.test(decodedText)
+          ? decodedText
+          : `https://${decodedText}`;
+        const url = new URL(raw);
         const match = url.pathname.match(/\/invite\/(.+)/);
         if (match?.[1]) {
           router.push(`/invite/${match[1]}`);
-          return;
+        } else {
+          setError("Invalid QR code. Please scan a valid invitation code.");
         }
+        return;
       } catch {
-        // Not a URL — try using it as a raw invitation ID
+        // Not a URL — fall through to treat as a raw invitation ID
       }
+
+      // Raw invitation ID (no spaces)
       if (decodedText && !decodedText.includes(" ")) {
         router.push(`/invite/${decodedText}`);
         return;
       }
+
       setError("Invalid QR code. Please scan a valid invitation code.");
     },
     [router, stopScanner],

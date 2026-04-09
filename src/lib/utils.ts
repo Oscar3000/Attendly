@@ -420,7 +420,9 @@ export function getTableStatusColor(status: string): string {
  */
 export async function generateQRCode(invitationId: string): Promise<string> {
   try {
-    const inviteUrl = `${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/invite/${invitationId}`;
+    const rawBase = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
+    const baseUrl = /^https?:\/\//i.test(rawBase) ? rawBase : `https://${rawBase}`;
+    const inviteUrl = `${baseUrl.replace(/\/$/, '')}/invite/${invitationId}`;
     const qrCodeDataURL = await QRCode.toDataURL(inviteUrl, {
       width: 200,
       margin: 2,
