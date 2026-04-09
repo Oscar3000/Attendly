@@ -297,6 +297,16 @@ export default function InvitePage({ params }: InvitePageProps) {
         </div>
         */}
 
+        {/* Home button */}
+        <div className="flex justify-center mb-6">
+          <Button
+            variant="attendly"
+            onClick={() => (window.location.href = "/")}
+          >
+            Go to Home Page
+          </Button>
+        </div>
+
         {/* Footer */}
         <div className="text-center text-gray-500 text-sm">
           <p>Invitation ID: {resolvedParams.id}</p>
