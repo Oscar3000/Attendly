@@ -11,10 +11,10 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Attendly - Attendance Management System",
+  title: "Oscar & Pamela's Wedding",
   description:
-    "A modern attendance management system built with Next.js. Track, manage, and analyze attendance records with ease.",
-  keywords: ["attendance", "management", "tracking", "nextjs", "react"],
+    "Manage invitations, RSVPs, and guest details for Oscar and Pamela's wedding.",
+  keywords: ["wedding", "invitation", "rsvp", "oscar", "pamela"],
   authors: [{ name: "Attendly Team" }],
   icons: {
     icon: [
