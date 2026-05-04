@@ -32,11 +32,13 @@ export default function AdminDashboard() {
   // Transform API data to dashboard format
   const metrics: DashboardMetrics = adminData ? {
     totalInvitations: adminData.metrics.totalInvitations,
+    totalGuests: adminData.metrics.totalGuests,
     pendingCount: adminData.metrics.pendingRsvps,
     confirmedCount: adminData.metrics.confirmedRsvps,
     rescindedCount: adminData.metrics.declinedRsvps,
   } : {
     totalInvitations: 0,
+    totalGuests: 0,
     pendingCount: 0,
     confirmedCount: 0,
     rescindedCount: 0,
@@ -99,7 +101,10 @@ export default function AdminDashboard() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
           {/* Left Column - Counter */}
           <div>
-            <InvitationCounter totalInvitations={metrics.totalInvitations} />
+            <InvitationCounter
+              totalInvitations={metrics.totalInvitations}
+              totalGuests={metrics.totalGuests}
+            />
           </div>
 
           {/* Right Column - Status Updates */}

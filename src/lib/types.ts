@@ -72,6 +72,7 @@ export interface InviteDetails extends WeddingInvitation {
 // Admin dashboard types
 export interface DashboardMetrics {
   totalInvitations: number;
+  totalGuests: number;
   pendingCount: number;
   confirmedCount: number;
   rescindedCount: number;
@@ -113,6 +114,7 @@ export interface EditInviteForm extends CreateInviteForm {
 // Admin metrics interface
 export interface AdminMetrics {
   totalInvitations: number;
+  totalGuests: number;
   confirmedRsvps: number;
   pendingRsvps: number;
   declinedRsvps: number;

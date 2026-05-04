@@ -138,15 +138,19 @@ export const db = {
 
   // Get admin metrics
   async getAdminMetrics(): Promise<AdminMetrics> {
-    const [total, confirmed, pending, declined] = await Promise.all([
+    const [total, confirmed, pending, declined, plusOneAgg] = await Promise.all([
       prisma.invitation.count(),
       prisma.invitation.count({ where: { status: 'CONFIRMED' } }),
       prisma.invitation.count({ where: { status: 'PENDING' } }),
-      prisma.invitation.count({ where: { status: 'DECLINED' } })
+      prisma.invitation.count({ where: { status: 'DECLINED' } }),
+      prisma.invitation.aggregate({ _sum: { plusOne: true } }),
     ]);
+
+    const totalPlusOnes = plusOneAgg._sum.plusOne ?? 0;
 
     return {
       totalInvitations: total,
+      totalGuests: total + totalPlusOnes,
       confirmedRsvps: confirmed,
       pendingRsvps: pending,
       declinedRsvps: declined,
