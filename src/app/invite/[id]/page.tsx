@@ -168,15 +168,19 @@ export default function InvitePage({ params }: InvitePageProps) {
                   <span className="text-gray-600 text-sm sm:text-base">Venue:</span>
                   <span className="font-medium text-sm sm:text-base">{invite.venue}</span>
                 </div>
-                {invite.plusOne && invite.plusOne > 0 && (
-                  <div className="flex flex-col sm:flex-row sm:justify-between">
-                    <span className="text-gray-600 text-sm sm:text-base">Additional Guests:</span>
+                <div className="flex flex-col sm:flex-row sm:justify-between">
+                  <span className="text-gray-600 text-sm sm:text-base">Additional Guests:</span>
+                  {invite.plusOne && invite.plusOne > 0 ? (
                     <span className="font-medium text-green-600 text-sm sm:text-base">
                       {invite.plusOne}{" "}
                       {invite.plusOne === 1 ? "person" : "people"}
                     </span>
-                  </div>
-                )}
+                  ) : (
+                    <span className="font-medium text-sm sm:text-base text-gray-600">
+                      You don&apos;t have a plus one
+                    </span>
+                  )}
+                </div>
               </div>
             </div>
           </div>
@@ -257,6 +261,46 @@ export default function InvitePage({ params }: InvitePageProps) {
             </div>
           </div>
         </div>
+
+        {/* Check-in: access pass allocation */}
+        {rsvpStatus === "pending" && (() => {
+          const extraGuests = invite.plusOne ?? 0;
+          const totalPasses = 1 + extraGuests;
+          return (
+            <div
+              className="bg-white rounded-2xl shadow-lg p-5 sm:p-6 mb-6 border-l-4"
+              style={{ borderLeftColor: "#C07A54" }}
+            >
+              <div className="flex items-start gap-4">
+                <div
+                  className="flex-shrink-0 flex items-center justify-center rounded-xl text-white font-semibold"
+                  style={{
+                    backgroundColor: "#C07A54",
+                    width: 56,
+                    height: 56,
+                    fontSize: 24,
+                  }}
+                  aria-hidden="true"
+                >
+                  {totalPasses}
+                </div>
+                <div className="flex-1">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1">
+                    Check-in
+                  </p>
+                  <h3 className="text-base sm:text-lg font-semibold text-gray-900">
+                    Issue {totalPasses} access {totalPasses === 1 ? "pass" : "passes"} to this guest
+                  </h3>
+                  <p className="text-sm text-gray-600 mt-1">
+                    {extraGuests > 0
+                      ? `1 for the invitee plus ${extraGuests} for their ${extraGuests === 1 ? "guest" : "guests"}.`
+                      : "This invitation does not include additional guests."}
+                  </p>
+                </div>
+              </div>
+            </div>
+          );
+        })()}
 
         {/* QR Code Section - commented out for now
         <div className="bg-white rounded-2xl shadow-lg p-4 sm:p-6 mb-6">

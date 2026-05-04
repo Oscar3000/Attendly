@@ -272,7 +272,7 @@ function drawInvitationCanvas(
   c.fillStyle = "#C07A54";
   c.font = "bold 15px Inter, system-ui, sans-serif";
   c.textAlign = "center";
-  c.fillText("#PamOscar2026", W / 2, y);
+  c.fillText("#OscarPam2026", W / 2, y);
 }
 
 /**

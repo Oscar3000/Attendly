@@ -1,23 +1,14 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 
 export default function InvitePinContent() {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const [pin, setPin] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const [redirectUrl, setRedirectUrl] = useState('/invite');
-
-  useEffect(() => {
-    // Get the redirect URL from query params
-    const redirect = searchParams.get('redirect');
-    if (redirect) {
-      setRedirectUrl(redirect);
-    }
-  }, [searchParams]);
+  const redirectUrl = searchParams.get('redirect') || '/invite';
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -40,8 +31,8 @@ export default function InvitePinContent() {
         return;
       }
 
-      // PIN verified - redirect to the original invitation URL
-      router.push(redirectUrl);
+      // PIN verified - hard navigate so the new invite_token cookie is sent on the next request
+      window.location.href = redirectUrl;
     } catch (err) {
       console.error('PIN verification error:', err);
       setError('An error occurred. Please try again.');
