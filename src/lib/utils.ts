@@ -199,6 +199,15 @@ function drawInvitationCanvas(
   c.stroke();
   y += 18;
 
+  // ── "Dear [Name]" ─────────────────────────────────────────────────────
+  if (firstName) {
+    c.fillStyle = "#6B4A3A";
+    c.font = "600 20px Georgia, serif";
+    c.textAlign = "center";
+    c.fillText(`Dear ${firstName}`, W / 2, y + 14);
+    y += 40;
+  }
+
   // ── "You have been specially invited..." ──────────────────────────────
   c.fillStyle = "#9A7B6B";
   c.font = "italic 13px Inter, system-ui, sans-serif";
@@ -212,16 +221,7 @@ function drawInvitationCanvas(
     c.fillText(line, W / 2, y);
     y += 20;
   }
-  y += 6;
-
-  // ── "Dear [Name]" ─────────────────────────────────────────────────────
-  if (firstName) {
-    c.fillStyle = "#6B4A3A";
-    c.font = "600 18px Georgia, serif";
-    c.textAlign = "center";
-    c.fillText(`Dear ${firstName}`, W / 2, y + 14);
-    y += 34;
-  }
+  y += 10;
 
   // ── QR Code in white rounded card ─────────────────────────────────────
   const qrBg = 14;
