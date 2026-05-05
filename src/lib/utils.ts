@@ -97,7 +97,9 @@ function wrapText(ctx: CanvasRenderingContext2D, text: string, maxWidth: number)
 function drawInvitationCanvas(
   canvas: HTMLCanvasElement,
   qrImg: HTMLImageElement,
+  guestName: string,
 ): void {
+  const firstName = guestName.trim().split(/\s+/)[0] ?? "";
   const W = 500;
   const qrSize = 240;
   const sidePad = 48;
@@ -210,7 +212,16 @@ function drawInvitationCanvas(
     c.fillText(line, W / 2, y);
     y += 20;
   }
-  y += 10;
+  y += 6;
+
+  // ── "Dear [Name]" ─────────────────────────────────────────────────────
+  if (firstName) {
+    c.fillStyle = "#6B4A3A";
+    c.font = "600 18px Georgia, serif";
+    c.textAlign = "center";
+    c.fillText(`Dear ${firstName}`, W / 2, y + 14);
+    y += 34;
+  }
 
   // ── QR Code in white rounded card ─────────────────────────────────────
   const qrBg = 14;
@@ -298,7 +309,7 @@ export function downloadQRCode(qrCodeDataUrl: string, fileName: string, guestNam
   const img = new Image();
   img.onload = () => {
     const canvas = document.createElement("canvas");
-    drawInvitationCanvas(canvas, img);
+    drawInvitationCanvas(canvas, img, guestName);
     const link = document.createElement("a");
     link.download = `${fileName.replace(/\s+/g, "-")}.png`;
     link.href = canvas.toDataURL("image/png");
@@ -310,12 +321,12 @@ export function downloadQRCode(qrCodeDataUrl: string, fileName: string, guestNam
 /**
  * Generates the decorated invitation canvas as a Blob
  */
-function generateInvitationBlob(qrCodeDataUrl: string): Promise<Blob> {
+function generateInvitationBlob(qrCodeDataUrl: string, guestName: string): Promise<Blob> {
   return new Promise((resolve, reject) => {
     const img = new Image();
     img.onload = () => {
       const canvas = document.createElement("canvas");
-      drawInvitationCanvas(canvas, img);
+      drawInvitationCanvas(canvas, img, guestName);
       canvas.toBlob((b) => {
         if (b) resolve(b);
         else reject(new Error("Failed to create blob"));
@@ -334,7 +345,7 @@ function generateInvitationBlob(qrCodeDataUrl: string): Promise<Blob> {
 export async function shareQRCodeAsImage(qrCodeDataUrl: string, guestName: string): Promise<void> {
   if (!qrCodeDataUrl || !qrCodeDataUrl.startsWith("data:")) return;
 
-  const blob = await generateInvitationBlob(qrCodeDataUrl);
+  const blob = await generateInvitationBlob(qrCodeDataUrl, guestName);
   const fileName = `invitation-${guestName.replace(/\s+/g, "-")}.png`;
   const file = new File([blob], fileName, { type: "image/png" });
 
