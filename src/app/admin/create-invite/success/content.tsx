@@ -35,7 +35,7 @@ export function SuccessPageContent() {
   const handleShare = async () => {
     if (!invitation?.qrCode || !invitation?.name) return;
     try {
-      await shareQRCodeAsImage(invitation.qrCode, invitation.name);
+      await shareQRCodeAsImage(invitation.qrCode, invitation.name, invitation.plusOne ?? 0);
     } catch (err) {
       console.error("Share failed:", err);
       handleCopyLink();
@@ -53,7 +53,7 @@ export function SuccessPageContent() {
   const handleWhatsAppShare = async () => {
     if (!invitation?.qrCode || !invitation?.name) return;
     try {
-      await shareQRCodeAsImage(invitation.qrCode, invitation.name);
+      await shareQRCodeAsImage(invitation.qrCode, invitation.name, invitation.plusOne ?? 0);
     } catch {
       const text = encodeURIComponent(
         `You're invited to our wedding!\n\nView your invitation: ${inviteUrl}\n\nWe can't wait to celebrate with you!`
@@ -64,7 +64,7 @@ export function SuccessPageContent() {
 
   const handleDownloadQR = () => {
     if (!invitation?.qrCode) return;
-    downloadQRCode(invitation.qrCode, `invitation-qr-${invitation.name}`, invitation.name);
+    downloadQRCode(invitation.qrCode, `invitation-qr-${invitation.name}`, invitation.name, invitation.plusOne ?? 0);
   };
 
   if (isLoading) {

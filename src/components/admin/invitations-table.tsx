@@ -22,7 +22,7 @@ export default function InvitationsTable({
 }: InvitationsTableProps) {
   const handleDownloadQR = (invitation: InvitationTableEntry) => {
     if (invitation.qrCode) {
-      downloadQRCode(invitation.qrCode, `invitation-qr-${invitation.name}`, invitation.name);
+      downloadQRCode(invitation.qrCode, `invitation-qr-${invitation.name}`, invitation.name, invitation.plusOne ?? 0);
     }
   };
 

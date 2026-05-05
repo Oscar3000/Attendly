@@ -98,8 +98,10 @@ function drawInvitationCanvas(
   canvas: HTMLCanvasElement,
   qrImg: HTMLImageElement,
   guestName: string,
+  plusOne: number = 0,
 ): void {
   const firstName = guestName.trim().split(/\s+/)[0] ?? "";
+  const admits = 1 + Math.max(0, plusOne);
   const W = 500;
   const qrSize = 240;
   const sidePad = 48;
@@ -120,6 +122,7 @@ function drawInvitationCanvas(
     30 +   // ornament line
     38 +   // couple names
     44 +   // date pill + gap
+    30 +   // admits pill + gap
     20 +   // "You are specially invited"
     34 +   // "Dear [Name]"
     20 +   // gap before QR
@@ -188,7 +191,25 @@ function drawInvitationCanvas(
   c.font = "bold 13px Inter, system-ui, sans-serif";
   c.textAlign = "center";
   c.fillText("May 23rd, 2026", W / 2, y + 18);
-  y += pillH + 20;
+  y += pillH + 10;
+
+  // ── Admits pill (outlined) ────────────────────────────────────────────
+  const admitsLabel = `Admits ${admits}`;
+  c.font = "600 11px Inter, system-ui, sans-serif";
+  const admitsTextW = c.measureText(admitsLabel).width;
+  const admitsPadX = 14;
+  const admitsW = admitsTextW + admitsPadX * 2;
+  const admitsH = 22;
+  const admitsX = (W - admitsW) / 2;
+  c.strokeStyle = "#C07A54";
+  c.lineWidth = 1.25;
+  c.beginPath();
+  c.roundRect(admitsX, y, admitsW, admitsH, 11);
+  c.stroke();
+  c.fillStyle = "#C07A54";
+  c.textAlign = "center";
+  c.fillText(admitsLabel, W / 2, y + 15);
+  y += admitsH + 14;
 
   // ── Thin gold separator ────────────────────────────────────────────────
   c.strokeStyle = "rgba(212,175,55,0.45)";
@@ -292,7 +313,7 @@ function drawInvitationCanvas(
  * @param fileName - The name for the downloaded file (without extension)
  * @param guestName - The guest's name to display on the image
  */
-export function downloadQRCode(qrCodeDataUrl: string, fileName: string, guestName?: string): void {
+export function downloadQRCode(qrCodeDataUrl: string, fileName: string, guestName?: string, plusOne: number = 0): void {
   if (!qrCodeDataUrl || !qrCodeDataUrl.startsWith("data:")) {
     console.warn("Invalid QR code data URL provided");
     return;
@@ -309,7 +330,7 @@ export function downloadQRCode(qrCodeDataUrl: string, fileName: string, guestNam
   const img = new Image();
   img.onload = () => {
     const canvas = document.createElement("canvas");
-    drawInvitationCanvas(canvas, img, guestName);
+    drawInvitationCanvas(canvas, img, guestName, plusOne);
     const link = document.createElement("a");
     link.download = `${fileName.replace(/\s+/g, "-")}.png`;
     link.href = canvas.toDataURL("image/png");
@@ -321,12 +342,12 @@ export function downloadQRCode(qrCodeDataUrl: string, fileName: string, guestNam
 /**
  * Generates the decorated invitation canvas as a Blob
  */
-function generateInvitationBlob(qrCodeDataUrl: string, guestName: string): Promise<Blob> {
+function generateInvitationBlob(qrCodeDataUrl: string, guestName: string, plusOne: number = 0): Promise<Blob> {
   return new Promise((resolve, reject) => {
     const img = new Image();
     img.onload = () => {
       const canvas = document.createElement("canvas");
-      drawInvitationCanvas(canvas, img, guestName);
+      drawInvitationCanvas(canvas, img, guestName, plusOne);
       canvas.toBlob((b) => {
         if (b) resolve(b);
         else reject(new Error("Failed to create blob"));
@@ -342,10 +363,10 @@ function generateInvitationBlob(qrCodeDataUrl: string, guestName: string): Promi
  * Requires HTTPS (secure context) to work on mobile.
  * Falls back to downloading the image if sharing is not supported.
  */
-export async function shareQRCodeAsImage(qrCodeDataUrl: string, guestName: string): Promise<void> {
+export async function shareQRCodeAsImage(qrCodeDataUrl: string, guestName: string, plusOne: number = 0): Promise<void> {
   if (!qrCodeDataUrl || !qrCodeDataUrl.startsWith("data:")) return;
 
-  const blob = await generateInvitationBlob(qrCodeDataUrl, guestName);
+  const blob = await generateInvitationBlob(qrCodeDataUrl, guestName, plusOne);
   const fileName = `invitation-${guestName.replace(/\s+/g, "-")}.png`;
   const file = new File([blob], fileName, { type: "image/png" });
 
@@ -353,7 +374,7 @@ export async function shareQRCodeAsImage(qrCodeDataUrl: string, guestName: strin
     await navigator.share({ files: [file] });
   } catch {
     // Share not available (not HTTPS or user cancelled) — fall back to download
-    downloadQRCode(qrCodeDataUrl, `invitation-qr-${guestName}`, guestName);
+    downloadQRCode(qrCodeDataUrl, `invitation-qr-${guestName}`, guestName, plusOne);
   }
 }
 
