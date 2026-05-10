@@ -116,18 +116,32 @@ function drawInvitationCanvas(
   );
   const msgHeight = msgLines.length * 22;
 
+  // Pre-measure venue address wrap (used in height calc and drawing)
+  ctx.font = "13px Inter, system-ui, sans-serif";
+  const venueAddressLines = wrapText(
+    ctx,
+    "23 Rd, opposite L Close, Festac Town, Lagos",
+    W - sidePad * 2,
+  );
+  const receptionBlockHeight =
+    20 +   // "RECEPTION" label + gap
+    20 +   // venue name (bold) + gap
+    venueAddressLines.length * 18 + // address lines
+    16;    // bottom gap before divider
+
   // Compute total canvas height
   const H =
     60 +   // top breathing room + monogram
     30 +   // ornament line
     38 +   // couple names
     44 +   // date pill + gap
-    30 +   // admits pill + gap
+    40 +   // admits pill + gap
     20 +   // "You are specially invited"
     34 +   // "Dear [Name]"
     20 +   // gap before QR
     qrSize + 24 + // QR + padding inside white box
-    msgHeight + 16 + // message
+    msgHeight + 18 + // message + gap
+    receptionBlockHeight + // reception block (label + venue + address)
     28 +   // divider
     20 +   // "Colours of the Day" label
     42 +   // swatches
@@ -179,8 +193,8 @@ function drawInvitationCanvas(
   c.stroke();
   y += 28;
 
-  // ── Date pill ──────────────────────────────────────────────────────────
-  const pillW = 210;
+  // ── Date + Time pill ───────────────────────────────────────────────────
+  const pillW = 290;
   const pillH = 28;
   const pillX = (W - pillW) / 2;
   c.fillStyle = "#C07A54";
@@ -190,25 +204,25 @@ function drawInvitationCanvas(
   c.fillStyle = "#FFFFFF";
   c.font = "bold 13px Inter, system-ui, sans-serif";
   c.textAlign = "center";
-  c.fillText("May 23rd, 2026", W / 2, y + 18);
+  c.fillText("May 23rd, 2026  •  3:00 PM", W / 2, y + 18);
   y += pillH + 10;
 
   // ── Admits pill (outlined) ────────────────────────────────────────────
   const admitsLabel = `Admits ${admits}`;
-  c.font = "600 11px Inter, system-ui, sans-serif";
+  c.font = "600 14px Inter, system-ui, sans-serif";
   const admitsTextW = c.measureText(admitsLabel).width;
-  const admitsPadX = 14;
+  const admitsPadX = 16;
   const admitsW = admitsTextW + admitsPadX * 2;
-  const admitsH = 22;
+  const admitsH = 26;
   const admitsX = (W - admitsW) / 2;
   c.strokeStyle = "#C07A54";
   c.lineWidth = 1.25;
   c.beginPath();
-  c.roundRect(admitsX, y, admitsW, admitsH, 11);
+  c.roundRect(admitsX, y, admitsW, admitsH, 13);
   c.stroke();
   c.fillStyle = "#C07A54";
   c.textAlign = "center";
-  c.fillText(admitsLabel, W / 2, y + 15);
+  c.fillText(admitsLabel, W / 2, y + 18);
   y += admitsH + 14;
 
   // ── Thin gold separator ────────────────────────────────────────────────
@@ -266,6 +280,26 @@ function drawInvitationCanvas(
   for (const line of msgLines) {
     c.fillText(line, W / 2, y);
     y += 22;
+  }
+  y += 18;
+
+  // ── Reception block ───────────────────────────────────────────────────
+  c.fillStyle = "#9A7B6B";
+  c.font = "10px Inter, system-ui, sans-serif";
+  c.textAlign = "center";
+  c.fillText("RECEPTION", W / 2, y);
+  y += 20;
+
+  c.fillStyle = "#6B4A3A";
+  c.font = "600 16px Georgia, serif";
+  c.fillText("Canary World", W / 2, y);
+  y += 20;
+
+  c.fillStyle = "#9A7B6B";
+  c.font = "13px Inter, system-ui, sans-serif";
+  for (const line of venueAddressLines) {
+    c.fillText(line, W / 2, y);
+    y += 18;
   }
   y += 16;
 
