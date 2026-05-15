@@ -12,9 +12,10 @@ export async function GET(request: Request) {
     // Get pagination parameters
     const page = parseInt(url.searchParams.get('page') || '1');
     const limit = parseInt(url.searchParams.get('limit') || '10');
+    const search = url.searchParams.get('search') || '';
 
     const metrics = await db.getAdminMetrics();
-    const invitationData = await db.getAdminInvitations(page, limit);
+    const invitationData = await db.getAdminInvitations(page, limit, search);
 
     return NextResponse.json(
       {

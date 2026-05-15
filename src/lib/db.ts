@@ -180,7 +180,7 @@ export const db = {
   },
 
   // Get admin invitation list with pagination
-  async getAdminInvitations(page: number = 1, limit: number = 10): Promise<{
+  async getAdminInvitations(page: number = 1, limit: number = 10, search: string = ''): Promise<{
     invitations: InvitationTableEntry[];
     pagination: {
       page: number;
@@ -190,9 +190,13 @@ export const db = {
     };
   }> {
     const skip = (page - 1) * limit;
-    
+    const where = search.trim()
+      ? { name: { contains: search.trim(), mode: 'insensitive' as const } }
+      : {};
+
     const [invitations, total] = await Promise.all([
       prisma.invitation.findMany({
+        where,
         orderBy: { updatedAt: 'desc' },
         skip,
         take: limit,
@@ -208,7 +212,7 @@ export const db = {
           plusOne: true,
         }
       }),
-      prisma.invitation.count()
+      prisma.invitation.count({ where })
     ]);
 
     return {

@@ -12,6 +12,8 @@ interface InvitationsTableProps {
     totalPages: number;
   } | undefined;
   onPageChange?: (page: number) => void;
+  search?: string;
+  onSearchChange?: (value: string) => void;
 }
 
 export default function InvitationsTable({
@@ -19,6 +21,8 @@ export default function InvitationsTable({
   onEdit,
   pagination,
   onPageChange,
+  search,
+  onSearchChange,
 }: InvitationsTableProps) {
   const handleDownloadQR = (invitation: InvitationTableEntry) => {
     if (invitation.qrCode) {
@@ -28,9 +32,35 @@ export default function InvitationsTable({
 
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 sm:p-6">
-      <h2 className="text-base sm:text-lg font-medium text-gray-900 mb-4 sm:mb-6">
-        All Invitations
-      </h2>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4 sm:mb-6">
+        <h2 className="text-base sm:text-lg font-medium text-gray-900">
+          All Invitations
+        </h2>
+        {onSearchChange && (
+          <div className="relative w-full sm:w-64">
+            <input
+              type="text"
+              value={search ?? ""}
+              onChange={(e) => onSearchChange(e.target.value)}
+              placeholder="Search by name..."
+              className="w-full pl-9 pr-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[rgb(192,122,84)] focus:border-transparent"
+            />
+            <svg
+              className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M21 21l-4.35-4.35M11 19a8 8 0 100-16 8 8 0 000 16z"
+              />
+            </svg>
+          </div>
+        )}
+      </div>
 
       <div className="overflow-x-auto -mx-4 sm:mx-0">
         <table className="w-full min-w-[480px]">

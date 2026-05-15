@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import DashboardHeader from "@/components/admin/dashboard-header";
 import InvitationCounter from "@/components/admin/invitation-counter";
@@ -16,14 +16,26 @@ import { useGetAdminDataQuery, useGetStatusUpdatesQuery } from "@/store/invitati
 export default function AdminDashboard() {
   const router = useRouter();
   const [currentPage, setCurrentPage] = useState(1);
+  const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const limit = 10;
-  
+
+  useEffect(() => {
+    const t = setTimeout(() => setDebouncedSearch(search), 300);
+    return () => clearTimeout(t);
+  }, [search]);
+
+  const handleSearchChange = (value: string) => {
+    setSearch(value);
+    setCurrentPage(1);
+  };
+
   // RTK Query hooks
   const {
     data: adminData,
     isLoading: loading,
     isError,
-  } = useGetAdminDataQuery({ page: currentPage, limit });
+  } = useGetAdminDataQuery({ page: currentPage, limit, search: debouncedSearch });
 
   const {
     data: statusUpdatesData,
@@ -125,6 +137,8 @@ export default function AdminDashboard() {
             onEdit={handleEditInvitation}
             pagination={adminData?.pagination}
             onPageChange={setCurrentPage}
+            search={search}
+            onSearchChange={handleSearchChange}
           />
         </div>
       </div>

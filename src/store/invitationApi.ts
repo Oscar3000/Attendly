@@ -33,8 +33,12 @@ export const invitationApi = createApi({
         total: number;
         totalPages: number;
       };
-    }, { page?: number; limit?: number }>({
-      query: ({ page = 1, limit = 10 } = {}) => `admin?page=${page}&limit=${limit}`,
+    }, { page?: number; limit?: number; search?: string }>({
+      query: ({ page = 1, limit = 10, search = '' } = {}) => {
+        const params = new URLSearchParams({ page: String(page), limit: String(limit) });
+        if (search) params.set('search', search);
+        return `admin?${params.toString()}`;
+      },
       providesTags: ['AdminData', 'Invitation'],
     }),
 
