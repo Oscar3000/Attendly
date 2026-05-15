@@ -10,7 +10,7 @@ export default function CreateInvitePage() {
   const router = useRouter();
   const [form, setForm] = useState<CreateInviteForm>({
     name: "",
-    eventDate: "2026-05-23T15:00",
+    eventDate: "2026-05-23T14:00",
     venue: "Canary World, Lagos, Nigeria",
     status: "pending",
     plusOne: 0,
