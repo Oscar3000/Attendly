@@ -58,6 +58,28 @@ export const invitationApi = createApi({
       invalidatesTags: ['Invitation', 'AdminData', 'StatusUpdates'],
     }),
 
+    // Bulk create invitations
+    bulkCreateInvitations: builder.mutation<
+      {
+        created: { row: number; name: string; id: string }[];
+        failed: { row: number; name: string; error: string }[];
+        summary: { total: number; createdCount: number; failedCount: number };
+      },
+      {
+        eventDate: string;
+        venue: string;
+        status?: RsvpStatus;
+        rows: { name: string; plusOne?: number }[];
+      }
+    >({
+      query: (body) => ({
+        url: 'invitations/bulk',
+        method: 'POST',
+        body,
+      }),
+      invalidatesTags: ['Invitation', 'AdminData', 'StatusUpdates'],
+    }),
+
     // Update invitation
     updateInvitation: builder.mutation<{ invitation: InviteDetails }, { id: string; data: Partial<CreateInviteForm> }>({
       query: ({ id, data }) => ({
@@ -107,6 +129,7 @@ export const {
   useGetAdminDataQuery,
   useGetStatusUpdatesQuery,
   useCreateInvitationMutation,
+  useBulkCreateInvitationsMutation,
   useUpdateInvitationMutation,
   useUpdateRsvpStatusMutation,
   useDeleteInvitationMutation,
