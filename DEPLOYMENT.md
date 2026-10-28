@@ -83,15 +83,16 @@ railway up
 
 In the Railway dashboard, click on your **app service** (not the database), go to the **"Variables"** tab, and add the following:
 
-| Variable                  | Value                             | Notes                                                    |
-| ------------------------- | --------------------------------- | -------------------------------------------------------- |
-| `DATABASE_URL`            | `${{Postgres.DATABASE_URL}}`      | Use Railway's variable reference to auto-link to your DB |
-| `NEXT_PUBLIC_BASE_URL`    | `https://your-app.up.railway.app` | Your Railway public URL (set after first deploy)         |
-| `ADMIN_PASSWORD`          | `your-secure-password`            | **Change this!** Used for admin dashboard login          |
-| `INVITE_PIN`              | `your-pin`                        | PIN guests use to access invitations                     |
-| `PORT`                    | `3000`                            | The port the app listens on                              |
-| `NODE_ENV`                | `production`                      |                                                          |
-| `NEXT_TELEMETRY_DISABLED` | `1`                               | Optional                                                 |
+| Variable                  | Value                               | Notes                                                            |
+| ------------------------- | ----------------------------------- | ---------------------------------------------------------------- |
+| `DATABASE_URL`            | `${{Postgres.DATABASE_URL}}`        | Use Railway's variable reference to auto-link to your DB         |
+| `NEXT_PUBLIC_BASE_URL`    | `https://your-app.up.railway.app`   | Your Railway public URL (set after first deploy)                 |
+| `ADMIN_PASSWORD`          | `your-secure-password`              | **Change this!** Used for admin dashboard login                  |
+| `INVITE_PIN`              | `your-pin`                          | PIN guests use to access invitations                             |
+| `AUTH_SECRET`             | output of `openssl rand -base64 32` | **Required.** Signs login cookies; changing it logs everyone out |
+| `PORT`                    | `3000`                              | The port the app listens on                                      |
+| `NODE_ENV`                | `production`                        |                                                                  |
+| `NEXT_TELEMETRY_DISABLED` | `1`                                 | Optional                                                         |
 
 ### Linking the Database URL
 

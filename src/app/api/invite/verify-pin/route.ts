@@ -2,12 +2,13 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { handleRoute, UnauthorizedError } from "@/server/http/errors";
 import { parseBody } from "@/server/http/validate";
+import { sessionCookieOptions, signSession } from "@/server/auth/session";
 
 /**
  * Invite PIN verification API endpoint
  * POST /api/invite/verify-pin
  * Body: { pin: string }
- * Response: { token: string } or { error: string }
+ * Response: { message: string } or { error: string }; the session is set as an HTTP-only cookie
  */
 
 const INVITE_PIN = process.env.INVITE_PIN || "1234";
@@ -23,19 +24,10 @@ export const POST = handleRoute(async (request) => {
     throw new UnauthorizedError("Invalid PIN");
   }
 
-  // Generate a simple token
-  const token = Buffer.from(`invite:${Date.now()}`).toString("base64");
+  const token = await signSession("guest");
 
-  const response = NextResponse.json({ token, message: "PIN verified" }, { status: 200 });
-
-  // Set secure HTTP-only cookie
-  response.cookies.set("invite_token", token, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "strict",
-    maxAge: 24 * 60 * 60, // 24 hours
-    path: "/",
-  });
+  const response = NextResponse.json({ message: "PIN verified" }, { status: 200 });
+  response.cookies.set("invite_token", token, sessionCookieOptions);
 
   return response;
 });

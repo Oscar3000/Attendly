@@ -43,6 +43,8 @@ services:
       
       # Authentication Configuration
       ADMIN_PASSWORD: ${ADMIN_PASSWORD:-admin123}
+      # Signs session cookies; required, no default (openssl rand -base64 32)
+      AUTH_SECRET: ${AUTH_SECRET}
       INVITE_PIN: ${INVITE_PIN:-0000}
       
       # Disable Next.js telemetry
