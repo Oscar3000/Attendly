@@ -16,8 +16,8 @@ Goal: turn Attendly from a single hard-coded wedding into a product any host can
 | Phase | Theme                                                | Tickets       | Status      |
 | ----- | ---------------------------------------------------- | ------------- | ----------- |
 | 0     | Foundations (server layer, validation, tests, CI)    | T-001 – T-009 | ✅ Done     |
-| 1     | Lock down security on the current app                | T-101 – T-108 | In progress |
-| 2     | Accounts with Better Auth (users, sign-up, sessions) | T-201 – T-209 | Not started |
+| 1     | Lock down security on the current app                | T-101 – T-108 | ✅ Done     |
+| 2     | Accounts with Better Auth (users, sign-up, sessions) | T-201 – T-209 | Next        |
 | 3     | Events & multi-tenancy                               | T-301 – T-312 | Not started |
 | 4     | Remove hard-coded content / theming                  | T-401 – T-409 | Not started |
 | 5     | Guest experience                                     | T-501 – T-508 | Not started |
@@ -141,7 +141,7 @@ Add a simple rate limiter (5 attempts per minute per IP plus identifier), in mem
 
 - **Files:** ~4
 
-### T-107 · Security headers · S
+### ✅ T-107 · Security headers · S
 
 Add CSP, `X-Frame-Options`, `Referrer-Policy`, and `Permissions-Policy` (camera stays allowed for the QR scanner) in `next.config.ts`.
 
