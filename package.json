@@ -11,6 +11,11 @@
     "type-check": "tsc --noEmit",
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,css,md}\"",
     "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,css,md}\"",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:unit": "vitest run --project unit",
+    "test:db:up": "docker-compose -f docker-compose.test.yml up -d --wait",
+    "test:db:down": "docker-compose -f docker-compose.test.yml down",
     "clean": "rm -rf .next out",
     "db:migrate": "prisma migrate dev",
     "db:studio": "prisma studio",
@@ -46,6 +51,7 @@
     "eslint-config-next": "16.0.4",
     "prettier": "3.7.3",
     "tailwindcss": "4.1.17",
-    "typescript": "5.9.3"
+    "typescript": "5.9.3",
+    "vitest": "3.2.7"
   }
 }
