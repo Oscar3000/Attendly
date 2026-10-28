@@ -1,10 +1,10 @@
 /**
  * Redux Provider component
  */
-'use client';
+"use client";
 
-import { Provider } from 'react-redux';
-import { store } from './store';
+import { Provider } from "react-redux";
+import { store } from "./store";
 
 interface ReduxProviderProps {
   children: React.ReactNode;

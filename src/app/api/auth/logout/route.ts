@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server';
+import { NextResponse } from "next/server";
 
 /**
  * Admin logout API endpoint
@@ -7,13 +7,10 @@ import { NextResponse } from 'next/server';
  */
 
 export async function POST() {
-  const response = NextResponse.json(
-    { message: 'Logout successful' },
-    { status: 200 }
-  );
+  const response = NextResponse.json({ message: "Logout successful" }, { status: 200 });
 
   // Clear auth token cookie
-  response.cookies.delete('auth_token');
+  response.cookies.delete("auth_token");
 
   return response;
 }

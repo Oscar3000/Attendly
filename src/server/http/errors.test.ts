@@ -18,7 +18,11 @@ describe("handleRoute", () => {
   });
 
   it("maps ApiError subclasses to their status and message", async () => {
-    expect(await run(async () => { throw new NotFoundError("Invitation not found"); })).toEqual({
+    expect(
+      await run(async () => {
+        throw new NotFoundError("Invitation not found");
+      }),
+    ).toEqual({
       status: 404,
       body: { error: "Invitation not found" },
     });
@@ -26,7 +30,11 @@ describe("handleRoute", () => {
 
   it("includes details when provided", async () => {
     const details = { fieldErrors: { name: ["Required"] } };
-    expect(await run(async () => { throw new BadRequestError("Invalid", details); })).toEqual({
+    expect(
+      await run(async () => {
+        throw new BadRequestError("Invalid", details);
+      }),
+    ).toEqual({
       status: 400,
       body: { error: "Invalid", details },
     });
@@ -35,7 +43,11 @@ describe("handleRoute", () => {
   it("hides unexpected errors behind a 500 and logs them", async () => {
     const log = vi.spyOn(console, "error").mockImplementation(() => {});
 
-    expect(await run(async () => { throw new Error("db down"); })).toEqual({
+    expect(
+      await run(async () => {
+        throw new Error("db down");
+      }),
+    ).toEqual({
       status: 500,
       body: { error: "Internal server error" },
     });

@@ -50,10 +50,7 @@ export const DELETE = handleRoute(async (_request, { params }: RouteParams) => {
     throw new NotFoundError("Invitation not found");
   }
 
-  return NextResponse.json(
-    { message: "Invitation deleted successfully" },
-    { status: 200 },
-  );
+  return NextResponse.json({ message: "Invitation deleted successfully" }, { status: 200 });
 });
 
 export const PATCH = handleRoute(async (request, { params }: RouteParams) => {

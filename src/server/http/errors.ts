@@ -59,10 +59,7 @@ export function handleRoute<Context>(
       }
 
       console.error(`Unhandled error in ${request.method} ${request.nextUrl.pathname}:`, error);
-      return NextResponse.json(
-        { error: "Internal server error" },
-        { status: 500 },
-      );
+      return NextResponse.json({ error: "Internal server error" }, { status: 500 });
     }
   };
 }

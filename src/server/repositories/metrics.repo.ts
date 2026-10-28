@@ -2,14 +2,9 @@
  * Metrics repository
  * Dashboard aggregates and recent activity
  */
-import 'server-only';
-import { prisma } from '@/server/db/client';
-import type {
-  AdminMetrics,
-  StatusUpdate,
-  PrismaRsvpStatus,
-  StatusUpdateSelect,
-} from "@/lib/types";
+import "server-only";
+import { prisma } from "@/server/db/client";
+import type { AdminMetrics, StatusUpdate, PrismaRsvpStatus, StatusUpdateSelect } from "@/lib/types";
 import { convertPrismaStatus } from "@/lib/utils";
 
 export const metricsRepo = {
@@ -17,9 +12,9 @@ export const metricsRepo = {
   async getAdminMetrics(): Promise<AdminMetrics> {
     const [total, confirmed, pending, declined, plusOneAgg] = await Promise.all([
       prisma.invitation.count(),
-      prisma.invitation.count({ where: { status: 'CONFIRMED' } }),
-      prisma.invitation.count({ where: { status: 'PENDING' } }),
-      prisma.invitation.count({ where: { status: 'DECLINED' } }),
+      prisma.invitation.count({ where: { status: "CONFIRMED" } }),
+      prisma.invitation.count({ where: { status: "PENDING" } }),
+      prisma.invitation.count({ where: { status: "DECLINED" } }),
       prisma.invitation.aggregate({ _sum: { plusOne: true } }),
     ]);
 
@@ -38,14 +33,14 @@ export const metricsRepo = {
   // Get recent status updates (last 5 invitations with recent updates)
   async getRecentStatusUpdates(): Promise<StatusUpdate[]> {
     const recentUpdates = await prisma.invitation.findMany({
-      orderBy: { updatedAt: 'desc' },
+      orderBy: { updatedAt: "desc" },
       take: 5,
       select: {
         id: true,
         name: true,
         status: true,
         updatedAt: true,
-      }
+      },
     });
 
     return recentUpdates.map((invitation: StatusUpdateSelect) => ({

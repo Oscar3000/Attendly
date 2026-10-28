@@ -35,7 +35,10 @@ describe("POST /api/invitations", () => {
 
   it("rejects invalid fields with a 400 and field errors", async () => {
     const { status, body } = await call(
-      createInvitation(jsonRequest("POST", { name: " ", eventDate: "not a date", plusOne: -1 }), {}),
+      createInvitation(
+        jsonRequest("POST", { name: " ", eventDate: "not a date", plusOne: -1 }),
+        {},
+      ),
     );
 
     expect(status).toBe(400);
@@ -97,7 +100,10 @@ describe("POST /api/invitations/bulk", () => {
 
   it("rejects an empty rows array", async () => {
     const { status } = await call(
-      bulkCreate(jsonRequest("POST", { eventDate: "2026-05-23T14:00", venue: "Hall", rows: [] }), {}),
+      bulkCreate(
+        jsonRequest("POST", { eventDate: "2026-05-23T14:00", venue: "Hall", rows: [] }),
+        {},
+      ),
     );
     expect(status).toBe(400);
   });
