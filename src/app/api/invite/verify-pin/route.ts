@@ -3,6 +3,7 @@ import { z } from "zod";
 import { handleRoute, UnauthorizedError } from "@/server/http/errors";
 import { parseBody } from "@/server/http/validate";
 import { sessionCookieOptions, signSession } from "@/server/auth/session";
+import { getEnv } from "@/server/env";
 
 /**
  * Invite PIN verification API endpoint
@@ -11,8 +12,6 @@ import { sessionCookieOptions, signSession } from "@/server/auth/session";
  * Response: { message: string } or { error: string }; the session is set as an HTTP-only cookie
  */
 
-const INVITE_PIN = process.env.INVITE_PIN || "1234";
-
 const bodySchema = z.object({
   pin: z.string().min(1, "PIN is required"),
 });
@@ -20,7 +19,7 @@ const bodySchema = z.object({
 export const POST = handleRoute(async (request) => {
   const { pin } = await parseBody(request, bodySchema);
 
-  if (pin !== INVITE_PIN) {
+  if (pin !== getEnv().INVITE_PIN) {
     throw new UnauthorizedError("Invalid PIN");
   }
 

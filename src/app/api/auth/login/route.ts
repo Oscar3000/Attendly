@@ -3,6 +3,7 @@ import { z } from "zod";
 import { handleRoute, UnauthorizedError } from "@/server/http/errors";
 import { parseBody } from "@/server/http/validate";
 import { sessionCookieOptions, signSession } from "@/server/auth/session";
+import { getEnv } from "@/server/env";
 
 /**
  * Admin login API endpoint
@@ -11,8 +12,6 @@ import { sessionCookieOptions, signSession } from "@/server/auth/session";
  * Response: { message: string } or { error: string }; the session is set as an HTTP-only cookie
  */
 
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
-
 const bodySchema = z.object({
   password: z.string().min(1, "Password is required"),
 });
@@ -20,7 +19,7 @@ const bodySchema = z.object({
 export const POST = handleRoute(async (request) => {
   const { password } = await parseBody(request, bodySchema);
 
-  if (password !== ADMIN_PASSWORD) {
+  if (password !== getEnv().ADMIN_PASSWORD) {
     throw new UnauthorizedError("Invalid password");
   }
 

@@ -87,12 +87,14 @@ In the Railway dashboard, click on your **app service** (not the database), go t
 | ------------------------- | ----------------------------------- | ---------------------------------------------------------------- |
 | `DATABASE_URL`            | `${{Postgres.DATABASE_URL}}`        | Use Railway's variable reference to auto-link to your DB         |
 | `NEXT_PUBLIC_BASE_URL`    | `https://your-app.up.railway.app`   | Your Railway public URL (set after first deploy)                 |
-| `ADMIN_PASSWORD`          | `your-secure-password`              | **Change this!** Used for admin dashboard login                  |
-| `INVITE_PIN`              | `your-pin`                          | PIN guests use to access invitations                             |
+| `ADMIN_PASSWORD`          | `your-secure-password`              | **Required.** Used for admin dashboard login                     |
+| `INVITE_PIN`              | `your-pin`                          | **Required.** PIN guests use to access invitations (4+ chars)    |
 | `AUTH_SECRET`             | output of `openssl rand -base64 32` | **Required.** Signs login cookies; changing it logs everyone out |
 | `PORT`                    | `3000`                              | The port the app listens on                                      |
 | `NODE_ENV`                | `production`                        |                                                                  |
 | `NEXT_TELEMETRY_DISABLED` | `1`                                 | Optional                                                         |
+
+If `DATABASE_URL`, `AUTH_SECRET`, `ADMIN_PASSWORD` or `INVITE_PIN` is missing or invalid, the app logs which one and exits at startup, so the deploy fails instead of serving errors.
 
 ### Linking the Database URL
 
