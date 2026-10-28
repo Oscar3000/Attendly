@@ -80,7 +80,7 @@ Single model: `Invitation` with fields: id (cuid), name, qrCode, eventDate, venu
 - **Admin**: Password login -> signed `auth_token` cookie (HS256 JWT, role `admin`) -> access to `/admin/*` and `/api/admin/*`
 - **Guest**: PIN verification -> signed `invite_token` cookie (role `guest`) -> access to `/invite/*`
 - Tokens are signed and verified in `src/server/auth/session.ts` (edge-safe; stopgap until Better Auth in T-204)
-- **Middleware** protects routes; redirects to `/login` or `/invite-pin` on missing token
+- **Middleware** verifies the signed cookies; a missing, forged or expired token redirects to `/login` or `/invite-pin` (pages) or returns 401 (API)
 
 ## Environment Variables
 

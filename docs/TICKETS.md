@@ -108,7 +108,7 @@ Replace the base64 `admin:<timestamp>` token with a signed JWT, using `jose` and
 - Update `api/auth/login/route.ts` to issue the signed token.
 - **Files:** ~5
 
-### T-102 · Verify tokens in middleware (not just presence) · S
+### ✅ T-102 · Verify tokens in middleware (not just presence) · S
 
 In `src/middleware.ts`, call `verifySession()` (it is edge-compatible via `jose`). Reject missing, invalid, or expired tokens.
 
