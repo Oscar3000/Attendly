@@ -2,8 +2,8 @@
  * Prisma client singleton
  * Server-only: importing this from a client component fails the build
  */
-import 'server-only';
-import { PrismaClient } from '@prisma/client';
+import "server-only";
+import { PrismaClient } from "@prisma/client";
 
 // Global type for Prisma singleton
 declare global {
@@ -13,7 +13,7 @@ declare global {
 // Singleton pattern for Prisma client
 let prisma: PrismaClient;
 
-if (process.env.NODE_ENV === 'production') {
+if (process.env.NODE_ENV === "production") {
   prisma = new PrismaClient();
 } else {
   // Prevent multiple instances during development

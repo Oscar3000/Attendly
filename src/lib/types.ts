@@ -122,7 +122,7 @@ export interface AdminMetrics {
 }
 
 // Prisma enum types
-export type PrismaRsvpStatus = 'PENDING' | 'CONFIRMED' | 'DECLINED' | 'RESCINDED';
+export type PrismaRsvpStatus = "PENDING" | "CONFIRMED" | "DECLINED" | "RESCINDED";
 
 // Prisma model types
 export interface Invitation {

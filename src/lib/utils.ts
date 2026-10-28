@@ -4,12 +4,7 @@
  */
 
 import QRCode from "qrcode";
-import type { 
-  RsvpStatus,
-  PrismaRsvpStatus,
-  Invitation,
-  InviteDetails
-} from "./types";
+import type { RsvpStatus, PrismaRsvpStatus, Invitation, InviteDetails } from "./types";
 
 /**
  * Formats a date to a human-readable string
@@ -124,29 +119,31 @@ function drawInvitationCanvas(
     W - sidePad * 2,
   );
   const receptionBlockHeight =
-    20 +   // "RECEPTION" label + gap
-    20 +   // venue name (bold) + gap
+    20 + // "RECEPTION" label + gap
+    20 + // venue name (bold) + gap
     venueAddressLines.length * 18 + // address lines
-    16;    // bottom gap before divider
+    16; // bottom gap before divider
 
   // Compute total canvas height
   const H =
-    60 +   // top breathing room + monogram
-    30 +   // ornament line
-    38 +   // couple names
-    44 +   // date pill + gap
-    40 +   // admits pill + gap
-    20 +   // "You are specially invited"
-    34 +   // "Dear [Name]"
-    20 +   // gap before QR
-    qrSize + 24 + // QR + padding inside white box
-    msgHeight + 18 + // message + gap
+    60 + // top breathing room + monogram
+    30 + // ornament line
+    38 + // couple names
+    44 + // date pill + gap
+    40 + // admits pill + gap
+    20 + // "You are specially invited"
+    34 + // "Dear [Name]"
+    20 + // gap before QR
+    qrSize +
+    24 + // QR + padding inside white box
+    msgHeight +
+    18 + // message + gap
     receptionBlockHeight + // reception block (label + venue + address)
-    28 +   // divider
-    20 +   // "Colours of the Day" label
-    42 +   // swatches
-    36 +   // hashtag
-    28;    // bottom breathing room
+    28 + // divider
+    20 + // "Colours of the Day" label
+    42 + // swatches
+    36 + // hashtag
+    28; // bottom breathing room
 
   canvas.width = W;
   canvas.height = H;
@@ -347,7 +344,12 @@ function drawInvitationCanvas(
  * @param fileName - The name for the downloaded file (without extension)
  * @param guestName - The guest's name to display on the image
  */
-export function downloadQRCode(qrCodeDataUrl: string, fileName: string, guestName?: string, plusOne: number = 0): void {
+export function downloadQRCode(
+  qrCodeDataUrl: string,
+  fileName: string,
+  guestName?: string,
+  plusOne: number = 0,
+): void {
   if (!qrCodeDataUrl || !qrCodeDataUrl.startsWith("data:")) {
     console.warn("Invalid QR code data URL provided");
     return;
@@ -376,7 +378,11 @@ export function downloadQRCode(qrCodeDataUrl: string, fileName: string, guestNam
 /**
  * Generates the decorated invitation canvas as a Blob
  */
-function generateInvitationBlob(qrCodeDataUrl: string, guestName: string, plusOne: number = 0): Promise<Blob> {
+function generateInvitationBlob(
+  qrCodeDataUrl: string,
+  guestName: string,
+  plusOne: number = 0,
+): Promise<Blob> {
   return new Promise((resolve, reject) => {
     const img = new Image();
     img.onload = () => {
@@ -397,7 +403,11 @@ function generateInvitationBlob(qrCodeDataUrl: string, guestName: string, plusOn
  * Requires HTTPS (secure context) to work on mobile.
  * Falls back to downloading the image if sharing is not supported.
  */
-export async function shareQRCodeAsImage(qrCodeDataUrl: string, guestName: string, plusOne: number = 0): Promise<void> {
+export async function shareQRCodeAsImage(
+  qrCodeDataUrl: string,
+  guestName: string,
+  plusOne: number = 0,
+): Promise<void> {
   if (!qrCodeDataUrl || !qrCodeDataUrl.startsWith("data:")) return;
 
   const blob = await generateInvitationBlob(qrCodeDataUrl, guestName, plusOne);
@@ -419,7 +429,7 @@ export async function shareQRCodeAsImage(qrCodeDataUrl: string, guestName: strin
  */
 export function formatTimeAgo(date: Date | string): string {
   const now = new Date();
-  const dateObj = typeof date === 'string' ? new Date(date) : date;
+  const dateObj = typeof date === "string" ? new Date(date) : date;
   const diffMs = now.getTime() - dateObj.getTime();
   const diffMinutes = Math.floor(diffMs / (1000 * 60));
   const diffHours = Math.floor(diffMinutes / 60);
@@ -486,20 +496,20 @@ export function getTableStatusColor(status: string): string {
  */
 export async function generateQRCode(invitationId: string): Promise<string> {
   try {
-    const rawBase = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
+    const rawBase = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
     const baseUrl = /^https?:\/\//i.test(rawBase) ? rawBase : `https://${rawBase}`;
-    const inviteUrl = `${baseUrl.replace(/\/$/, '')}/invite/${invitationId}`;
+    const inviteUrl = `${baseUrl.replace(/\/$/, "")}/invite/${invitationId}`;
     const qrCodeDataURL = await QRCode.toDataURL(inviteUrl, {
       width: 200,
       margin: 2,
       color: {
-        dark: '#000000',
-        light: '#FFFFFF'
-      }
+        dark: "#000000",
+        light: "#FFFFFF",
+      },
     });
     return qrCodeDataURL;
   } catch (error) {
-    console.error('Error generating QR code:', error);
+    console.error("Error generating QR code:", error);
     return `QR_CODE_PLACEHOLDER_${invitationId}`;
   }
 }
@@ -511,10 +521,10 @@ export async function generateQRCode(invitationId: string): Promise<string> {
  */
 export function convertPrismaStatus(status: PrismaRsvpStatus): RsvpStatus {
   const statusMap: Record<PrismaRsvpStatus, RsvpStatus> = {
-    PENDING: 'pending',
-    CONFIRMED: 'confirmed',
-    DECLINED: 'declined',
-    RESCINDED: 'rescinded'
+    PENDING: "pending",
+    CONFIRMED: "confirmed",
+    DECLINED: "declined",
+    RESCINDED: "rescinded",
   };
   return statusMap[status];
 }
@@ -526,10 +536,10 @@ export function convertPrismaStatus(status: PrismaRsvpStatus): RsvpStatus {
  */
 export function convertToPrismaStatus(status: RsvpStatus): PrismaRsvpStatus {
   const statusMap: Record<RsvpStatus, PrismaRsvpStatus> = {
-    'pending': 'PENDING',
-    'confirmed': 'CONFIRMED',
-    'declined': 'DECLINED',
-    'rescinded': 'RESCINDED'
+    pending: "PENDING",
+    confirmed: "CONFIRMED",
+    declined: "DECLINED",
+    rescinded: "RESCINDED",
   };
   return statusMap[status];
 }

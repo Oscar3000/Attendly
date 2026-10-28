@@ -2,8 +2,8 @@
  * Invitation repository
  * All Prisma reads and writes for invitations
  */
-import 'server-only';
-import { prisma } from '@/server/db/client';
+import "server-only";
+import { prisma } from "@/server/db/client";
 import type {
   InviteDetails,
   InvitationTableEntry,
@@ -16,22 +16,24 @@ import {
   generateQRCode,
   convertPrismaStatus,
   convertToPrismaStatus,
-  convertToInviteDetails
+  convertToInviteDetails,
 } from "@/lib/utils";
 
 export const invitationRepo = {
   // Get all invitations
   async getAllInvitations(): Promise<InviteDetails[]> {
     const invitations = await prisma.invitation.findMany({
-      orderBy: { createdAt: 'desc' }
+      orderBy: { createdAt: "desc" },
     });
-    return invitations.map((invitation: InvitationSelect) => convertToInviteDetails(invitation as Invitation));
+    return invitations.map((invitation: InvitationSelect) =>
+      convertToInviteDetails(invitation as Invitation),
+    );
   },
 
   // Get invitation by ID
   async getInvitationById(id: string): Promise<InviteDetails | undefined> {
     const invitation = await prisma.invitation.findUnique({
-      where: { id }
+      where: { id },
     });
     return invitation ? convertToInviteDetails(invitation as Invitation) : undefined;
   },
@@ -44,12 +46,12 @@ export const invitationRepo = {
     const newInvitation = await prisma.invitation.create({
       data: {
         name: invitation.name,
-        qrCode: 'PLACEHOLDER', // Temporary placeholder
+        qrCode: "PLACEHOLDER", // Temporary placeholder
         eventDate: invitation.eventDate,
         venue: invitation.venue,
         status: convertToPrismaStatus(invitation.status),
         plusOne: invitation.plusOne ?? 0,
-      }
+      },
     });
 
     // Generate QR code with the actual ID
@@ -58,7 +60,7 @@ export const invitationRepo = {
     // Update invitation with the real QR code
     const updatedInvitation = await prisma.invitation.update({
       where: { id: newInvitation.id },
-      data: { qrCode }
+      data: { qrCode },
     });
 
     return convertToInviteDetails(updatedInvitation as Invitation);
@@ -68,7 +70,9 @@ export const invitationRepo = {
   async updateInvitation(
     id: string,
     // Fields that are missing or undefined are left unchanged
-    updates: { [K in keyof Omit<InviteDetails, "id" | "createdAt">]?: InviteDetails[K] | undefined },
+    updates: {
+      [K in keyof Omit<InviteDetails, "id" | "createdAt">]?: InviteDetails[K] | undefined;
+    },
   ): Promise<InviteDetails | undefined> {
     try {
       const updateData: Partial<{
@@ -87,12 +91,12 @@ export const invitationRepo = {
 
       const updatedInvitation = await prisma.invitation.update({
         where: { id },
-        data: updateData
+        data: updateData,
       });
 
       return convertToInviteDetails(updatedInvitation as Invitation);
     } catch (error) {
-      console.error('Error updating invitation:', error);
+      console.error("Error updating invitation:", error);
       return undefined;
     }
   },
@@ -101,11 +105,11 @@ export const invitationRepo = {
   async deleteInvitation(id: string): Promise<boolean> {
     try {
       await prisma.invitation.delete({
-        where: { id }
+        where: { id },
       });
       return true;
     } catch (error) {
-      console.error('Error deleting invitation:', error);
+      console.error("Error deleting invitation:", error);
       return false;
     }
   },
@@ -116,7 +120,11 @@ export const invitationRepo = {
   },
 
   // Get admin invitation list with pagination
-  async getAdminInvitations(page: number = 1, limit: number = 10, search: string = ''): Promise<{
+  async getAdminInvitations(
+    page: number = 1,
+    limit: number = 10,
+    search: string = "",
+  ): Promise<{
     invitations: InvitationTableEntry[];
     pagination: {
       page: number;
@@ -127,13 +135,13 @@ export const invitationRepo = {
   }> {
     const skip = (page - 1) * limit;
     const where = search.trim()
-      ? { name: { contains: search.trim(), mode: 'insensitive' as const } }
+      ? { name: { contains: search.trim(), mode: "insensitive" as const } }
       : {};
 
     const [invitations, total] = await Promise.all([
       prisma.invitation.findMany({
         where,
-        orderBy: { updatedAt: 'desc' },
+        orderBy: { updatedAt: "desc" },
         skip,
         take: limit,
         select: {
@@ -146,9 +154,9 @@ export const invitationRepo = {
           eventDate: true,
           venue: true,
           plusOne: true,
-        }
+        },
       }),
-      prisma.invitation.count({ where })
+      prisma.invitation.count({ where }),
     ]);
 
     return {
@@ -169,7 +177,7 @@ export const invitationRepo = {
         limit,
         total,
         totalPages: Math.ceil(total / limit),
-      }
+      },
     };
   },
 };
