@@ -5,127 +5,66 @@
  * DELETE /api/invitations/[id] - Delete invitation
  * PATCH /api/invitations/[id] - Update RSVP status
  */
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { invitationRepo } from "@/server/repositories/invitation.repo";
-import type { InviteDetails } from "@/lib/types";
+import { handleRoute, NotFoundError } from "@/server/http/errors";
+import { parseBody } from "@/server/http/validate";
+import {
+  updateInvitationSchema,
+  updateRsvpStatusSchema,
+} from "@/server/validation/invitation.schemas";
 
 interface RouteParams {
   params: Promise<{ id: string }>;
 }
 
-export async function GET(_request: NextRequest, { params }: RouteParams) {
-  try {
-    const { id } = await params;
-    const invitation = await invitationRepo.getInvitationById(id);
+export const GET = handleRoute(async (_request, { params }: RouteParams) => {
+  const { id } = await params;
+  const invitation = await invitationRepo.getInvitationById(id);
 
-    if (!invitation) {
-      return NextResponse.json(
-        { error: "Invitation not found" },
-        { status: 404 },
-      );
-    }
-
-    return NextResponse.json({ invitation }, { status: 200 });
-  } catch (error) {
-    console.error("Error fetching invitation:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch invitation" },
-      { status: 500 },
-    );
+  if (!invitation) {
+    throw new NotFoundError("Invitation not found");
   }
-}
 
-export async function PUT(request: NextRequest, { params }: RouteParams) {
-  try {
-    const { id } = await params;
-    const body = await request.json();
+  return NextResponse.json({ invitation }, { status: 200 });
+});
 
-    const updateData: Partial<Omit<InviteDetails, "id" | "createdAt">> = {
-      name: body.name,
-      venue: body.venue,
-      status: body.status,
-      plusOne: body.plusOne,
-    };
-    if (body.eventDate) {
-      updateData.eventDate = new Date(body.eventDate);
-    }
-    const updatedInvitation = await invitationRepo.updateInvitation(id, updateData);
+export const PUT = handleRoute(async (request, { params }: RouteParams) => {
+  const { id } = await params;
+  const updates = await parseBody(request, updateInvitationSchema);
 
-    if (!updatedInvitation) {
-      return NextResponse.json(
-        { error: "Invitation not found" },
-        { status: 404 },
-      );
-    }
+  const updatedInvitation = await invitationRepo.updateInvitation(id, updates);
 
-    return NextResponse.json(
-      { invitation: updatedInvitation },
-      { status: 200 },
-    );
-  } catch (error) {
-    console.error("Error updating invitation:", error);
-    return NextResponse.json(
-      { error: "Failed to update invitation" },
-      { status: 500 },
-    );
+  if (!updatedInvitation) {
+    throw new NotFoundError("Invitation not found");
   }
-}
 
-export async function DELETE(_request: NextRequest, { params }: RouteParams) {
-  try {
-    const { id } = await params;
-    const deleted = await invitationRepo.deleteInvitation(id);
+  return NextResponse.json({ invitation: updatedInvitation }, { status: 200 });
+});
 
-    if (!deleted) {
-      return NextResponse.json(
-        { error: "Invitation not found" },
-        { status: 404 },
-      );
-    }
+export const DELETE = handleRoute(async (_request, { params }: RouteParams) => {
+  const { id } = await params;
+  const deleted = await invitationRepo.deleteInvitation(id);
 
-    return NextResponse.json(
-      { message: "Invitation deleted successfully" },
-      { status: 200 },
-    );
-  } catch (error) {
-    console.error("Error deleting invitation:", error);
-    return NextResponse.json(
-      { error: "Failed to delete invitation" },
-      { status: 500 },
-    );
+  if (!deleted) {
+    throw new NotFoundError("Invitation not found");
   }
-}
 
-export async function PATCH(request: NextRequest, { params }: RouteParams) {
-  try {
-    const { id } = await params;
-    const body = await request.json();
+  return NextResponse.json(
+    { message: "Invitation deleted successfully" },
+    { status: 200 },
+  );
+});
 
-    if (!body.status) {
-      return NextResponse.json(
-        { error: "Status is required" },
-        { status: 400 },
-      );
-    }
+export const PATCH = handleRoute(async (request, { params }: RouteParams) => {
+  const { id } = await params;
+  const { status } = await parseBody(request, updateRsvpStatusSchema);
 
-    const updatedInvitation = await invitationRepo.updateRsvpStatus(id, body.status);
+  const updatedInvitation = await invitationRepo.updateRsvpStatus(id, status);
 
-    if (!updatedInvitation) {
-      return NextResponse.json(
-        { error: "Invitation not found" },
-        { status: 404 },
-      );
-    }
-
-    return NextResponse.json(
-      { invitation: updatedInvitation },
-      { status: 200 },
-    );
-  } catch (error) {
-    console.error("Error updating RSVP status:", error);
-    return NextResponse.json(
-      { error: "Failed to update RSVP status" },
-      { status: 500 },
-    );
+  if (!updatedInvitation) {
+    throw new NotFoundError("Invitation not found");
   }
-}
+
+  return NextResponse.json({ invitation: updatedInvitation }, { status: 200 });
+});
