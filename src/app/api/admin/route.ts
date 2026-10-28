@@ -7,10 +7,12 @@ import { NextResponse } from "next/server";
 import { invitationRepo } from "@/server/repositories/invitation.repo";
 import { metricsRepo } from "@/server/repositories/metrics.repo";
 import { handleRoute } from "@/server/http/errors";
+import { requireAdmin } from "@/server/auth/guards";
 import { parseQuery } from "@/server/http/validate";
 import { adminInvitationsQuerySchema } from "@/server/validation/invitation.schemas";
 
 export const GET = handleRoute(async (request) => {
+  await requireAdmin(request);
   const { page, limit, search } = parseQuery(request, adminInvitationsQuerySchema);
 
   const metrics = await metricsRepo.getAdminMetrics();
