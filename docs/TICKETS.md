@@ -9,20 +9,21 @@ Goal: turn Attendly from a single hard-coded wedding into a product any host can
 - **Schema changes are additive first.** Add column/table → backfill → switch code → drop old column in a later ticket. Never rename-and-drop in one PR.
 - **Size guide:** S = < 1 day, M = 1–2 days, L = 3+ days (L tickets should be rare; split if possible).
 - `Depends on` lists tickets that must be merged first.
+- **Done tickets** are marked ✅ in their heading, with the PR number where known. Mark a ticket done in the PR that completes it.
 
 ## Phase overview
 
-| Phase | Theme                                                | Tickets       |
-| ----- | ---------------------------------------------------- | ------------- |
-| 0     | Foundations (server layer, validation, tests, CI)    | T-001 – T-009 |
-| 1     | Lock down security on the current app                | T-101 – T-108 |
-| 2     | Accounts with Better Auth (users, sign-up, sessions) | T-201 – T-209 |
-| 3     | Events & multi-tenancy                               | T-301 – T-312 |
-| 4     | Remove hard-coded content / theming                  | T-401 – T-409 |
-| 5     | Guest experience                                     | T-501 – T-508 |
-| 6     | Product features                                     | T-601 – T-610 |
-| 7     | Ops, compliance, launch                              | T-701 – T-710 |
-| 8     | Billing                                              | T-801 – T-805 |
+| Phase | Theme                                                | Tickets       | Status      |
+| ----- | ---------------------------------------------------- | ------------- | ----------- |
+| 0     | Foundations (server layer, validation, tests, CI)    | T-001 – T-009 | ✅ Done     |
+| 1     | Lock down security on the current app                | T-101 – T-108 | Next        |
+| 2     | Accounts with Better Auth (users, sign-up, sessions) | T-201 – T-209 | Not started |
+| 3     | Events & multi-tenancy                               | T-301 – T-312 | Not started |
+| 4     | Remove hard-coded content / theming                  | T-401 – T-409 | Not started |
+| 5     | Guest experience                                     | T-501 – T-508 | Not started |
+| 6     | Product features                                     | T-601 – T-610 | Not started |
+| 7     | Ops, compliance, launch                              | T-701 – T-710 | Not started |
+| 8     | Billing                                              | T-801 – T-805 | Not started |
 
 Phases 0 and 1 can happen while the current wedding site is still live. Phase 2 onwards changes the data model.
 
@@ -30,7 +31,7 @@ Phases 0 and 1 can happen while the current wedding site is still live. Phase 2 
 
 ## Phase 0 — Foundations
 
-### T-001 · Create `src/server/` layer and move Prisma client · S
+### ✅ T-001 · Create `src/server/` layer and move Prisma client · S (#1)
 
 Move the Prisma client singleton from `src/lib/db.ts` into `src/server/db/client.ts`. Keep `src/lib/db.ts` re-exporting `db` so no callers change yet.
 
@@ -38,56 +39,56 @@ Move the Prisma client singleton from `src/lib/db.ts` into `src/server/db/client
 - **Done when:** build passes, no behaviour change.
 - **Files:** ~3
 
-### T-002 · Split `db.ts` into repository modules · M
+### ✅ T-002 · Split `db.ts` into repository modules · M (#2)
 
 Split `src/lib/db.ts` into `src/server/repositories/invitation.repo.ts` and `src/server/repositories/metrics.repo.ts`. Update the API routes to import from them, then delete `src/lib/db.ts`.
 
 - **Depends on:** T-001
 - **Files:** ~10
 
-### T-003 · Add test tooling (Vitest + test DB) · M
+### ✅ T-003 · Add test tooling (Vitest + test DB) · M (#4)
 
 - Add Vitest and a `npm run test` script.
 - Add a `docker-compose.test.yml` Postgres or Testcontainers, plus a helper that runs migrations and truncates tables between tests.
 - Write one smoke test against `invitation.repo.ts`.
 - **Files:** ~6
 
-### T-004 · Add `zod` and request validation helper · S
+### ✅ T-004 · Add `zod` and request validation helper · S (#3)
 
 - Add `zod`.
 - Add `src/server/http/validate.ts` with a `parseBody(req, schema)` helper that returns a 400 containing field errors.
 - Add `src/server/http/errors.ts` with standard `ApiError` classes and a `handleRoute()` wrapper that maps errors to JSON responses.
 - **Files:** ~3
 
-### T-005 · Apply validation to all existing API routes · M
+### ✅ T-005 · Apply validation to all existing API routes · M (#5)
 
 Use `parseBody` and `handleRoute` in every route under `src/app/api/`. Remove the hand-rolled `try/catch` blocks.
 
 - **Depends on:** T-004
 - **Files:** ~10
 
-### T-006 · CI pipeline · S
+### ✅ T-006 · CI pipeline · S (#6)
 
 Add a GitHub Actions workflow that runs install, type-check, lint, test, and build on every PR. The format check is left out until T-009.
 
 - **Depends on:** T-003
 - **Files:** ~2
 
-### T-007 · Prettier config + format server-side code · S
+### ✅ T-007 · Prettier config + format server-side code · S (#7)
 
 - Add `.prettierrc` with `printWidth: 100` and the other defaults (double quotes). This gave the smallest diff of the configs tried.
 - Run Prettier on `src/server`, `src/app/api`, `src/lib`, `src/store`, `src/middleware.ts`, `next.config.ts`, and `tests`.
 - Formatting only, no code changes.
 - **Files:** ~20
 
-### T-008 · Format app pages + docs · S
+### ✅ T-008 · Format app pages + docs · S (#8)
 
 Run Prettier on the `src/app` pages (everything except `src/app/api`) and on `README.md`, `DEPLOYMENT.md`, and `docs/TICKETS.md`.
 
 - **Depends on:** T-007
 - **Files:** ~13
 
-### T-009 · Format components + enforce in CI · S
+### ✅ T-009 · Format components + enforce in CI · S
 
 - Run Prettier on `src/components`.
 - Add an `npm run format:check` step to `.github/workflows/ci.yml`. After this, `npm run format:check` must pass for the whole repo.

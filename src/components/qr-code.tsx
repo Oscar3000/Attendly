@@ -14,12 +14,7 @@ interface QrCodeProps extends BaseComponentProps {
   alt?: string;
 }
 
-export function QrCode({
-  className,
-  src,
-  size = 200,
-  alt = "QR Code",
-}: QrCodeProps) {
+export function QrCode({ className, src, size = 200, alt = "QR Code" }: QrCodeProps) {
   const containerStyle: React.CSSProperties = {
     width: size,
     height: size,

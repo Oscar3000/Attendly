@@ -27,9 +27,7 @@ export default function QrScanner() {
 
       // Try parsing as a URL (prepend https:// if protocol is missing)
       try {
-        const raw = /^https?:\/\//i.test(decodedText)
-          ? decodedText
-          : `https://${decodedText}`;
+        const raw = /^https?:\/\//i.test(decodedText) ? decodedText : `https://${decodedText}`;
         const url = new URL(raw);
         const match = url.pathname.match(/\/invite\/(.+)/);
         if (match?.[1]) {
@@ -68,9 +66,7 @@ export default function QrScanner() {
       );
     } catch (err) {
       console.error("Scanner error:", err);
-      setError(
-        "Could not access camera. Please allow camera permissions and try again.",
-      );
+      setError("Could not access camera. Please allow camera permissions and try again.");
       setScanning(false);
     }
   };
@@ -92,10 +88,7 @@ export default function QrScanner() {
     >
       <div className="max-w-sm mx-auto">
         <div className="mb-8">
-          <div
-            className="w-12 h-px mx-auto mb-5"
-            style={{ backgroundColor: "#D4AF37" }}
-          />
+          <div className="w-12 h-px mx-auto mb-5" style={{ backgroundColor: "#D4AF37" }} />
           <h2
             className="text-3xl sm:text-4xl font-bold mb-3"
             style={{ color: "#2C1810", fontFamily: "Georgia, serif" }}
@@ -105,10 +98,7 @@ export default function QrScanner() {
           <p className="text-sm" style={{ color: "#6B4A3A" }}>
             Scan your personal QR code to confirm your attendance
           </p>
-          <div
-            className="w-12 h-px mx-auto mt-5"
-            style={{ backgroundColor: "#D4AF37" }}
-          />
+          <div className="w-12 h-px mx-auto mt-5" style={{ backgroundColor: "#D4AF37" }} />
         </div>
 
         <div className="flex flex-col items-center">
@@ -121,10 +111,7 @@ export default function QrScanner() {
             />
           ) : (
             <div className="w-full max-w-[300px]">
-              <div
-                id={SCANNER_CONTAINER_ID}
-                className="rounded-xl overflow-hidden shadow-lg"
-              />
+              <div id={SCANNER_CONTAINER_ID} className="rounded-xl overflow-hidden shadow-lg" />
               <button
                 onClick={stopScanner}
                 className="w-full mt-3 py-2 rounded-lg font-inter font-medium text-sm text-gray-700 border border-gray-300 hover:bg-gray-50 transition-colors"

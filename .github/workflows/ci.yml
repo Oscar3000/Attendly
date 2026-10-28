@@ -57,7 +57,8 @@ jobs:
       - name: Lint
         run: npm run lint:check
 
-      # Format check is added once the codebase is formatted (T-008)
+      - name: Format check
+        run: npm run format:check
 
       - name: Test
         run: npm test

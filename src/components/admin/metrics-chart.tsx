@@ -6,11 +6,7 @@ interface MetricsChartProps {
 
 export default function MetricsChart({ metrics }: MetricsChartProps) {
   // Calculate heights for bars based on max value
-  const maxValue = Math.max(
-    metrics.pendingCount,
-    metrics.confirmedCount,
-    metrics.rescindedCount,
-  );
+  const maxValue = Math.max(metrics.pendingCount, metrics.confirmedCount, metrics.rescindedCount);
   const maxHeight = 150; // Max bar height in pixels
 
   const getBarHeight = (value: number) => {
@@ -31,9 +27,7 @@ export default function MetricsChart({ metrics }: MetricsChartProps) {
         {bars.map((bar) => (
           <div key={bar.label} className="flex flex-col items-center flex-1">
             {/* Value label */}
-            <div className="text-xs sm:text-sm font-medium text-gray-600 mb-1">
-              {bar.value}
-            </div>
+            <div className="text-xs sm:text-sm font-medium text-gray-600 mb-1">{bar.value}</div>
 
             {/* Bar */}
             <div className="flex-1 flex items-end mb-2 w-full">

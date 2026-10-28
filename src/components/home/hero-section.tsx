@@ -3,16 +3,14 @@ export default function HeroSection() {
     <section
       className="relative flex flex-col items-center justify-center px-4 pt-16 pb-20 text-center overflow-hidden"
       style={{
-        background:
-          "linear-gradient(160deg, #FFF9F4 0%, #FDF0E6 55%, #FFF9F4 100%)",
+        background: "linear-gradient(160deg, #FFF9F4 0%, #FDF0E6 55%, #FFF9F4 100%)",
       }}
     >
       {/* Gold top border */}
       <div
         className="absolute top-0 left-0 right-0 h-1"
         style={{
-          background:
-            "linear-gradient(90deg, transparent, #C07A54, #D4AF37, #C07A54, transparent)",
+          background: "linear-gradient(90deg, transparent, #C07A54, #D4AF37, #C07A54, transparent)",
         }}
       />
 
@@ -29,10 +27,7 @@ export default function HeroSection() {
       </div>
 
       {/* Tagline */}
-      <p
-        className="text-xs uppercase tracking-[0.35em] mb-6"
-        style={{ color: "#9A7B6B" }}
-      >
+      <p className="text-xs uppercase tracking-[0.35em] mb-6" style={{ color: "#9A7B6B" }}>
         Solemnly request your presence at their wedding celebration
       </p>
 
@@ -78,9 +73,7 @@ export default function HeroSection() {
         className="text-center text-sm sm:text-base max-w-sm leading-relaxed"
         style={{ color: "#6B4A3A" }}
       >
-        <p className="font-semibold">
-          Chief Sunday &amp; Late Lolo Peace Innah
-        </p>
+        <p className="font-semibold">Chief Sunday &amp; Late Lolo Peace Innah</p>
         <p className="italic text-xs mb-3" style={{ color: "#9A7B6B" }}>
           (UGO MBA 1 of Ntezi)
         </p>
@@ -97,8 +90,7 @@ export default function HeroSection() {
       <div
         className="absolute bottom-0 left-0 right-0 h-1"
         style={{
-          background:
-            "linear-gradient(90deg, transparent, #C07A54, #D4AF37, #C07A54, transparent)",
+          background: "linear-gradient(90deg, transparent, #C07A54, #D4AF37, #C07A54, transparent)",
         }}
       />
     </section>

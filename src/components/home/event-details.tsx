@@ -21,10 +21,7 @@ export default function EventDetails() {
           >
             Church Service
           </h3>
-          <p
-            className="text-sm font-bold mb-4 tracking-wide"
-            style={{ color: "#C07A54" }}
-          >
+          <p className="text-sm font-bold mb-4 tracking-wide" style={{ color: "#C07A54" }}>
             10:00 AM
           </p>
           <p className="text-sm leading-6" style={{ color: "#6B4A3A" }}>
@@ -48,10 +45,7 @@ export default function EventDetails() {
           >
             Wedding Reception
           </h3>
-          <p
-            className="text-sm font-bold mb-4 tracking-wide"
-            style={{ color: "#C07A54" }}
-          >
+          <p className="text-sm font-bold mb-4 tracking-wide" style={{ color: "#C07A54" }}>
             3:00 PM
           </p>
           <p className="text-sm leading-6" style={{ color: "#6B4A3A" }}>
@@ -69,10 +63,7 @@ export default function EventDetails() {
         className="mt-5 rounded-2xl p-5 text-center border"
         style={{ borderColor: "#E8D5C4", backgroundColor: "#FFFCF9" }}
       >
-        <p
-          className="text-xs uppercase tracking-[0.35em] mb-4"
-          style={{ color: "#9A7B6B" }}
-        >
+        <p className="text-xs uppercase tracking-[0.35em] mb-4" style={{ color: "#9A7B6B" }}>
           Colours of the Day
         </p>
         <div className="flex justify-center gap-4 mb-3">
