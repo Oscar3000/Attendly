@@ -53,9 +53,11 @@ src/
     button.tsx                # Reusable button (variants: primary, secondary, danger, attendly)
     qr-code.tsx               # QR code display
   lib/
-    db.ts                     # Database service layer (wraps Prisma)
     types.ts                  # TypeScript interfaces
     utils.ts                  # Formatting, QR generation, status helpers
+  server/                     # Server-only code (`import 'server-only'`)
+    db/client.ts              # Prisma client singleton
+    repositories/             # invitation.repo.ts, metrics.repo.ts (all Prisma queries)
   store/
     store.ts                  # Redux store config
     invitationApi.ts          # RTK Query API slice
@@ -86,7 +88,7 @@ Single model: `Invitation` with fields: id (cuid), name, qrCode, eventDate, venu
 
 - Server Components by default; `'use client'` for interactive UI
 - RTK Query for data fetching with tag-based cache invalidation
-- `db.ts` service layer abstracts all Prisma operations
+- Repositories in `src/server/repositories/` hold all Prisma operations; route handlers stay thin
 - `utils.ts` has status converters between Prisma enums and app types
 - Path alias: `@/*` maps to `./src/*`
 - Pagination defaults: 10 items per page

@@ -6,7 +6,7 @@
  * PATCH /api/invitations/[id] - Update RSVP status
  */
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/lib/db";
+import { invitationRepo } from "@/server/repositories/invitation.repo";
 import type { InviteDetails } from "@/lib/types";
 
 interface RouteParams {
@@ -16,7 +16,7 @@ interface RouteParams {
 export async function GET(_request: NextRequest, { params }: RouteParams) {
   try {
     const { id } = await params;
-    const invitation = await db.getInvitationById(id);
+    const invitation = await invitationRepo.getInvitationById(id);
 
     if (!invitation) {
       return NextResponse.json(
@@ -49,7 +49,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
     if (body.eventDate) {
       updateData.eventDate = new Date(body.eventDate);
     }
-    const updatedInvitation = await db.updateInvitation(id, updateData);
+    const updatedInvitation = await invitationRepo.updateInvitation(id, updateData);
 
     if (!updatedInvitation) {
       return NextResponse.json(
@@ -74,7 +74,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
 export async function DELETE(_request: NextRequest, { params }: RouteParams) {
   try {
     const { id } = await params;
-    const deleted = await db.deleteInvitation(id);
+    const deleted = await invitationRepo.deleteInvitation(id);
 
     if (!deleted) {
       return NextResponse.json(
@@ -108,7 +108,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
       );
     }
 
-    const updatedInvitation = await db.updateRsvpStatus(id, body.status);
+    const updatedInvitation = await invitationRepo.updateRsvpStatus(id, body.status);
 
     if (!updatedInvitation) {
       return NextResponse.json(
