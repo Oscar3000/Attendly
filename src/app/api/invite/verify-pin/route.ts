@@ -4,6 +4,7 @@ import { handleRoute, UnauthorizedError } from "@/server/http/errors";
 import { parseBody } from "@/server/http/validate";
 import { sessionCookieOptions, signSession } from "@/server/auth/session";
 import { getEnv } from "@/server/env";
+import { secretsMatch } from "@/server/auth/compare";
 
 /**
  * Invite PIN verification API endpoint
@@ -19,7 +20,7 @@ const bodySchema = z.object({
 export const POST = handleRoute(async (request) => {
   const { pin } = await parseBody(request, bodySchema);
 
-  if (pin !== getEnv().INVITE_PIN) {
+  if (!secretsMatch(pin, getEnv().INVITE_PIN)) {
     throw new UnauthorizedError("Invalid PIN");
   }
 

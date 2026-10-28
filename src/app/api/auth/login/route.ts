@@ -4,6 +4,7 @@ import { handleRoute, UnauthorizedError } from "@/server/http/errors";
 import { parseBody } from "@/server/http/validate";
 import { sessionCookieOptions, signSession } from "@/server/auth/session";
 import { getEnv } from "@/server/env";
+import { secretsMatch } from "@/server/auth/compare";
 
 /**
  * Admin login API endpoint
@@ -19,7 +20,7 @@ const bodySchema = z.object({
 export const POST = handleRoute(async (request) => {
   const { password } = await parseBody(request, bodySchema);
 
-  if (password !== getEnv().ADMIN_PASSWORD) {
+  if (!secretsMatch(password, getEnv().ADMIN_PASSWORD)) {
     throw new UnauthorizedError("Invalid password");
   }
 
