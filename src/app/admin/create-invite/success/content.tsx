@@ -92,7 +92,7 @@ export function SuccessPageContent() {
             Invitation Not Found
           </h1>
           <p className="text-gray-600 mb-6">
-            We couldn't find the invitation you're looking for.
+            We couldn&apos;t find the invitation you&apos;re looking for.
           </p>
           <Button variant="primary" onClick={() => router.push("/admin")}>
             Back to Dashboard

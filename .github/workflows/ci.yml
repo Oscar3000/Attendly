@@ -1,0 +1,66 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+# Cancel superseded runs on the same branch
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  checks:
+    name: Type-check, lint, test, build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    # Same database as docker-compose.test.yml, so tests use their default TEST_DATABASE_URL
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: attendly_test
+          POSTGRES_USER: attendly_test
+          POSTGRES_PASSWORD: attendly_test
+        ports:
+          - 5433:5432
+        options: >-
+          --health-cmd "pg_isready -U attendly_test -d attendly_test"
+          --health-interval 2s
+          --health-timeout 5s
+          --health-retries 15
+
+    env:
+      NEXT_TELEMETRY_DISABLED: 1
+      # Only needed so the build can construct the Prisma client; nothing connects to it
+      DATABASE_URL: postgresql://attendly_test:attendly_test@localhost:5433/attendly_test?schema=public
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .tool-versions
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate Prisma client
+        run: npx prisma generate
+
+      - name: Type-check
+        run: npm run type-check
+
+      - name: Lint
+        run: npm run lint:check
+
+      # Format check is added once the codebase is formatted (T-008)
+
+      - name: Test
+        run: npm test
+
+      - name: Build
+        run: npm run build

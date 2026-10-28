@@ -14,7 +14,7 @@ Goal: turn Attendly from a single hard-coded wedding into a product any host can
 
 | Phase | Theme | Tickets |
 |---|---|---|
-| 0 | Foundations (server layer, validation, tests) | T-001 – T-006 |
+| 0 | Foundations (server layer, validation, tests, CI) | T-001 – T-008 |
 | 1 | Lock down security on the current app | T-101 – T-108 |
 | 2 | Accounts with Better Auth (users, sign-up, sessions) | T-201 – T-209 |
 | 3 | Events & multi-tenancy | T-301 – T-312 |
@@ -59,9 +59,22 @@ Use `parseBody` and `handleRoute` in every route under `src/app/api/`. Remove th
 - **Files:** ~10
 
 ### T-006 · CI pipeline · S
-Add a GitHub Actions workflow that runs install, type-check, lint, format check, test, and build on every PR.
+Add a GitHub Actions workflow that runs install, type-check, lint, test, and build on every PR. The format check is left out until T-008.
 - **Depends on:** T-003
 - **Files:** ~2
+
+### T-007 · Prettier config + format server-side code · S
+39 files currently fail `format:check`, and there is no Prettier config.
+- Add `.prettierrc` matching the dominant existing style (so the formatting diff stays small) and `.prettierignore`.
+- Run Prettier on `src/server`, `src/lib`, `src/store`, `tests`, `docs`, and root config and markdown files.
+- Formatting only, no code changes.
+- **Files:** ~20
+
+### T-008 · Format UI code + enforce in CI · S
+- Run Prettier on `src/app` and `src/components`.
+- Add an `npm run format:check` step to `.github/workflows/ci.yml`.
+- **Depends on:** T-006, T-007
+- **Files:** ~21, so split `src/app/admin` into its own PR to stay under 20
 
 ---
 
