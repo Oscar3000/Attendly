@@ -129,7 +129,7 @@ Compare the password and PIN with `crypto.timingSafeEqual`.
 
 - **Files:** ~3
 
-### T-105 · Remove insecure defaults · S
+### ✅ T-105 · Remove insecure defaults · S
 
 - Remove the `INVITE_PIN` default of `"1234"`.
 - Fail fast at startup if `AUTH_SECRET`, `ADMIN_PASSWORD`, or `DATABASE_URL` is missing. Add `src/server/env.ts`, which validates env vars with zod.

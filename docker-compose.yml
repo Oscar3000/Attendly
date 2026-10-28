@@ -42,10 +42,11 @@ services:
       PORT: ${PORT:-3000}
       
       # Authentication Configuration
-      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-admin123}
+      # Required, no defaults: the app refuses to start without them
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD}
       # Signs session cookies; required, no default (openssl rand -base64 32)
       AUTH_SECRET: ${AUTH_SECRET}
-      INVITE_PIN: ${INVITE_PIN:-0000}
+      INVITE_PIN: ${INVITE_PIN}
       
       # Disable Next.js telemetry
       NEXT_TELEMETRY_DISABLED: 1

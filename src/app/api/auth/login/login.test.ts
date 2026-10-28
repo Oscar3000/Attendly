@@ -1,14 +1,13 @@
 import { beforeAll, describe, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
 import { verifySession } from "@/server/auth/session";
+import { POST } from "./route";
 
-let POST: typeof import("./route").POST;
-
-beforeAll(async () => {
+beforeAll(() => {
+  vi.stubEnv("DATABASE_URL", "postgresql://unused");
   vi.stubEnv("AUTH_SECRET", "test-secret-that-is-at-least-32-characters-long");
   vi.stubEnv("ADMIN_PASSWORD", "correct-horse");
-  // The route reads ADMIN_PASSWORD when the module loads, so import after stubbing
-  ({ POST } = await import("./route"));
+  vi.stubEnv("INVITE_PIN", "2468");
 });
 
 function login(password: string) {
