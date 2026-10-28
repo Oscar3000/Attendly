@@ -135,7 +135,7 @@ Compare the password and PIN with `crypto.timingSafeEqual`.
 - Fail fast at startup if `AUTH_SECRET`, `ADMIN_PASSWORD`, or `DATABASE_URL` is missing. Add `src/server/env.ts`, which validates env vars with zod.
 - **Files:** ~5
 
-### T-106 · Rate limiting on login and PIN endpoints · M
+### ✅ T-106 · Rate limiting on login and PIN endpoints · M
 
 Add a simple rate limiter (5 attempts per minute per IP plus identifier), in memory for now behind an interface so it can move to Redis later.
 

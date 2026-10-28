@@ -11,6 +11,7 @@ export class ApiError extends Error {
     public readonly status: number,
     message: string,
     public readonly details?: unknown,
+    public readonly headers?: Record<string, string>,
   ) {
     super(message);
     this.name = "ApiError";
@@ -41,6 +42,14 @@ export class NotFoundError extends ApiError {
   }
 }
 
+export class TooManyRequestsError extends ApiError {
+  constructor(retryAfterSeconds: number) {
+    super(429, `Too many attempts. Try again in ${retryAfterSeconds} seconds.`, undefined, {
+      "Retry-After": String(retryAfterSeconds),
+    });
+  }
+}
+
 // Wrap a route handler so thrown errors become consistent JSON responses
 export function handleRoute<Context>(
   handler: (request: NextRequest, context: Context) => Promise<Response>,
@@ -54,7 +63,7 @@ export function handleRoute<Context>(
           error.details === undefined
             ? { error: error.message }
             : { error: error.message, details: error.details },
-          { status: error.status },
+          { status: error.status, ...(error.headers ? { headers: error.headers } : {}) },
         );
       }
 

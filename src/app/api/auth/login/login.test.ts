@@ -10,10 +10,12 @@ beforeAll(() => {
   vi.stubEnv("INVITE_PIN", "2468");
 });
 
-function login(password: string) {
+// Each test uses its own IP so rate-limit counts don't leak between tests
+function login(password: string, ip = "10.0.0.1") {
   return POST(
     new NextRequest("http://localhost/api/auth/login", {
       method: "POST",
+      headers: { "x-real-ip": ip },
       body: JSON.stringify({ password }),
     }),
     {},
@@ -34,9 +36,29 @@ describe("POST /api/auth/login", () => {
   });
 
   it("rejects a wrong password without setting a cookie", async () => {
-    const response = await login("wrong");
+    const response = await login("wrong", "10.0.0.2");
 
     expect(response.status).toBe(401);
     expect(response.headers.get("set-cookie")).toBeNull();
+  });
+
+  it("returns 429 after 5 failed attempts, even for the right password", async () => {
+    const ip = "10.0.0.3";
+    for (let i = 0; i < 5; i++) expect((await login("wrong", ip)).status).toBe(401);
+
+    const blocked = await login("correct-horse", ip);
+    expect(blocked.status).toBe(429);
+    expect(blocked.headers.get("retry-after")).toBe("60");
+    expect((await blocked.json()).error).toMatch(/Too many attempts/);
+
+    expect((await login("correct-horse", "10.0.0.4")).status).toBe(200);
+  });
+
+  it("resets the failure count after a successful login", async () => {
+    const ip = "10.0.0.5";
+    for (let i = 0; i < 4; i++) await login("wrong", ip);
+    expect((await login("correct-horse", ip)).status).toBe(200);
+
+    for (let i = 0; i < 4; i++) expect((await login("wrong", ip)).status).toBe(401);
   });
 });
