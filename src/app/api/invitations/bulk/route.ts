@@ -4,7 +4,7 @@
  * Body: { eventDate, venue, status?, rows: { name, plusOne? }[] }
  */
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/lib/db";
+import { invitationRepo } from "@/server/repositories/invitation.repo";
 import type { RsvpStatus } from "@/lib/types";
 
 interface BulkRow {
@@ -62,7 +62,7 @@ export async function POST(request: NextRequest) {
       const plusOne = Number.isFinite(row.plusOne) ? Math.max(0, Math.floor(row.plusOne as number)) : 0;
 
       try {
-        const invite = await db.createInvitation({
+        const invite = await invitationRepo.createInvitation({
           name,
           eventDate,
           venue: body.venue,

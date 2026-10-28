@@ -3,7 +3,8 @@
  * GET /api/admin - Get admin dashboard metrics and invitations
  */
 import { NextResponse } from "next/server";
-import { db } from "@/lib/db";
+import { invitationRepo } from "@/server/repositories/invitation.repo";
+import { metricsRepo } from "@/server/repositories/metrics.repo";
 
 export async function GET(request: Request) {
   try {
@@ -14,8 +15,8 @@ export async function GET(request: Request) {
     const limit = parseInt(url.searchParams.get('limit') || '10');
     const search = url.searchParams.get('search') || '';
 
-    const metrics = await db.getAdminMetrics();
-    const invitationData = await db.getAdminInvitations(page, limit, search);
+    const metrics = await metricsRepo.getAdminMetrics();
+    const invitationData = await invitationRepo.getAdminInvitations(page, limit, search);
 
     return NextResponse.json(
       {

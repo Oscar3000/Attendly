@@ -3,11 +3,11 @@
  * GET /api/admin/status - Get recent status updates
  */
 import { NextResponse } from "next/server";
-import { db } from "@/lib/db";
+import { metricsRepo } from "@/server/repositories/metrics.repo";
 
 export async function GET() {
   try {
-    const statusUpdates = await db.getRecentStatusUpdates();
+    const statusUpdates = await metricsRepo.getRecentStatusUpdates();
     return NextResponse.json({ statusUpdates }, { status: 200 });
   } catch (error) {
     console.error("Error fetching status updates:", error);

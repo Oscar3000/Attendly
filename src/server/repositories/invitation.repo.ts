@@ -1,28 +1,25 @@
 /**
- * Database service using Prisma ORM for PostgreSQL
- * Replaces the in-memory database with persistent storage
+ * Invitation repository
+ * All Prisma reads and writes for invitations
  */
 import 'server-only';
 import { prisma } from '@/server/db/client';
 import type {
   InviteDetails,
-  AdminMetrics,
   InvitationTableEntry,
   RsvpStatus,
-  StatusUpdate,
   PrismaRsvpStatus,
   Invitation,
   InvitationSelect,
-  StatusUpdateSelect,
-} from "./types";
-import { 
+} from "@/lib/types";
+import {
   generateQRCode,
   convertPrismaStatus,
   convertToPrismaStatus,
   convertToInviteDetails
-} from "./utils";
+} from "@/lib/utils";
 
-export const db = {
+export const invitationRepo = {
   // Get all invitations
   async getAllInvitations(): Promise<InviteDetails[]> {
     const invitations = await prisma.invitation.findMany({
@@ -80,7 +77,7 @@ export const db = {
         plusOne: number;
         status: PrismaRsvpStatus;
       }> = {};
-      
+
       if (updates.name !== undefined) updateData.name = updates.name;
       if (updates.venue !== undefined) updateData.venue = updates.venue;
       if (updates.eventDate !== undefined) updateData.eventDate = updates.eventDate;
@@ -114,50 +111,7 @@ export const db = {
 
   // Update RSVP status
   async updateRsvpStatus(id: string, status: RsvpStatus): Promise<InviteDetails | undefined> {
-    return await this.updateInvitation(id, { status });
-  },
-
-  // Get admin metrics
-  async getAdminMetrics(): Promise<AdminMetrics> {
-    const [total, confirmed, pending, declined, plusOneAgg] = await Promise.all([
-      prisma.invitation.count(),
-      prisma.invitation.count({ where: { status: 'CONFIRMED' } }),
-      prisma.invitation.count({ where: { status: 'PENDING' } }),
-      prisma.invitation.count({ where: { status: 'DECLINED' } }),
-      prisma.invitation.aggregate({ _sum: { plusOne: true } }),
-    ]);
-
-    const totalPlusOnes = plusOneAgg._sum.plusOne ?? 0;
-
-    return {
-      totalInvitations: total,
-      totalGuests: total + totalPlusOnes,
-      confirmedRsvps: confirmed,
-      pendingRsvps: pending,
-      declinedRsvps: declined,
-      attendanceRate: total > 0 ? Math.round((confirmed / total) * 100) : 0,
-    };
-  },
-
-  // Get recent status updates (last 5 invitations with recent updates)
-  async getRecentStatusUpdates(): Promise<StatusUpdate[]> {
-    const recentUpdates = await prisma.invitation.findMany({
-      orderBy: { updatedAt: 'desc' },
-      take: 5,
-      select: {
-        id: true,
-        name: true,
-        status: true,
-        updatedAt: true,
-      }
-    });
-
-    return recentUpdates.map((invitation: StatusUpdateSelect) => ({
-      id: invitation.id,
-      name: invitation.name,
-      status: convertPrismaStatus(invitation.status as PrismaRsvpStatus),
-      timestamp: invitation.updatedAt,
-    }));
+    return await invitationRepo.updateInvitation(id, { status });
   },
 
   // Get admin invitation list with pagination
@@ -217,16 +171,4 @@ export const db = {
       }
     };
   },
-
-  // Reset database (useful for testing)
-  async reset(): Promise<void> {
-    await prisma.invitation.deleteMany();
-  },
-
-  // Disconnect from database
-  async disconnect(): Promise<void> {
-    await prisma.$disconnect();
-  }
 };
-
-export { prisma };

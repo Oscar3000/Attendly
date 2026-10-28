@@ -4,12 +4,12 @@
  * POST /api/invitations - Create new invitation
  */
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/lib/db";
+import { invitationRepo } from "@/server/repositories/invitation.repo";
 
 
 export async function GET() {
   try {
-    const invitations = await db.getAllInvitations();
+    const invitations = await invitationRepo.getAllInvitations();
     return NextResponse.json({ invitations }, { status: 200 });
   } catch (error) {
     console.error("Error fetching invitations:", error);
@@ -36,7 +36,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Create the invitation
-    const newInvitation = await db.createInvitation({
+    const newInvitation = await invitationRepo.createInvitation({
       name: body.name,
       eventDate: new Date(body.eventDate),
       venue: body.venue,
