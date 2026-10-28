@@ -25,6 +25,10 @@ npm run lint:check       # Lint check only
 npm run type-check       # TypeScript check (tsc --noEmit)
 npm run format           # Prettier format
 npm run format:check     # Format check only
+npm test                 # All tests (needs test DB: npm run test:db:up)
+npm run test:unit        # Unit tests only, no DB
+npm run test:db:up       # Start throwaway test Postgres on :5433
+npm run test:db:down     # Stop test Postgres
 npm run db:migrate       # Prisma migrate dev
 npm run db:studio        # Prisma Studio
 npm run db:reset         # Reset database
@@ -92,3 +96,4 @@ Single model: `Invitation` with fields: id (cuid), name, qrCode, eventDate, venu
 - `utils.ts` has status converters between Prisma enums and app types
 - Path alias: `@/*` maps to `./src/*`
 - Pagination defaults: 10 items per page
+- Tests: Vitest, colocated as `*.test.ts` (unit) and `*.db.test.ts` (real Postgres, tables truncated before each test)
