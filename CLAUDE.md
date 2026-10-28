@@ -100,5 +100,6 @@ All four required variables are validated at startup (`src/instrumentation.ts` -
 - Repositories in `src/server/repositories/` hold all Prisma operations; route handlers stay thin
 - `utils.ts` has status converters between Prisma enums and app types
 - Path alias: `@/*` maps to `./src/*`
+- Security headers and the Content Security Policy live in `next.config.ts`. Everything loads from `'self'`; adding an external script, font, image or API means updating the CSP, or the browser blocks it
 - Pagination defaults: 10 items per page
 - Tests: Vitest, colocated as `*.test.ts` (unit) and `*.db.test.ts` (real Postgres, tables truncated before each test)
