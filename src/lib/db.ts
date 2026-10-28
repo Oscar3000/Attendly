@@ -2,7 +2,8 @@
  * Database service using Prisma ORM for PostgreSQL
  * Replaces the in-memory database with persistent storage
  */
-import { PrismaClient } from '@prisma/client';
+import 'server-only';
+import { prisma } from '@/server/db/client';
 import type {
   InviteDetails,
   AdminMetrics,
@@ -20,26 +21,6 @@ import {
   convertToPrismaStatus,
   convertToInviteDetails
 } from "./utils";
-
-// Global type for Prisma singleton
-declare global {
-  var prisma: PrismaClient | undefined;
-}
-
-// Singleton pattern for Prisma client
-let prisma: PrismaClient;
-
-if (process.env.NODE_ENV === 'production') {
-  prisma = new PrismaClient();
-} else {
-  // Prevent multiple instances during development
-  if (!global.prisma) {
-    global.prisma = new PrismaClient();
-  }
-  prisma = global.prisma;
-}
-
-
 
 export const db = {
   // Get all invitations
