@@ -5,12 +5,14 @@ A modern wedding invitation management system built with Next.js, TypeScript, an
 ## ✨ Features
 
 ### 🎫 Invitation Management
+
 - **Create Digital Invitations**: Generate personalized wedding invitations with event details
 - **QR Code Generation**: Automatic QR code creation for each invitation
 - **RSVP Tracking**: Real-time status updates (Pending, Confirmed, Declined, Rescinded)
 - **Plus-One Support**: Manage additional guests for each invitation
 
 ### 📊 Admin Dashboard
+
 - **Real-time Metrics**: Live dashboard with attendance statistics and trends
 - **Status Updates**: Recent RSVP changes with timestamp tracking
 - **Paginated Tables**: Efficient browsing of large invitation lists (10 per page)
@@ -18,6 +20,7 @@ A modern wedding invitation management system built with Next.js, TypeScript, an
 - **QR Code Downloads**: Bulk download capabilities for invitation QR codes
 
 ### 🎨 Modern UI/UX
+
 - **Responsive Design**: Mobile-first approach with Tailwind CSS
 - **Brand Consistency**: Custom color scheme (rgb(192, 122, 84))
 - **Accessible Interface**: WCAG compliant components and interactions
@@ -43,32 +46,38 @@ A modern wedding invitation management system built with Next.js, TypeScript, an
 ### Installation
 
 1. **Clone the repository**
+
    ```bash
    git clone <repository-url>
    cd attendly
    ```
 
 2. **Install dependencies**
+
    ```bash
    npm install
    ```
 
 3. **Set up environment variables**
+
    ```bash
    cp .env.example .env.local
    ```
+
    Configure your database connection and other environment variables.
 
 4. **Set up the database**
+
    ```bash
    # Run database migrations
    npm run db:migrate
-   
+
    # Optional: Open Prisma Studio to view data
    npm run db:studio
    ```
 
 5. **Start the development server**
+
    ```bash
    npm run dev
    ```
@@ -113,12 +122,14 @@ src/
 ## 🎯 Key Features Walkthrough
 
 ### Admin Dashboard
+
 - **Metrics Overview**: Total invitations, confirmed/pending/declined counts, attendance rates
 - **Status Updates**: Real-time feed of recent RSVP changes with timestamps
 - **Invitation Management**: Create, edit, and track all invitations in paginated tables
 - **QR Code Management**: Download individual or bulk QR codes for distribution
 
 ### Invitation Flow
+
 1. **Create**: Admin creates invitation with guest details and event information
 2. **Generate**: System automatically generates unique QR code for each invitation
 3. **Distribute**: QR codes can be downloaded and shared with guests

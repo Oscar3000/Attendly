@@ -1,32 +1,32 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useState } from "react";
+import { useSearchParams } from "next/navigation";
 
 export default function InvitePinContent() {
   const searchParams = useSearchParams();
-  const [pin, setPin] = useState('');
-  const [error, setError] = useState('');
+  const [pin, setPin] = useState("");
+  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const redirectUrl = searchParams.get('redirect') || '/invite';
+  const redirectUrl = searchParams.get("redirect") || "/invite";
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
+    setError("");
     setLoading(true);
 
     try {
-      const response = await fetch('/api/invite/verify-pin', {
-        method: 'POST',
+      const response = await fetch("/api/invite/verify-pin", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({ pin }),
       });
 
       if (!response.ok) {
         const data = await response.json();
-        setError(data.error || 'PIN verification failed');
+        setError(data.error || "PIN verification failed");
         setLoading(false);
         return;
       }
@@ -34,8 +34,8 @@ export default function InvitePinContent() {
       // PIN verified - hard navigate so the new invite_token cookie is sent on the next request
       window.location.href = redirectUrl;
     } catch (err) {
-      console.error('PIN verification error:', err);
-      setError('An error occurred. Please try again.');
+      console.error("PIN verification error:", err);
+      setError("An error occurred. Please try again.");
       setLoading(false);
     }
   };
@@ -43,22 +43,22 @@ export default function InvitePinContent() {
   return (
     <main
       className="flex min-h-screen items-center justify-center px-4 py-8"
-      style={{ backgroundColor: '#FFF9F4' }}
+      style={{ backgroundColor: "#FFF9F4" }}
     >
       <div className="w-full max-w-sm">
         {/* Header */}
         <div className="mb-8 text-center">
           <h1
             className="font-inter font-semibold text-2xl sm:text-3xl mb-2"
-            style={{ color: '#000000' }}
+            style={{ color: "#000000" }}
           >
             Attendly
           </h1>
           <p
             className="font-inter font-normal"
             style={{
-              fontSize: '16px',
-              color: '#666666',
+              fontSize: "16px",
+              color: "#666666",
             }}
           >
             Invitation Access
@@ -69,13 +69,13 @@ export default function InvitePinContent() {
         <div
           className="rounded-lg p-6"
           style={{
-            backgroundColor: '#FFFFFF',
-            boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+            backgroundColor: "#FFFFFF",
+            boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
           }}
         >
           <h2
             className="font-inter font-bold mb-6 text-xl sm:text-2xl"
-            style={{ color: '#000000' }}
+            style={{ color: "#000000" }}
           >
             Enter Access PIN
           </h2>
@@ -87,8 +87,8 @@ export default function InvitePinContent() {
                 htmlFor="pin"
                 className="font-inter font-medium mb-2 block"
                 style={{
-                  fontSize: '14px',
-                  color: '#333333',
+                  fontSize: "14px",
+                  color: "#333333",
                 }}
               >
                 PIN Code
@@ -103,9 +103,9 @@ export default function InvitePinContent() {
                 maxLength={6}
                 className="w-full rounded-lg border px-4 py-2 font-inter text-center text-2xl letter-spacing tracking-widest focus:outline-none focus:ring-2"
                 style={{
-                  borderColor: '#E0E0E0',
-                  fontSize: '14px',
-                  color: '#333333',
+                  borderColor: "#E0E0E0",
+                  fontSize: "14px",
+                  color: "#333333",
                 }}
               />
             </div>
@@ -115,9 +115,9 @@ export default function InvitePinContent() {
               <div
                 className="mb-4 rounded-lg p-3 font-inter"
                 style={{
-                  backgroundColor: '#FFE5E5',
-                  color: '#D32F2F',
-                  fontSize: '14px',
+                  backgroundColor: "#FFE5E5",
+                  color: "#D32F2F",
+                  fontSize: "14px",
                 }}
               >
                 {error}
@@ -130,11 +130,11 @@ export default function InvitePinContent() {
               disabled={loading || !pin}
               className="w-full rounded-lg px-4 py-2 font-inter font-medium text-white transition-all hover:opacity-90 disabled:opacity-50"
               style={{
-                backgroundColor: '#C07A54',
-                fontSize: '16px',
+                backgroundColor: "#C07A54",
+                fontSize: "16px",
               }}
             >
-              {loading ? 'Verifying...' : 'Verify PIN'}
+              {loading ? "Verifying..." : "Verify PIN"}
             </button>
           </form>
         </div>
@@ -143,8 +143,8 @@ export default function InvitePinContent() {
         <p
           className="font-inter text-center mt-6"
           style={{
-            fontSize: '12px',
-            color: '#999999',
+            fontSize: "12px",
+            color: "#999999",
           }}
         >
           Enter the PIN code from your invitation to continue

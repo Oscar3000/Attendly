@@ -16,7 +16,7 @@ export function SuccessPageContent() {
   const [shareMethod, setShareMethod] = useState<"link" | "qr">("qr");
 
   const { data, isLoading, error } = useGetInvitationQuery(invitationId || "", {
-    skip: !invitationId
+    skip: !invitationId,
   });
 
   const invitation = data?.invitation;
@@ -45,9 +45,9 @@ export function SuccessPageContent() {
   const handleEmailShare = () => {
     const subject = encodeURIComponent(`Wedding Invitation - ${invitation?.name}`);
     const body = encodeURIComponent(
-      `You're invited to our wedding!\n\nView your invitation: ${inviteUrl}\n\nWe can't wait to celebrate with you!`
+      `You're invited to our wedding!\n\nView your invitation: ${inviteUrl}\n\nWe can't wait to celebrate with you!`,
     );
-    window.open(`mailto:?subject=${subject}&body=${body}`, '_blank');
+    window.open(`mailto:?subject=${subject}&body=${body}`, "_blank");
   };
 
   const handleWhatsAppShare = async () => {
@@ -56,15 +56,20 @@ export function SuccessPageContent() {
       await shareQRCodeAsImage(invitation.qrCode, invitation.name, invitation.plusOne ?? 0);
     } catch {
       const text = encodeURIComponent(
-        `You're invited to our wedding!\n\nView your invitation: ${inviteUrl}\n\nWe can't wait to celebrate with you!`
+        `You're invited to our wedding!\n\nView your invitation: ${inviteUrl}\n\nWe can't wait to celebrate with you!`,
       );
-      window.open(`https://wa.me/?text=${text}`, '_blank');
+      window.open(`https://wa.me/?text=${text}`, "_blank");
     }
   };
 
   const handleDownloadQR = () => {
     if (!invitation?.qrCode) return;
-    downloadQRCode(invitation.qrCode, `invitation-qr-${invitation.name}`, invitation.name, invitation.plusOne ?? 0);
+    downloadQRCode(
+      invitation.qrCode,
+      `invitation-qr-${invitation.name}`,
+      invitation.name,
+      invitation.plusOne ?? 0,
+    );
   };
 
   if (isLoading) {
@@ -88,9 +93,7 @@ export function SuccessPageContent() {
         style={{ backgroundColor: "#FFF9F4" }}
       >
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">
-            Invitation Not Found
-          </h1>
+          <h1 className="text-2xl font-bold text-gray-900 mb-4">Invitation Not Found</h1>
           <p className="text-gray-600 mb-6">
             We couldn&apos;t find the invitation you&apos;re looking for.
           </p>
@@ -167,25 +170,23 @@ export function SuccessPageContent() {
             </div>
             <div className="flex flex-col sm:flex-row sm:justify-between">
               <span className="text-gray-600 text-sm sm:text-base">Status:</span>
-              <span className="font-medium capitalize text-sm sm:text-base">{invitation.status}</span>
+              <span className="font-medium capitalize text-sm sm:text-base">
+                {invitation.status}
+              </span>
             </div>
           </div>
         </div>
 
         {/* Share Section */}
         <div className="bg-white rounded-2xl shadow-lg p-4 sm:p-6 mb-6">
-          <h2 className="text-lg sm:text-xl font-semibold text-gray-900 mb-4">
-            Share Invitation
-          </h2>
+          <h2 className="text-lg sm:text-xl font-semibold text-gray-900 mb-4">Share Invitation</h2>
 
           {/* Share Method Toggle */}
           <div className="flex bg-gray-100 rounded-lg p-1 mb-6">
             <button
               onClick={() => setShareMethod("qr")}
               className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
-                shareMethod === "qr"
-                  ? "bg-white text-gray-900 shadow-sm"
-                  : "text-gray-600"
+                shareMethod === "qr" ? "bg-white text-gray-900 shadow-sm" : "text-gray-600"
               }`}
             >
               QR Code
@@ -193,9 +194,7 @@ export function SuccessPageContent() {
             <button
               onClick={() => setShareMethod("link")}
               className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
-                shareMethod === "link"
-                  ? "bg-white text-gray-900 shadow-sm"
-                  : "text-gray-600"
+                shareMethod === "link" ? "bg-white text-gray-900 shadow-sm" : "text-gray-600"
               }`}
             >
               Link
@@ -215,10 +214,7 @@ export function SuccessPageContent() {
                     alt={`QR Code for ${invitation.name}'s invitation`}
                   />
                 ) : (
-                  <QrCode
-                    size={200}
-                    alt={`QR Code for ${invitation.name}'s invitation`}
-                  />
+                  <QrCode size={200} alt={`QR Code for ${invitation.name}'s invitation`} />
                 )}
               </div>
               <div className="flex flex-col sm:flex-row gap-3 justify-center">
@@ -227,8 +223,18 @@ export function SuccessPageContent() {
                   onClick={handleDownloadQR}
                   disabled={!invitation.qrCode?.startsWith("data:")}
                 >
-                  <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  <svg
+                    className="w-4 h-4 mr-2"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                    />
                   </svg>
                   Download QR Code
                 </Button>
@@ -244,9 +250,7 @@ export function SuccessPageContent() {
 
           {shareMethod === "link" && (
             <div>
-              <p className="text-gray-600 mb-4">
-                Share this link to give access to the invitation
-              </p>
+              <p className="text-gray-600 mb-4">Share this link to give access to the invitation</p>
               <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg mb-4">
                 <input
                   type="text"
@@ -254,11 +258,7 @@ export function SuccessPageContent() {
                   readOnly
                   className="flex-1 bg-transparent text-sm text-gray-700"
                 />
-                <Button
-                  variant="secondary"
-                  onClick={handleCopyLink}
-                  className="shrink-0"
-                >
+                <Button variant="secondary" onClick={handleCopyLink} className="shrink-0">
                   {copied ? "Copied!" : "Copy"}
                 </Button>
               </div>
@@ -291,11 +291,21 @@ export function SuccessPageContent() {
         <div className="grid grid-cols-2 sm:flex sm:flex-row gap-3 sm:gap-4 sm:justify-center">
           <Button
             variant="secondary"
-            onClick={() => window.open(`/invite/${invitation.id}`, '_blank')}
+            onClick={() => window.open(`/invite/${invitation.id}`, "_blank")}
           >
             <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+              />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+              />
             </svg>
             Preview Invitation
           </Button>
@@ -304,26 +314,40 @@ export function SuccessPageContent() {
             onClick={() => router.push(`/admin/edit-invite/${invitation.id}`)}
           >
             <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+              />
             </svg>
             Edit Invitation
           </Button>
-          <Button
-            variant="secondary"
-            onClick={() => router.push("/admin")}
-          >
+          <Button variant="secondary" onClick={() => router.push("/admin")}>
             <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z" />
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 5a2 2 0 012-2h4a2 2 0 012 2v6H8V5z" />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z"
+              />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M8 5a2 2 0 012-2h4a2 2 0 012 2v6H8V5z"
+              />
             </svg>
             Back to Dashboard
           </Button>
-          <Button
-            variant="secondary"
-            onClick={() => router.push("/admin/create-invite")}
-          >
+          <Button variant="secondary" onClick={() => router.push("/admin/create-invite")}>
             <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 4v16m8-8H4"
+              />
             </svg>
             Create New Invitation
           </Button>

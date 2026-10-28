@@ -83,15 +83,15 @@ railway up
 
 In the Railway dashboard, click on your **app service** (not the database), go to the **"Variables"** tab, and add the following:
 
-| Variable | Value | Notes |
-|---|---|---|
-| `DATABASE_URL` | `${{Postgres.DATABASE_URL}}` | Use Railway's variable reference to auto-link to your DB |
-| `NEXT_PUBLIC_BASE_URL` | `https://your-app.up.railway.app` | Your Railway public URL (set after first deploy) |
-| `ADMIN_PASSWORD` | `your-secure-password` | **Change this!** Used for admin dashboard login |
-| `INVITE_PIN` | `your-pin` | PIN guests use to access invitations |
-| `PORT` | `3000` | The port the app listens on |
-| `NODE_ENV` | `production` | |
-| `NEXT_TELEMETRY_DISABLED` | `1` | Optional |
+| Variable                  | Value                             | Notes                                                    |
+| ------------------------- | --------------------------------- | -------------------------------------------------------- |
+| `DATABASE_URL`            | `${{Postgres.DATABASE_URL}}`      | Use Railway's variable reference to auto-link to your DB |
+| `NEXT_PUBLIC_BASE_URL`    | `https://your-app.up.railway.app` | Your Railway public URL (set after first deploy)         |
+| `ADMIN_PASSWORD`          | `your-secure-password`            | **Change this!** Used for admin dashboard login          |
+| `INVITE_PIN`              | `your-pin`                        | PIN guests use to access invitations                     |
+| `PORT`                    | `3000`                            | The port the app listens on                              |
+| `NODE_ENV`                | `production`                      |                                                          |
+| `NEXT_TELEMETRY_DISABLED` | `1`                               | Optional                                                 |
 
 ### Linking the Database URL
 
@@ -155,9 +155,11 @@ railway run npx prisma migrate deploy
 ## Monitoring & Logs
 
 ### Dashboard
+
 - Click on your app service → **"Logs"** tab to view real-time logs
 
 ### CLI
+
 ```bash
 railway logs
 ```
@@ -179,18 +181,22 @@ railway open            # Open the project dashboard in browser
 ## Troubleshooting
 
 ### App crashes on startup
+
 - Check that `DATABASE_URL` is set and the Postgres service is running
 - View logs for migration errors: **Logs** tab or `railway logs`
 
 ### Database connection refused
+
 - Ensure you're using the Railway reference variable (`${{Postgres.DATABASE_URL}}`) for internal networking
 - Check that the PostgreSQL service is healthy in the dashboard
 
 ### Migrations fail
+
 - Run manually: `railway run npx prisma migrate deploy`
 - If the schema is out of sync, you may need: `railway run npx prisma db push`
 
 ### QR codes show wrong URL
+
 - Ensure `NEXT_PUBLIC_BASE_URL` matches your actual deployment URL (including `https://`)
 - Redeploy after changing this variable (it's baked in at build time)
 

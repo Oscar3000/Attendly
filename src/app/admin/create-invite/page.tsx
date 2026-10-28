@@ -30,10 +30,7 @@ export default function CreateInvitePage() {
     }
   };
 
-  const handleInputChange = (
-    field: keyof CreateInviteForm,
-    value: string | number,
-  ) => {
+  const handleInputChange = (field: keyof CreateInviteForm, value: string | number) => {
     setForm((prev) => ({
       ...prev,
       [field]: value,
@@ -139,9 +136,7 @@ export default function CreateInvitePage() {
               type="number"
               id="plusOne"
               value={form.plusOne}
-              onChange={(e) =>
-                handleInputChange("plusOne", parseInt(e.target.value) || 0)
-              }
+              onChange={(e) => handleInputChange("plusOne", parseInt(e.target.value) || 0)}
               placeholder="Enter number"
               min="0"
               max="10"
@@ -165,9 +160,7 @@ export default function CreateInvitePage() {
               <select
                 id="status"
                 value={form.status}
-                onChange={(e) =>
-                  handleInputChange("status", e.target.value as RsvpStatus)
-                }
+                onChange={(e) => handleInputChange("status", e.target.value as RsvpStatus)}
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none"
                 style={{
                   fontFamily: "Inter",
@@ -180,11 +173,7 @@ export default function CreateInvitePage() {
               </select>
               {/* Custom dropdown arrow */}
               <div className="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none">
-                <svg
-                  className="w-5 h-5 text-gray-400"
-                  fill="currentColor"
-                  viewBox="0 0 20 20"
-                >
+                <svg className="w-5 h-5 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
                   <path
                     fillRule="evenodd"
                     d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
@@ -197,12 +186,7 @@ export default function CreateInvitePage() {
 
           {/* Submit Button */}
           <div className="pt-4">
-            <Button
-              variant="attendly"
-              type="submit"
-              disabled={isSubmitting}
-              loading={isSubmitting}
-            >
+            <Button variant="attendly" type="submit" disabled={isSubmitting} loading={isSubmitting}>
               {isSubmitting ? "Saving..." : "Save"}
             </Button>
           </div>

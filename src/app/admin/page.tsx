@@ -7,10 +7,7 @@ import InvitationCounter from "@/components/admin/invitation-counter";
 import StatusUpdates from "@/components/admin/status-updates";
 import MetricsChart from "@/components/admin/metrics-chart";
 import InvitationsTable from "@/components/admin/invitations-table";
-import {
-  DashboardMetrics,
-  InvitationTableEntry,
-} from "@/lib/types";
+import { DashboardMetrics, InvitationTableEntry } from "@/lib/types";
 import { useGetAdminDataQuery, useGetStatusUpdatesQuery } from "@/store/invitationApi";
 
 export default function AdminDashboard() {
@@ -37,30 +34,31 @@ export default function AdminDashboard() {
     isError,
   } = useGetAdminDataQuery({ page: currentPage, limit, search: debouncedSearch });
 
-  const {
-    data: statusUpdatesData,
-  } = useGetStatusUpdatesQuery();
+  const { data: statusUpdatesData } = useGetStatusUpdatesQuery();
 
   // Transform API data to dashboard format
-  const metrics: DashboardMetrics = adminData ? {
-    totalInvitations: adminData.metrics.totalInvitations,
-    totalGuests: adminData.metrics.totalGuests,
-    pendingCount: adminData.metrics.pendingRsvps,
-    confirmedCount: adminData.metrics.confirmedRsvps,
-    rescindedCount: adminData.metrics.declinedRsvps,
-  } : {
-    totalInvitations: 0,
-    totalGuests: 0,
-    pendingCount: 0,
-    confirmedCount: 0,
-    rescindedCount: 0,
-  };
+  const metrics: DashboardMetrics = adminData
+    ? {
+        totalInvitations: adminData.metrics.totalInvitations,
+        totalGuests: adminData.metrics.totalGuests,
+        pendingCount: adminData.metrics.pendingRsvps,
+        confirmedCount: adminData.metrics.confirmedRsvps,
+        rescindedCount: adminData.metrics.declinedRsvps,
+      }
+    : {
+        totalInvitations: 0,
+        totalGuests: 0,
+        pendingCount: 0,
+        confirmedCount: 0,
+        rescindedCount: 0,
+      };
 
-  const invitations: InvitationTableEntry[] = adminData ? 
-    adminData.invitations.map((inv) => ({
-      ...inv,
-      status: inv.status === 'declined' ? 'rescinded' : inv.status, // Map declined to rescinded for UI
-    })) : [];
+  const invitations: InvitationTableEntry[] = adminData
+    ? adminData.invitations.map((inv) => ({
+        ...inv,
+        status: inv.status === "declined" ? "rescinded" : inv.status, // Map declined to rescinded for UI
+      }))
+    : [];
 
   const handleCreateInvite = () => {
     router.push("/admin/create-invite");
