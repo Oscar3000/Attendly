@@ -12,8 +12,7 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   title: "Oscar & Pamela's Wedding",
-  description:
-    "Manage invitations, RSVPs, and guest details for Oscar and Pamela's wedding.",
+  description: "Manage invitations, RSVPs, and guest details for Oscar and Pamela's wedding.",
   keywords: ["wedding", "invitation", "rsvp", "oscar", "pamela"],
   authors: [{ name: "Attendly Team" }],
   icons: {
@@ -54,10 +53,7 @@ interface RootLayoutProps {
 export default function RootLayout({ children }: RootLayoutProps) {
   return (
     <html lang="en" className={inter.variable}>
-      <body
-        className="min-h-screen font-sans antialiased"
-        style={{ backgroundColor: "#FFF9F4" }}
-      >
+      <body className="min-h-screen font-sans antialiased" style={{ backgroundColor: "#FFF9F4" }}>
         <ReduxProvider>{children}</ReduxProvider>
       </body>
     </html>

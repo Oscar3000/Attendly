@@ -9,7 +9,7 @@ import { useGetInvitationQuery, useUpdateRsvpStatusMutation } from "@/store/invi
 export default function InvitePage({ params }: InvitePageProps) {
   const resolvedParams = use(params) as { id: string };
   const [justConfirmed, setJustConfirmed] = useState(false);
-  
+
   // RTK Query hooks
   const {
     data: invitationData,
@@ -17,26 +17,27 @@ export default function InvitePage({ params }: InvitePageProps) {
     error,
     isError,
   } = useGetInvitationQuery(resolvedParams.id);
-  
+
   const [updateRsvpStatus, { isLoading: isUpdating }] = useUpdateRsvpStatusMutation();
 
   const invite = invitationData?.invitation;
-  const inviteNotFound = isError && 'status' in (error as object) && (error as { status: number }).status === 404;
+  const inviteNotFound =
+    isError && "status" in (error as object) && (error as { status: number }).status === 404;
   const rsvpStatus = invite?.status || "pending";
   const isAlreadyConfirmed = rsvpStatus === "confirmed" && !justConfirmed;
 
   const handleRsvp = async (status: RsvpStatus) => {
     try {
-      await updateRsvpStatus({ 
-        id: resolvedParams.id, 
-        status 
+      await updateRsvpStatus({
+        id: resolvedParams.id,
+        status,
       }).unwrap();
 
       if (status === "confirmed") {
         setJustConfirmed(true);
       }
     } catch (err) {
-      console.error('Failed to update RSVP status:', err);
+      console.error("Failed to update RSVP status:", err);
       // You could add a toast notification here
     }
   };
@@ -57,10 +58,7 @@ export default function InvitePage({ params }: InvitePageProps) {
 
   if (inviteNotFound) {
     return (
-      <InviteNotFound
-        inviteId={resolvedParams.id}
-        onGoHome={() => (window.location.href = "/")}
-      />
+      <InviteNotFound inviteId={resolvedParams.id} onGoHome={() => (window.location.href = "/")} />
     );
   }
 
@@ -72,8 +70,8 @@ export default function InvitePage({ params }: InvitePageProps) {
       >
         <div className="text-center">
           <p className="text-red-600 mb-4">Failed to load invitation. Please try again.</p>
-          <button 
-            onClick={() => window.location.reload()} 
+          <button
+            onClick={() => window.location.reload()}
             className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
           >
             Retry
@@ -90,16 +88,11 @@ export default function InvitePage({ params }: InvitePageProps) {
         style={{ backgroundColor: "#FFF9F4" }}
       >
         <div className="text-center max-w-md mx-auto p-6">
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">
-            Error Loading Invitation
-          </h1>
+          <h1 className="text-2xl font-bold text-gray-900 mb-4">Error Loading Invitation</h1>
           <p className="text-gray-600 mb-6">
             {error || "Something went wrong while loading your invitation."}
           </p>
-          <Button
-            variant="primary"
-            onClick={() => (window.location.href = "/")}
-          >
+          <Button variant="primary" onClick={() => (window.location.href = "/")}>
             Go Home
           </Button>
         </div>
@@ -172,8 +165,7 @@ export default function InvitePage({ params }: InvitePageProps) {
                   <span className="text-gray-600 text-sm sm:text-base">Additional Guests:</span>
                   {invite.plusOne && invite.plusOne > 0 ? (
                     <span className="font-medium text-green-600 text-sm sm:text-base">
-                      {invite.plusOne}{" "}
-                      {invite.plusOne === 1 ? "person" : "people"}
+                      {invite.plusOne} {invite.plusOne === 1 ? "person" : "people"}
                     </span>
                   ) : (
                     <span className="font-medium text-sm sm:text-base text-gray-600">
@@ -187,9 +179,7 @@ export default function InvitePage({ params }: InvitePageProps) {
 
           {/* RSVP Status */}
           <div className="border-t border-gray-200 pt-6">
-            <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-4">
-              RSVP Status
-            </h3>
+            <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-4">RSVP Status</h3>
 
             <div className="space-y-4">
               <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
@@ -212,10 +202,7 @@ export default function InvitePage({ params }: InvitePageProps) {
               </div>
 
               {rsvpStatus === "pending" && (
-                <div
-                  className="flex justify-center"
-                  style={{ marginTop: "50px" }}
-                >
+                <div className="flex justify-center" style={{ marginTop: "50px" }}>
                   <Button
                     variant="attendly"
                     onClick={() => handleRsvp("confirmed")}
@@ -263,44 +250,46 @@ export default function InvitePage({ params }: InvitePageProps) {
         </div>
 
         {/* Check-in: access pass allocation */}
-        {rsvpStatus === "pending" && (() => {
-          const extraGuests = invite.plusOne ?? 0;
-          const totalPasses = 1 + extraGuests;
-          return (
-            <div
-              className="bg-white rounded-2xl shadow-lg p-5 sm:p-6 mb-6 border-l-4"
-              style={{ borderLeftColor: "#C07A54" }}
-            >
-              <div className="flex items-start gap-4">
-                <div
-                  className="flex-shrink-0 flex items-center justify-center rounded-xl text-white font-semibold"
-                  style={{
-                    backgroundColor: "#C07A54",
-                    width: 56,
-                    height: 56,
-                    fontSize: 24,
-                  }}
-                  aria-hidden="true"
-                >
-                  {totalPasses}
-                </div>
-                <div className="flex-1">
-                  <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1">
-                    Check-in
-                  </p>
-                  <h3 className="text-base sm:text-lg font-semibold text-gray-900">
-                    Issue {totalPasses} access {totalPasses === 1 ? "pass" : "passes"} to this guest
-                  </h3>
-                  <p className="text-sm text-gray-600 mt-1">
-                    {extraGuests > 0
-                      ? `1 for the invitee plus ${extraGuests} for their ${extraGuests === 1 ? "guest" : "guests"}.`
-                      : "This invitation does not include additional guests."}
-                  </p>
+        {rsvpStatus === "pending" &&
+          (() => {
+            const extraGuests = invite.plusOne ?? 0;
+            const totalPasses = 1 + extraGuests;
+            return (
+              <div
+                className="bg-white rounded-2xl shadow-lg p-5 sm:p-6 mb-6 border-l-4"
+                style={{ borderLeftColor: "#C07A54" }}
+              >
+                <div className="flex items-start gap-4">
+                  <div
+                    className="flex-shrink-0 flex items-center justify-center rounded-xl text-white font-semibold"
+                    style={{
+                      backgroundColor: "#C07A54",
+                      width: 56,
+                      height: 56,
+                      fontSize: 24,
+                    }}
+                    aria-hidden="true"
+                  >
+                    {totalPasses}
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1">
+                      Check-in
+                    </p>
+                    <h3 className="text-base sm:text-lg font-semibold text-gray-900">
+                      Issue {totalPasses} access {totalPasses === 1 ? "pass" : "passes"} to this
+                      guest
+                    </h3>
+                    <p className="text-sm text-gray-600 mt-1">
+                      {extraGuests > 0
+                        ? `1 for the invitee plus ${extraGuests} for their ${extraGuests === 1 ? "guest" : "guests"}.`
+                        : "This invitation does not include additional guests."}
+                    </p>
+                  </div>
                 </div>
               </div>
-            </div>
-          );
-        })()}
+            );
+          })()}
 
         {/* QR Code Section - commented out for now
         <div className="bg-white rounded-2xl shadow-lg p-4 sm:p-6 mb-6">
@@ -343,10 +332,7 @@ export default function InvitePage({ params }: InvitePageProps) {
 
         {/* Home button */}
         <div className="flex justify-center mb-6">
-          <Button
-            variant="attendly"
-            onClick={() => (window.location.href = "/")}
-          >
+          <Button variant="attendly" onClick={() => (window.location.href = "/")}>
             Go to Home Page
           </Button>
         </div>
@@ -354,9 +340,7 @@ export default function InvitePage({ params }: InvitePageProps) {
         {/* Footer */}
         <div className="text-center text-gray-500 text-sm">
           <p>Invitation ID: {resolvedParams.id}</p>
-          <p className="mt-1">
-            Questions? Please reach out to the coordinator for assistance.
-          </p>
+          <p className="mt-1">Questions? Please reach out to the coordinator for assistance.</p>
         </div>
       </div>
     </div>

@@ -21,7 +21,10 @@ function parseCsv(text: string): { rows: ParsedRow[]; errors: string[] } {
   const errors: string[] = [];
   const rows: ParsedRow[] = [];
 
-  const lines = text.split(/\r?\n/).map((l) => l.trim()).filter((l) => l.length > 0);
+  const lines = text
+    .split(/\r?\n/)
+    .map((l) => l.trim())
+    .filter((l) => l.length > 0);
   if (lines.length === 0) return { rows, errors: ["File is empty"] };
 
   // Detect header
@@ -143,8 +146,8 @@ export default function BulkUploadPage() {
         <div className="mb-6 p-4 bg-gray-50 rounded-lg text-sm text-gray-700">
           <p className="font-medium mb-1">CSV format</p>
           <p>
-            One row per guest. Columns: <code className="px-1 bg-white rounded">name</code> (required),{" "}
-            <code className="px-1 bg-white rounded">plusOne</code> (optional, number).
+            One row per guest. Columns: <code className="px-1 bg-white rounded">name</code>{" "}
+            (required), <code className="px-1 bg-white rounded">plusOne</code> (optional, number).
           </p>
           <p className="mt-2 text-xs text-gray-500">
             Header row is optional. Wrap names containing commas in double quotes.
@@ -153,7 +156,9 @@ export default function BulkUploadPage() {
 
         <form onSubmit={handleSubmit} className="space-y-5">
           <div>
-            <label className="block text-base font-medium text-gray-900 mb-2">Event Date &amp; Time</label>
+            <label className="block text-base font-medium text-gray-900 mb-2">
+              Event Date &amp; Time
+            </label>
             <input
               type="datetime-local"
               value={eventDate}
@@ -201,14 +206,17 @@ export default function BulkUploadPage() {
             {fileName && (
               <p className="mt-2 text-sm text-gray-600">
                 {fileName} — {rows.length} valid row{rows.length === 1 ? "" : "s"}
-                {parseErrors.length > 0 && `, ${parseErrors.length} issue${parseErrors.length === 1 ? "" : "s"}`}
+                {parseErrors.length > 0 &&
+                  `, ${parseErrors.length} issue${parseErrors.length === 1 ? "" : "s"}`}
               </p>
             )}
           </div>
 
           {parseErrors.length > 0 && (
             <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg">
-              <p className="text-sm font-medium text-amber-900 mb-2">CSV issues (these rows will be skipped):</p>
+              <p className="text-sm font-medium text-amber-900 mb-2">
+                CSV issues (these rows will be skipped):
+              </p>
               <ul className="text-sm text-amber-800 list-disc pl-5 space-y-0.5 max-h-40 overflow-y-auto">
                 {parseErrors.map((err, i) => (
                   <li key={i}>{err}</li>
@@ -250,7 +258,9 @@ export default function BulkUploadPage() {
               disabled={isSubmitting || rows.length === 0}
               loading={isSubmitting}
             >
-              {isSubmitting ? "Uploading..." : `Upload ${rows.length} invite${rows.length === 1 ? "" : "s"}`}
+              {isSubmitting
+                ? "Uploading..."
+                : `Upload ${rows.length} invite${rows.length === 1 ? "" : "s"}`}
             </Button>
           </div>
         </form>
@@ -259,7 +269,8 @@ export default function BulkUploadPage() {
           <div className="mt-8 space-y-4">
             <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
               <p className="text-sm font-medium text-green-900">
-                Created {result.summary.createdCount} of {result.summary.total} invitation{result.summary.total === 1 ? "" : "s"}.
+                Created {result.summary.createdCount} of {result.summary.total} invitation
+                {result.summary.total === 1 ? "" : "s"}.
               </p>
             </div>
 
