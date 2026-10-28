@@ -3,10 +3,7 @@ interface InviteNotFoundProps {
   onGoHome: () => void;
 }
 
-export default function InviteNotFound({
-  inviteId,
-  onGoHome,
-}: InviteNotFoundProps) {
+export default function InviteNotFound({ inviteId, onGoHome }: InviteNotFoundProps) {
   return (
     <div
       className="min-h-screen flex items-center justify-center"
@@ -27,30 +24,20 @@ export default function InviteNotFound({
               strokeLinejoin="round"
               d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
             />
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M6 18L18 6M6 6l12 12"
-            />
+            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
           </svg>
         </div>
 
         {/* Title */}
-        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-4">
-          Invitation Not Found
-        </h1>
+        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-4">Invitation Not Found</h1>
 
         {/* Description */}
         <div className="space-y-3 mb-8">
           <p className="text-gray-600 leading-relaxed">
             We couldn&apos;t find an invitation with ID:{" "}
-            <span className="font-mono text-sm bg-gray-100 px-2 py-1 rounded">
-              {inviteId}
-            </span>
+            <span className="font-mono text-sm bg-gray-100 px-2 py-1 rounded">{inviteId}</span>
           </p>
-          <p className="text-gray-600 leading-relaxed">
-            This invitation may have been:
-          </p>
+          <p className="text-gray-600 leading-relaxed">This invitation may have been:</p>
           <ul className="text-left text-gray-600 space-y-1 max-w-xs mx-auto">
             <li className="flex items-center">
               <span className="w-2 h-2 bg-gray-400 rounded-full mr-3 flex-shrink-0"></span>

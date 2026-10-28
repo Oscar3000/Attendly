@@ -38,14 +38,8 @@ export default function CountdownSection() {
   const countdown = useCountdown(WEDDING_DATE);
 
   return (
-    <section
-      className="px-4 py-12 text-center"
-      style={{ backgroundColor: "#2C1810" }}
-    >
-      <p
-        className="text-xs uppercase tracking-[0.35em] mb-7"
-        style={{ color: "#D4AF37" }}
-      >
+    <section className="px-4 py-12 text-center" style={{ backgroundColor: "#2C1810" }}>
+      <p className="text-xs uppercase tracking-[0.35em] mb-7" style={{ color: "#D4AF37" }}>
         Counting Down to the Big Day
       </p>
       <div className="flex justify-center gap-3 sm:gap-8">
@@ -68,10 +62,7 @@ export default function CountdownSection() {
             >
               {String(value).padStart(2, "0")}
             </div>
-            <span
-              className="text-xs uppercase tracking-wider"
-              style={{ color: "#9A7B6B" }}
-            >
+            <span className="text-xs uppercase tracking-wider" style={{ color: "#9A7B6B" }}>
               {label}
             </span>
           </div>

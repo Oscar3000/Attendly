@@ -50,16 +50,12 @@ export function Button({
         maxWidth: "300px",
         height: typeof height === "number" ? `${height}px` : height || "56px",
         borderRadius:
-          typeof borderRadius === "number"
-            ? `${borderRadius}px`
-            : borderRadius || "18px",
+          typeof borderRadius === "number" ? `${borderRadius}px` : borderRadius || "18px",
         backgroundColor: backgroundColor || "#C07A54",
         color: textColor || "white",
         fontFamily: "Inter",
-        fontWeight:
-          typeof fontWeight === "number" ? fontWeight : fontWeight || "500",
-        fontSize:
-          typeof fontSize === "number" ? `${fontSize}px` : fontSize || "17px",
+        fontWeight: typeof fontWeight === "number" ? fontWeight : fontWeight || "500",
+        fontSize: typeof fontSize === "number" ? `${fontSize}px` : fontSize || "17px",
         border: "none",
       }
     : {};

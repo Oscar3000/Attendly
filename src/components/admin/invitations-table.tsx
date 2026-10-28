@@ -5,12 +5,14 @@ import { downloadQRCode, getTableStatusColor } from "@/lib/utils";
 interface InvitationsTableProps {
   invitations: InvitationTableEntry[];
   onEdit: (id: string) => void;
-  pagination?: {
-    page: number;
-    limit: number;
-    total: number;
-    totalPages: number;
-  } | undefined;
+  pagination?:
+    | {
+        page: number;
+        limit: number;
+        total: number;
+        totalPages: number;
+      }
+    | undefined;
   onPageChange?: (page: number) => void;
   search?: string;
   onSearchChange?: (value: string) => void;
@@ -26,16 +28,19 @@ export default function InvitationsTable({
 }: InvitationsTableProps) {
   const handleDownloadQR = (invitation: InvitationTableEntry) => {
     if (invitation.qrCode) {
-      downloadQRCode(invitation.qrCode, `invitation-qr-${invitation.name}`, invitation.name, invitation.plusOne ?? 0);
+      downloadQRCode(
+        invitation.qrCode,
+        `invitation-qr-${invitation.name}`,
+        invitation.name,
+        invitation.plusOne ?? 0,
+      );
     }
   };
 
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 sm:p-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4 sm:mb-6">
-        <h2 className="text-base sm:text-lg font-medium text-gray-900">
-          All Invitations
-        </h2>
+        <h2 className="text-base sm:text-lg font-medium text-gray-900">All Invitations</h2>
         {onSearchChange && (
           <div className="relative w-full sm:w-64">
             <input
@@ -82,10 +87,7 @@ export default function InvitationsTable({
           </thead>
           <tbody>
             {invitations.map((invitation, index) => (
-              <tr
-                key={invitation.id}
-                className={index % 2 === 0 ? "bg-gray-50" : "bg-white"}
-              >
+              <tr key={invitation.id} className={index % 2 === 0 ? "bg-gray-50" : "bg-white"}>
                 <td className="py-3 sm:py-4 px-3 sm:px-4">
                   <div className="font-medium text-gray-900 text-sm sm:text-base">
                     {invitation.name}
@@ -95,8 +97,7 @@ export default function InvitationsTable({
                   <span
                     className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${getTableStatusColor(invitation.status)}`}
                   >
-                    {invitation.status.charAt(0).toUpperCase() +
-                      invitation.status.slice(1)}
+                    {invitation.status.charAt(0).toUpperCase() + invitation.status.slice(1)}
                   </span>
                 </td>
                 <td className="py-3 sm:py-4 px-3 sm:px-4">
@@ -107,31 +108,28 @@ export default function InvitationsTable({
                     disabled={!invitation.hasQrCode}
                   >
                     {invitation.hasQrCode && invitation.qrCode ? (
-                      <QrCode 
+                      <QrCode
                         src={invitation.qrCode}
                         size={60}
                         alt={`QR Code for ${invitation.name}`}
                       />
                     ) : (
-                      <QrCode 
-                        size={60}
-                        alt={`QR Code for ${invitation.name}`}
-                      />
+                      <QrCode size={60} alt={`QR Code for ${invitation.name}`} />
                     )}
                     {/* Download overlay on hover */}
                     {invitation.hasQrCode && (
                       <div className="absolute inset-0 bg-black bg-opacity-50 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center">
-                        <svg 
-                          className="w-6 h-6 text-white" 
-                          fill="none" 
-                          stroke="currentColor" 
+                        <svg
+                          className="w-6 h-6 text-white"
+                          fill="none"
+                          stroke="currentColor"
                           viewBox="0 0 24 24"
                         >
-                          <path 
-                            strokeLinecap="round" 
-                            strokeLinejoin="round" 
-                            strokeWidth={2} 
-                            d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" 
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
                           />
                         </svg>
                       </div>
@@ -151,12 +149,14 @@ export default function InvitationsTable({
           </tbody>
         </table>
       </div>
-      
+
       {/* Pagination Controls */}
       {pagination && pagination.totalPages > 1 && (
         <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-4 sm:px-6 py-4 border-t border-gray-200">
           <div className="text-xs sm:text-sm text-gray-700">
-            Showing {((pagination.page - 1) * pagination.limit) + 1} to {Math.min(pagination.page * pagination.limit, pagination.total)} of {pagination.total} invitations
+            Showing {(pagination.page - 1) * pagination.limit + 1} to{" "}
+            {Math.min(pagination.page * pagination.limit, pagination.total)} of {pagination.total}{" "}
+            invitations
           </div>
           <div className="flex items-center space-x-1 sm:space-x-2">
             <button
@@ -166,39 +166,44 @@ export default function InvitationsTable({
             >
               Previous
             </button>
-            
+
             {/* Page numbers */}
             {Array.from({ length: pagination.totalPages }, (_, i) => i + 1)
-              .filter(page => {
+              .filter((page) => {
                 // Show current page, first/last pages, and pages around current
-                return page === 1 || 
-                       page === pagination.totalPages || 
-                       (page >= pagination.page - 1 && page <= pagination.page + 1);
+                return (
+                  page === 1 ||
+                  page === pagination.totalPages ||
+                  (page >= pagination.page - 1 && page <= pagination.page + 1)
+                );
               })
               .map((page, index, array) => {
                 // Add ellipsis if there's a gap
                 const previousPage = array[index - 1];
-                const showEllipsis = index > 0 && previousPage !== undefined && page - previousPage > 1;
+                const showEllipsis =
+                  index > 0 && previousPage !== undefined && page - previousPage > 1;
                 return (
                   <div key={page} className="flex items-center">
-                    {showEllipsis && (
-                      <span className="px-2 text-gray-500">...</span>
-                    )}
+                    {showEllipsis && <span className="px-2 text-gray-500">...</span>}
                     <button
                       onClick={() => onPageChange?.(page)}
                       className={`px-3 py-1 text-sm font-medium rounded-md ${
                         page === pagination.page
-                          ? 'text-white'
-                          : 'text-gray-700 bg-white border border-gray-300 hover:bg-gray-50'
+                          ? "text-white"
+                          : "text-gray-700 bg-white border border-gray-300 hover:bg-gray-50"
                       }`}
-                      style={page === pagination.page ? { backgroundColor: 'rgb(192, 122, 84)' } : undefined}
+                      style={
+                        page === pagination.page
+                          ? { backgroundColor: "rgb(192, 122, 84)" }
+                          : undefined
+                      }
                     >
                       {page}
                     </button>
                   </div>
                 );
               })}
-            
+
             <button
               onClick={() => onPageChange?.(pagination.page + 1)}
               disabled={pagination.page >= pagination.totalPages}
