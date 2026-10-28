@@ -77,14 +77,16 @@ Single model: `Invitation` with fields: id (cuid), name, qrCode, eventDate, venu
 
 ## Auth Flow
 
-- **Admin**: Password login -> `auth_token` cookie -> access to `/admin/*` and `/api/admin/*`
-- **Guest**: PIN verification -> `invite_token` cookie -> access to `/invite/*`
+- **Admin**: Password login -> signed `auth_token` cookie (HS256 JWT, role `admin`) -> access to `/admin/*` and `/api/admin/*`
+- **Guest**: PIN verification -> signed `invite_token` cookie (role `guest`) -> access to `/invite/*`
+- Tokens are signed and verified in `src/server/auth/session.ts` (edge-safe; stopgap until Better Auth in T-204)
 - **Middleware** protects routes; redirects to `/login` or `/invite-pin` on missing token
 
 ## Environment Variables
 
 - `DATABASE_URL` - PostgreSQL connection string (required)
 - `ADMIN_PASSWORD` - Admin login password
+- `AUTH_SECRET` - Signs session cookies; at least 32 characters (required, generate with `openssl rand -base64 32`)
 - `INVITE_PIN` - Guest PIN (default: "1234")
 - `NEXT_PUBLIC_BASE_URL` - App URL for QR codes (default: http://localhost:3000)
 

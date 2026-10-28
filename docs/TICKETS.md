@@ -16,7 +16,7 @@ Goal: turn Attendly from a single hard-coded wedding into a product any host can
 | Phase | Theme                                                | Tickets       | Status      |
 | ----- | ---------------------------------------------------- | ------------- | ----------- |
 | 0     | Foundations (server layer, validation, tests, CI)    | T-001 – T-009 | ✅ Done     |
-| 1     | Lock down security on the current app                | T-101 – T-108 | Next        |
+| 1     | Lock down security on the current app                | T-101 – T-108 | In progress |
 | 2     | Accounts with Better Auth (users, sign-up, sessions) | T-201 – T-209 | Not started |
 | 3     | Events & multi-tenancy                               | T-301 – T-312 | Not started |
 | 4     | Remove hard-coded content / theming                  | T-401 – T-409 | Not started |
@@ -99,7 +99,7 @@ Run Prettier on the `src/app` pages (everything except `src/app/api`) and on `RE
 
 ## Phase 1 — Security fixes (current app)
 
-### T-101 · Signed admin session tokens · M
+### ✅ T-101 · Signed admin session tokens · M
 
 Replace the base64 `admin:<timestamp>` token with a signed JWT, using `jose` and an `AUTH_SECRET` env var.
 

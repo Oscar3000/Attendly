@@ -2,12 +2,13 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { handleRoute, UnauthorizedError } from "@/server/http/errors";
 import { parseBody } from "@/server/http/validate";
+import { sessionCookieOptions, signSession } from "@/server/auth/session";
 
 /**
  * Admin login API endpoint
  * POST /api/auth/login
  * Body: { password: string }
- * Response: { token: string } or { error: string }
+ * Response: { message: string } or { error: string }; the session is set as an HTTP-only cookie
  */
 
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
@@ -23,19 +24,10 @@ export const POST = handleRoute(async (request) => {
     throw new UnauthorizedError("Invalid password");
   }
 
-  // Generate a simple token (in production, use JWT)
-  const token = Buffer.from(`admin:${Date.now()}`).toString("base64");
+  const token = await signSession("admin");
 
-  const response = NextResponse.json({ token, message: "Login successful" }, { status: 200 });
-
-  // Set secure HTTP-only cookie
-  response.cookies.set("auth_token", token, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "strict",
-    maxAge: 24 * 60 * 60, // 24 hours
-    path: "/",
-  });
+  const response = NextResponse.json({ message: "Login successful" }, { status: 200 });
+  response.cookies.set("auth_token", token, sessionCookieOptions);
 
   return response;
 });
