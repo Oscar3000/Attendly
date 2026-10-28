@@ -67,7 +67,8 @@ export const invitationRepo = {
   // Update invitation
   async updateInvitation(
     id: string,
-    updates: Partial<Omit<InviteDetails, "id" | "createdAt">>,
+    // Fields that are missing or undefined are left unchanged
+    updates: { [K in keyof Omit<InviteDetails, "id" | "createdAt">]?: InviteDetails[K] | undefined },
   ): Promise<InviteDetails | undefined> {
     try {
       const updateData: Partial<{

@@ -4,16 +4,9 @@
  */
 import { NextResponse } from "next/server";
 import { metricsRepo } from "@/server/repositories/metrics.repo";
+import { handleRoute } from "@/server/http/errors";
 
-export async function GET() {
-  try {
-    const statusUpdates = await metricsRepo.getRecentStatusUpdates();
-    return NextResponse.json({ statusUpdates }, { status: 200 });
-  } catch (error) {
-    console.error("Error fetching status updates:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch status updates" },
-      { status: 500 },
-    );
-  }
-}
+export const GET = handleRoute(async () => {
+  const statusUpdates = await metricsRepo.getRecentStatusUpdates();
+  return NextResponse.json({ statusUpdates }, { status: 200 });
+});
