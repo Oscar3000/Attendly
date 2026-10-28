@@ -123,7 +123,7 @@ Guests (`invite_token`) may only `GET` a single invitation and `PATCH` its statu
 - Add `requireAdmin()` and `requireAdminOrGuest()` helpers in `src/server/auth/guards.ts`. The `/api/admin` routes use `requireAdmin()` too, as a second line of defence behind the middleware.
 - **Files:** ~10
 
-### T-104 · Constant-time secret comparison · S
+### ✅ T-104 · Constant-time secret comparison · S
 
 Compare the password and PIN with `crypto.timingSafeEqual`.
 
