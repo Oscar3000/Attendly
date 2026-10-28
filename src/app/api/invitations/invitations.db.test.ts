@@ -1,13 +1,32 @@
-import { describe, expect, it } from "vitest";
+import { beforeAll, describe, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
-import { POST as createInvitation } from "./route";
+import { signSession } from "@/server/auth/session";
+import { GET as listInvitations, POST as createInvitation } from "./route";
 import { POST as bulkCreate } from "./bulk/route";
-import { GET as getInvitation, PATCH as patchStatus, PUT as updateInvitation } from "./[id]/route";
+import {
+  DELETE as deleteInvitation,
+  GET as getInvitation,
+  PATCH as patchStatus,
+  PUT as updateInvitation,
+} from "./[id]/route";
 
 const url = "http://localhost/api/invitations";
 
-function jsonRequest(method: string, body: unknown) {
-  return new NextRequest(url, { method, body: JSON.stringify(body) });
+type Caller = "admin" | "guest" | "anonymous";
+const cookies: Record<Caller, string> = { admin: "", guest: "", anonymous: "" };
+
+beforeAll(async () => {
+  vi.stubEnv("AUTH_SECRET", "test-secret-that-is-at-least-32-characters-long");
+  cookies.admin = `auth_token=${await signSession("admin")}`;
+  cookies.guest = `invite_token=${await signSession("guest")}`;
+});
+
+function jsonRequest(method: string, body?: unknown, as: Caller = "admin") {
+  return new NextRequest(url, {
+    method,
+    headers: cookies[as] ? { cookie: cookies[as] } : {},
+    ...(body === undefined ? {} : { body: JSON.stringify(body) }),
+  });
 }
 
 const params = (id: string) => ({ params: Promise.resolve({ id }) });
@@ -54,7 +73,7 @@ describe("POST /api/invitations", () => {
 
 describe("/api/invitations/[id]", () => {
   it("returns 404 for an unknown invitation", async () => {
-    const { status, body } = await call(getInvitation(new NextRequest(url), params("missing")));
+    const { status, body } = await call(getInvitation(jsonRequest("GET"), params("missing")));
     expect(status).toBe(404);
     expect(body).toEqual({ error: "Invitation not found" });
   });
@@ -106,5 +125,48 @@ describe("POST /api/invitations/bulk", () => {
       ),
     );
     expect(status).toBe(400);
+  });
+});
+
+describe("access control", () => {
+  it("lets a guest read one invitation and update its RSVP status", async () => {
+    const created = await createGuest();
+
+    const read = await call(
+      getInvitation(jsonRequest("GET", undefined, "guest"), params(created.id)),
+    );
+    expect(read.status).toBe(200);
+
+    const rsvp = await call(
+      patchStatus(jsonRequest("PATCH", { status: "confirmed" }, "guest"), params(created.id)),
+    );
+    expect(rsvp.status).toBe(200);
+    expect(rsvp.body.invitation.status).toBe("confirmed");
+  });
+
+  it("returns 403 when a guest calls an admin-only endpoint", async () => {
+    const created = await createGuest();
+    const guest = (method: string, body?: unknown) => jsonRequest(method, body, "guest");
+    const valid = { name: "Eve", eventDate: "2026-05-23T14:00", venue: "Hall" };
+
+    const responses = await Promise.all([
+      listInvitations(guest("GET"), {}),
+      createInvitation(guest("POST", valid), {}),
+      bulkCreate(guest("POST", { ...valid, rows: [{ name: "Eve" }] }), {}),
+      updateInvitation(guest("PUT", { name: "Hacked" }), params(created.id)),
+      deleteInvitation(guest("DELETE"), params(created.id)),
+    ]);
+
+    expect(responses.map((r) => r.status)).toEqual([403, 403, 403, 403, 403]);
+    const stillThere = await call(getInvitation(jsonRequest("GET"), params(created.id)));
+    expect(stillThere.body.invitation.name).toBe("Ada");
+  });
+
+  it("returns 401 without a session, before validating the body", async () => {
+    const { status } = await call(createInvitation(jsonRequest("POST", {}, "anonymous"), {}));
+    expect(status).toBe(401);
+
+    const read = await call(getInvitation(jsonRequest("GET", undefined, "anonymous"), params("x")));
+    expect(read.status).toBe(401);
   });
 });

@@ -116,12 +116,12 @@ In `src/middleware.ts`, call `verifySession()` (it is edge-compatible via `jose`
 - **Done when:** setting `auth_token=x` by hand no longer grants access.
 - **Files:** ~2
 
-### T-103 · Restrict guest access on `/api/invitations` · M
+### ✅ T-103 · Restrict guest access on `/api/invitations` · M
 
 Guests (`invite_token`) may only `GET` a single invitation and `PATCH` its status. `GET` list, `POST`, `PUT`, `DELETE`, and `/bulk` require the admin session.
 
-- Add `requireAdmin()` and `requireGuest()` helpers in `src/server/auth/guards.ts`.
-- **Files:** ~5
+- Add `requireAdmin()` and `requireAdminOrGuest()` helpers in `src/server/auth/guards.ts`. The `/api/admin` routes use `requireAdmin()` too, as a second line of defence behind the middleware.
+- **Files:** ~10
 
 ### T-104 · Constant-time secret comparison · S
 
@@ -147,12 +147,13 @@ Add CSP, `X-Frame-Options`, `Referrer-Policy`, and `Permissions-Policy` (camera 
 
 - **Files:** ~1
 
-### T-108 · Tests for auth guards · S
+### ✅ T-108 · Tests for auth guards · S
 
 Cover: forged cookie → 401, guest calling an admin route → 401/403, guest `PATCH` on own invite → 200.
 
 - **Depends on:** T-003, T-103
 - **Files:** ~3
+- Done as part of T-103 (`guards.test.ts`, the access-control cases in `invitations.db.test.ts`) and T-102 (`middleware.test.ts`).
 
 ---
 

@@ -6,10 +6,12 @@
 import { NextResponse } from "next/server";
 import { invitationRepo } from "@/server/repositories/invitation.repo";
 import { handleRoute } from "@/server/http/errors";
+import { requireAdmin } from "@/server/auth/guards";
 import { parseBody } from "@/server/http/validate";
 import { bulkCreateInvitationsSchema } from "@/server/validation/invitation.schemas";
 
 export const POST = handleRoute(async (request) => {
+  await requireAdmin(request);
   const { eventDate, venue, status, rows } = await parseBody(request, bulkCreateInvitationsSchema);
 
   const created: { row: number; name: string; id: string }[] = [];
