@@ -1,18 +1,10 @@
 /**
  * RTK Query API slice for managing invitation-related API calls
- * Event-scoped endpoints are injected from eventInvitationApi.ts (T-308). The admin endpoints
- * below use the old unscoped routes and go away when the dashboard moves to them (T-309);
- * getInvitation and updateRsvpStatus also serve PIN guests until T-503
+ * The dashboard's event-scoped endpoints are injected from eventInvitationApi.ts (T-308).
+ * Only the PIN guest page uses the two endpoints below, until per-invitation links (T-503)
  */
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-import type {
-  InviteDetails,
-  AdminMetrics,
-  InvitationTableEntry,
-  CreateInviteForm,
-  RsvpStatus,
-  StatusUpdate,
-} from "@/lib/types";
+import type { InviteDetails, RsvpStatus } from "@/lib/types";
 
 export const invitationApi = createApi({
   reducerPath: "invitationApi",
@@ -20,104 +12,15 @@ export const invitationApi = createApi({
     baseUrl: "/api/",
   }),
   // Event* tags are per event (id = eventId), used by eventInvitationApi.ts
-  tagTypes: [
-    "Invitation",
-    "AdminData",
-    "StatusUpdates",
-    "EventInvitations",
-    "EventMetrics",
-    "EventStatus",
-  ],
+  tagTypes: ["Invitation", "EventInvitations", "EventMetrics", "EventStatus"],
   endpoints: (builder) => ({
-    // Get single invitation
+    // Get a single invitation (guest)
     getInvitation: builder.query<{ invitation: InviteDetails }, string>({
       query: (id) => `invitations/${id}`,
       providesTags: (_result, _error, id) => [{ type: "Invitation", id }],
     }),
 
-    // Get all invitations (admin)
-    getAllInvitations: builder.query<{ invitations: InviteDetails[] }, void>({
-      query: () => "invitations",
-      providesTags: ["Invitation"],
-    }),
-
-    // Get admin dashboard data
-    getAdminData: builder.query<
-      {
-        metrics: AdminMetrics;
-        invitations: InvitationTableEntry[];
-        pagination?: {
-          page: number;
-          limit: number;
-          total: number;
-          totalPages: number;
-        };
-      },
-      { page?: number; limit?: number; search?: string }
-    >({
-      query: ({ page = 1, limit = 10, search = "" } = {}) => {
-        const params = new URLSearchParams({ page: String(page), limit: String(limit) });
-        if (search) params.set("search", search);
-        return `admin?${params.toString()}`;
-      },
-      providesTags: ["AdminData", "Invitation"],
-    }),
-
-    // Get recent status updates
-    getStatusUpdates: builder.query<{ statusUpdates: StatusUpdate[] }, void>({
-      query: () => "admin/status",
-      providesTags: ["StatusUpdates"],
-    }),
-
-    // Create invitation
-    createInvitation: builder.mutation<{ invitation: InviteDetails }, CreateInviteForm>({
-      query: (invitation) => ({
-        url: "invitations",
-        method: "POST",
-        body: invitation,
-      }),
-      invalidatesTags: ["Invitation", "AdminData", "StatusUpdates"],
-    }),
-
-    // Bulk create invitations
-    bulkCreateInvitations: builder.mutation<
-      {
-        created: { row: number; name: string; id: string }[];
-        failed: { row: number; name: string; error: string }[];
-        summary: { total: number; createdCount: number; failedCount: number };
-      },
-      {
-        // The date and venue come from the event
-        status?: RsvpStatus;
-        rows: { name: string; plusOne?: number }[];
-      }
-    >({
-      query: (body) => ({
-        url: "invitations/bulk",
-        method: "POST",
-        body,
-      }),
-      invalidatesTags: ["Invitation", "AdminData", "StatusUpdates"],
-    }),
-
-    // Update invitation
-    updateInvitation: builder.mutation<
-      { invitation: InviteDetails },
-      { id: string; data: Partial<CreateInviteForm> }
-    >({
-      query: ({ id, data }) => ({
-        url: `invitations/${id}`,
-        method: "PUT",
-        body: data,
-      }),
-      invalidatesTags: (_result, _error, { id }) => [
-        { type: "Invitation", id },
-        "AdminData",
-        "StatusUpdates",
-      ],
-    }),
-
-    // Update RSVP status
+    // Update RSVP status (guest)
     updateRsvpStatus: builder.mutation<
       { invitation: InviteDetails },
       { id: string; status: RsvpStatus }
@@ -127,36 +30,9 @@ export const invitationApi = createApi({
         method: "PATCH",
         body: { status },
       }),
-      invalidatesTags: (_result, _error, { id }) => [
-        { type: "Invitation", id },
-        "AdminData",
-        "StatusUpdates",
-      ],
-    }),
-
-    // Delete invitation
-    deleteInvitation: builder.mutation<{ message: string }, string>({
-      query: (id) => ({
-        url: `invitations/${id}`,
-        method: "DELETE",
-      }),
-      invalidatesTags: (_result, _error, id) => [
-        { type: "Invitation", id },
-        "AdminData",
-        "StatusUpdates",
-      ],
+      invalidatesTags: (_result, _error, { id }) => [{ type: "Invitation", id }],
     }),
   }),
 });
 
-export const {
-  useGetInvitationQuery,
-  useGetAllInvitationsQuery,
-  useGetAdminDataQuery,
-  useGetStatusUpdatesQuery,
-  useCreateInvitationMutation,
-  useBulkCreateInvitationsMutation,
-  useUpdateInvitationMutation,
-  useUpdateRsvpStatusMutation,
-  useDeleteInvitationMutation,
-} = invitationApi;
+export const { useGetInvitationQuery, useUpdateRsvpStatusMutation } = invitationApi;

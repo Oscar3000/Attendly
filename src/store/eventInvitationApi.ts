@@ -2,7 +2,7 @@
  * Event-scoped endpoints (T-308), injected into invitationApi so they share its cache
  * Every endpoint takes eventId and calls /api/events/[eventId]/...; cache tags carry the event,
  * so a change in one event never refetches another event's data
- * The dashboard switches to these in T-309, which then removes the old admin endpoints
+ * Used by the event dashboard under /dashboard/events/[eventId] (T-309)
  */
 import type {
   AdminMetrics,

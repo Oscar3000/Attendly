@@ -50,6 +50,15 @@ describe("admin routes", () => {
     expect((await middleware(request("/api/admin", { auth_token }))).status).toBe(401);
   });
 
+  it("sends signed-out visitors of the event dashboard to /login", async () => {
+    const page = await middleware(request("/dashboard/events/abc"));
+    expect(page.status).toBe(307);
+    expect(page.headers.get("location")).toBe("http://localhost/login");
+    expect(passedThrough(await middleware(request("/dashboard/events/abc", sessionCookie)))).toBe(
+      true,
+    );
+  });
+
   it("requires a session cookie for event-scoped API routes", async () => {
     const path = "/api/events/abc/invitations";
     expect((await middleware(request(path))).status).toBe(401);

@@ -1,109 +1,40 @@
 "use client";
 
-import { useState, use, useEffect, useMemo } from "react";
-import { useRouter } from "next/navigation";
-import { EditInviteForm, RsvpStatus } from "@/lib/types";
+import { useState } from "react";
+import { CreateInviteForm, RsvpStatus } from "@/lib/types";
 import { Button } from "@/components/button";
-import { formatDate, formatTime } from "@/lib/utils";
-import { useGetInvitationQuery, useUpdateInvitationMutation } from "@/store/invitationApi";
+import { useCreateEventInvitationMutation } from "@/store/eventInvitationApi";
+import { useParams, useRouter } from "next/navigation";
 
-interface EditInvitePageProps {
-  params: Promise<{
-    id: string;
-  }>;
-}
-
-export default function EditInvitePage({ params }: EditInvitePageProps) {
-  const resolvedParams = use(params) as { id: string };
+export default function CreateInvitePage() {
   const router = useRouter();
+  const { eventId } = useParams<{ eventId: string }>();
+  const [form, setForm] = useState<CreateInviteForm>({
+    name: "",
+    status: "pending",
+    plusOne: 0,
+  });
 
-  const { data, isLoading: loading, error } = useGetInvitationQuery(resolvedParams.id);
-  const [updateInvitation, { isLoading: isSubmitting }] = useUpdateInvitationMutation();
-
-  const invitation = data?.invitation;
-
-  // Initialize form with invitation data when available
-  const initialForm = useMemo(() => {
-    if (invitation) {
-      return {
-        id: invitation.id,
-        name: invitation.name,
-        status: invitation.status,
-        plusOne: invitation.plusOne ?? 0,
-      };
-    }
-    return {
-      id: resolvedParams.id,
-      name: "",
-      status: "pending" as RsvpStatus,
-      plusOne: 0,
-    };
-  }, [invitation, resolvedParams.id]);
-
-  const [form, setForm] = useState<EditInviteForm>(initialForm);
-
-  // Update form when initialForm changes
-  useEffect(() => {
-    setForm(initialForm);
-  }, [initialForm]);
+  const [createInvitation, { isLoading: isSubmitting }] = useCreateEventInvitationMutation();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     try {
-      await updateInvitation({
-        id: resolvedParams.id,
-        data: {
-          name: form.name,
-          status: form.status,
-          plusOne: form.plusOne,
-        },
-      }).unwrap();
-
-      router.push("/admin");
+      const result = await createInvitation({ eventId, invitation: form }).unwrap();
+      router.push(`/dashboard/events/${eventId}/create-invite/success?id=${result.invitation.id}`);
     } catch (error) {
-      console.error("Error updating invite:", error);
-      alert("Failed to update invitation. Please try again.");
+      console.error("Error creating invite:", error);
+      alert("Failed to create invitation. Please try again.");
     }
   };
 
-  const handleInputChange = (field: keyof Omit<EditInviteForm, "id">, value: string | number) => {
+  const handleInputChange = (field: keyof CreateInviteForm, value: string | number) => {
     setForm((prev) => ({
       ...prev,
       [field]: value,
     }));
   };
-
-  if (loading) {
-    return (
-      <div
-        className="min-h-screen flex items-center justify-center"
-        style={{ backgroundColor: "#FFF9F4" }}
-      >
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading invitation...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div
-        className="min-h-screen flex items-center justify-center"
-        style={{ backgroundColor: "#FFF9F4" }}
-      >
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">Error</h1>
-          <p className="text-gray-600 mb-6">Failed to load invitation</p>
-          <Button variant="primary" onClick={() => router.push("/admin")}>
-            Back to Dashboard
-          </Button>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen px-4 py-4 sm:p-6">
@@ -117,8 +48,9 @@ export default function EditInvitePage({ params }: EditInvitePageProps) {
       >
         {/* Header */}
         <div className="mb-6 sm:mb-8">
-          <h1 className="text-2xl sm:text-4xl font-bold text-gray-900 mb-4 sm:mb-6">Edit Invite</h1>
-          <p className="text-gray-600">Invitation ID: {form.id}</p>
+          <h1 className="text-2xl sm:text-4xl font-bold text-gray-900 mb-4 sm:mb-6">
+            Create Invite
+          </h1>
         </div>
 
         {/* Form */}
@@ -146,22 +78,13 @@ export default function EditInvitePage({ params }: EditInvitePageProps) {
             />
           </div>
 
-          {/* The date and venue belong to the event, shown here for reference */}
-          {invitation && (
-            <p className="text-sm text-gray-600">
-              Event: {formatDate(new Date(invitation.eventDate))} at{" "}
-              {formatTime(new Date(invitation.eventDate))}
-              {invitation.venue && ` · ${invitation.venue}`}
-            </p>
-          )}
-
           {/* Plus One Field */}
           <div>
             <label
               htmlFor="plusOne"
               className="block text-base sm:text-lg font-medium text-gray-900 mb-2 sm:mb-3"
             >
-              Plus One (Additional Guests)
+              Plus One (Number of additional guests)
             </label>
             <input
               type="number"
@@ -185,7 +108,7 @@ export default function EditInvitePage({ params }: EditInvitePageProps) {
               htmlFor="status"
               className="block text-base sm:text-lg font-medium text-gray-900 mb-2 sm:mb-3"
             >
-              Status
+              Initial Status
             </label>
             <div className="relative">
               <select
@@ -201,7 +124,6 @@ export default function EditInvitePage({ params }: EditInvitePageProps) {
                 <option value="pending">Pending</option>
                 <option value="confirmed">Confirmed</option>
                 <option value="declined">Declined</option>
-                <option value="rescinded">Rescinded</option>
               </select>
               {/* Custom dropdown arrow */}
               <div className="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none">

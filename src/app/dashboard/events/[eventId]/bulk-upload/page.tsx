@@ -1,9 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { Button } from "@/components/button";
-import { useBulkCreateInvitationsMutation } from "@/store/invitationApi";
+import { useBulkCreateEventInvitationsMutation } from "@/store/eventInvitationApi";
 import type { RsvpStatus } from "@/lib/types";
 
 interface ParsedRow {
@@ -96,13 +96,15 @@ function parseCsvLine(line: string): string[] {
 
 export default function BulkUploadPage() {
   const router = useRouter();
+  const { eventId } = useParams<{ eventId: string }>();
+  const dashboard = `/dashboard/events/${eventId}`;
   const [status, setStatus] = useState<RsvpStatus>("pending");
   const [rows, setRows] = useState<ParsedRow[]>([]);
   const [parseErrors, setParseErrors] = useState<string[]>([]);
   const [fileName, setFileName] = useState<string>("");
   const [result, setResult] = useState<BulkResult | null>(null);
 
-  const [bulkCreate, { isLoading: isSubmitting }] = useBulkCreateInvitationsMutation();
+  const [bulkCreate, { isLoading: isSubmitting }] = useBulkCreateEventInvitationsMutation();
 
   const handleFile = async (file: File) => {
     setResult(null);
@@ -120,7 +122,7 @@ export default function BulkUploadPage() {
       return;
     }
     try {
-      const res = await bulkCreate({ status, rows }).unwrap();
+      const res = await bulkCreate({ eventId, status, rows }).unwrap();
       setResult(res);
     } catch (err) {
       console.error("Bulk upload error:", err);
@@ -134,7 +136,7 @@ export default function BulkUploadPage() {
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Bulk Upload Invites</h1>
           <button
-            onClick={() => router.push("/admin")}
+            onClick={() => router.push(dashboard)}
             className="text-sm text-gray-600 hover:text-gray-900"
           >
             ← Back
@@ -264,7 +266,7 @@ export default function BulkUploadPage() {
               </div>
             )}
 
-            <Button variant="secondary" onClick={() => router.push("/admin")}>
+            <Button variant="secondary" onClick={() => router.push(dashboard)}>
               Back to Dashboard
             </Button>
           </div>
