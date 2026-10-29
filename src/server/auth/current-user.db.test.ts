@@ -1,18 +1,15 @@
 import { beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
-import { UnauthorizedError } from "@/server/http/errors";
+import { ForbiddenError, UnauthorizedError } from "@/server/http/errors";
+import { sessionCookieFor, stubAuthEnv } from "../../../tests/helpers/auth";
 import { getAuth } from "./auth";
-import { getCurrentUser, requireUser } from "./current-user";
+import { getCurrentUser, requireAdminUser, requireUser } from "./current-user";
 
 // The helpers read the request's headers; each test sets the cookie it sends
 let requestHeaders = new Headers();
 vi.mock("next/headers", () => ({ headers: async () => requestHeaders }));
 
 beforeAll(() => {
-  vi.stubEnv("AUTH_SECRET", "test-secret-that-is-at-least-32-characters-long");
-  vi.stubEnv("ADMIN_PASSWORD", "correct-horse");
-  vi.stubEnv("INVITE_PIN", "2468");
-  vi.stubEnv("BETTER_AUTH_SECRET", "better-auth-test-secret-at-least-32-characters");
-  vi.stubEnv("BETTER_AUTH_URL", "http://localhost:3000");
+  stubAuthEnv();
 });
 
 beforeEach(() => {
@@ -56,5 +53,33 @@ describe("requireUser", () => {
 
   it("throws a 401 when signed out", async () => {
     await expect(requireUser()).rejects.toBeInstanceOf(UnauthorizedError);
+  });
+});
+
+describe("headers passed by a route handler", () => {
+  it("are used instead of next/headers", async () => {
+    const cookie = await signUp();
+    await expect(getCurrentUser(new Headers({ cookie }))).resolves.toMatchObject({ name: "Ada" });
+    // next/headers (requestHeaders) carries no cookie here
+    await expect(getCurrentUser()).resolves.toBeNull();
+  });
+});
+
+// ADMIN_EMAIL is admin@example.com (vitest.config.mts)
+describe("requireAdminUser", () => {
+  it("returns the ADMIN_EMAIL account, whatever the email's case", async () => {
+    const cookie = await sessionCookieFor("Admin@Example.com");
+    await expect(requireAdminUser(new Headers({ cookie }))).resolves.toMatchObject({
+      email: "admin@example.com",
+    });
+  });
+
+  it("rejects any other account with 403", async () => {
+    const cookie = await sessionCookieFor("someone@example.com");
+    await expect(requireAdminUser(new Headers({ cookie }))).rejects.toBeInstanceOf(ForbiddenError);
+  });
+
+  it("rejects no session with 401", async () => {
+    await expect(requireAdminUser(new Headers())).rejects.toBeInstanceOf(UnauthorizedError);
   });
 });

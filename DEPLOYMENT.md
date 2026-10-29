@@ -88,7 +88,6 @@ In the Railway dashboard, click on your **app service** (not the database), go t
 | `DATABASE_URL`            | `${{Postgres.DATABASE_URL}}`        | Use Railway's variable reference to auto-link to your DB                   |
 | `NEXT_PUBLIC_BASE_URL`    | `https://your-app.up.railway.app`   | Your Railway public URL (set after first deploy)                           |
 | `ADMIN_EMAIL`             | `you@example.com`                   | **Required.** The only account allowed into the dashboard                  |
-| `ADMIN_PASSWORD`          | `your-secure-password`              | **Required.** Password the seed gives the admin account (8+ characters)    |
 | `INVITE_PIN`              | `your-pin`                          | **Required.** PIN guests use to access invitations (4+ chars)              |
 | `AUTH_SECRET`             | output of `openssl rand -base64 32` | **Required.** Signs login cookies; changing it logs everyone out           |
 | `BETTER_AUTH_SECRET`      | output of `openssl rand -base64 32` | **Required.** Better Auth secret; use a different value from `AUTH_SECRET` |
@@ -97,7 +96,7 @@ In the Railway dashboard, click on your **app service** (not the database), go t
 | `NODE_ENV`                | `production`                        |                                                                            |
 | `NEXT_TELEMETRY_DISABLED` | `1`                                 | Optional                                                                   |
 
-If `DATABASE_URL`, `AUTH_SECRET`, `ADMIN_EMAIL`, `ADMIN_PASSWORD`, `INVITE_PIN`, `BETTER_AUTH_SECRET` or `BETTER_AUTH_URL` is missing or invalid, the app logs which one and exits at startup, so the deploy fails instead of serving errors.
+If `DATABASE_URL`, `AUTH_SECRET`, `ADMIN_EMAIL`, `INVITE_PIN`, `BETTER_AUTH_SECRET` or `BETTER_AUTH_URL` is missing or invalid, the app logs which one and exits at startup, so the deploy fails instead of serving errors.
 
 ### Linking the Database URL
 
@@ -138,14 +137,15 @@ railway run npx prisma migrate deploy
 
 ### Create the admin account
 
-Once the Better Auth migration has run, create the admin's account from your machine. Do this once; running it again leaves the existing account alone.
+Once the Better Auth migration has run, create the admin's account from your machine (not the Railway console: the production image has no `tsx`). Do this once; running it again leaves the existing account alone.
 
 ```bash
-# ADMIN_PASSWORD (at least 8 characters) becomes the account password
-railway run npm run db:seed
+railway run sh -c 'DATABASE_URL="<DATABASE_PUBLIC_URL>" ADMIN_PASSWORD="<password>" npm run db:seed'
 ```
 
-`railway run` injects the service's variables. If the database's internal hostname doesn't resolve from your machine, prefix the command with `DATABASE_URL=<the database's public URL>`.
+- `railway run` injects the app's variables, including `ADMIN_EMAIL`. Setting the others inside `sh -c` makes them win over Railway's values.
+- `DATABASE_URL` must be the database's **public** URL: the Postgres service's `DATABASE_PUBLIC_URL` (`…proxy.rlwy.net:<port>`). The app's own `DATABASE_URL` points at `postgres.railway.internal`, which only resolves inside Railway.
+- `ADMIN_PASSWORD` (8+ characters) becomes the account password. Only this command reads it, so there's no need to keep it as a Railway variable.
 
 ---
 

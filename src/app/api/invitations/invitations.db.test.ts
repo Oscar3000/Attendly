@@ -150,7 +150,8 @@ describe("access control", () => {
     expect(rsvp.body.invitation.status).toBe("confirmed");
   });
 
-  it("returns 403 when a guest calls an admin-only endpoint", async () => {
+  // A guest has no account session, so admin-only endpoints treat them as signed out
+  it("returns 401 when a guest calls an admin-only endpoint", async () => {
     const created = await createGuest();
     const guest = (method: string, body?: unknown) => jsonRequest(method, body, "guest");
     const valid = { name: "Eve", eventDate: "2026-05-23T14:00", venue: "Hall" };
@@ -163,7 +164,7 @@ describe("access control", () => {
       deleteInvitation(guest("DELETE"), params(created.id)),
     ]);
 
-    expect(responses.map((r) => r.status)).toEqual([403, 403, 403, 403, 403]);
+    expect(responses.map((r) => r.status)).toEqual([401, 401, 401, 401, 401]);
     const stillThere = await call(getInvitation(jsonRequest("GET"), params(created.id)));
     expect(stillThere.body.invitation.name).toBe("Ada");
   });
