@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { sendEmail } from "./send-email";
+import { canSendEmail, sendEmail } from "./send-email";
 
 const email = { to: "guest@example.com", subject: "Verify your email", text: "Open this link" };
 
@@ -33,12 +33,24 @@ describe("without RESEND_API_KEY", () => {
     vi.stubEnv("NODE_ENV", "production");
     await expect(sendEmail(email)).rejects.toThrow("Email is not configured");
   });
+
+  it("can send (by logging) in development, but not in production", () => {
+    vi.stubEnv("NODE_ENV", "development");
+    expect(canSendEmail()).toBe(true);
+    vi.stubEnv("NODE_ENV", "production");
+    expect(canSendEmail()).toBe(false);
+  });
 });
 
 describe("with RESEND_API_KEY", () => {
   beforeEach(() => {
     vi.stubEnv("RESEND_API_KEY", "re_test_key");
     vi.stubEnv("EMAIL_FROM", "Attendly <hello@example.com>");
+  });
+
+  it("can send in production", () => {
+    vi.stubEnv("NODE_ENV", "production");
+    expect(canSendEmail()).toBe(true);
   });
 
   it("posts the email to Resend", async () => {

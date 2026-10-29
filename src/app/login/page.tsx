@@ -37,12 +37,19 @@ export default function LoginPage() {
     <AuthCard
       title="Log in"
       footer={
-        <p>
-          No account yet?{" "}
-          <Link href="/signup" className="font-medium text-[#C07A54] hover:underline">
-            Sign up
-          </Link>
-        </p>
+        <>
+          <p>
+            <Link href="/forgot-password" className="hover:underline">
+              Forgot your password?
+            </Link>
+          </p>
+          <p>
+            No account yet?{" "}
+            <Link href="/signup" className="font-medium text-[#C07A54] hover:underline">
+              Sign up
+            </Link>
+          </p>
+        </>
       }
     >
       <form onSubmit={handleSubmit} noValidate>

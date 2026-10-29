@@ -52,8 +52,10 @@ src/
       health/                 # Health check
     invite/[id]/              # Guest invitation view
     invite-pin/               # Guest PIN entry
-    login/                    # Email + password login (admin-password/ is the old form, removed in T-204)
-    signup/                   # Account sign-up
+    login/                    # Email + password login
+    signup/                   # Account sign-up (sends a verification email)
+    forgot-password/          # Request a password reset email
+    reset-password/           # Set a new password from the emailed link (?token= or ?error=)
   components/
     admin/                    # Dashboard components (header, table, metrics, status)
     button.tsx                # Reusable button (variants: primary, secondary, danger, attendly)
@@ -98,7 +100,7 @@ All required variables are validated at startup (`src/instrumentation.ts` -> `sr
 - `BETTER_AUTH_SECRET` - Better Auth secret; at least 32 characters, different from `AUTH_SECRET` (required)
 - `BETTER_AUTH_URL` - Public app URL for Better Auth, e.g. `http://localhost:3000` (required)
 - `NEXT_PUBLIC_BASE_URL` - App URL for QR codes (default: http://localhost:3000)
-- `RESEND_API_KEY`, `EMAIL_FROM` - Optional; set both to send email through Resend (`EMAIL_FROM` like `Attendly <hello@yourdomain.com>`, on a domain verified in Resend). Without them, development logs emails to the console and production `sendEmail()` throws
+- `RESEND_API_KEY`, `EMAIL_FROM` - Send email through Resend (`EMAIL_FROM` like `Attendly <hello@yourdomain.com>`, on a domain verified in Resend). Optional: without them, development logs emails (with their links) to the console, and production skips them (sign-up still works; verification and password-reset emails aren't sent, and the verify banner is hidden)
 - `ADMIN_PASSWORD`, `ADMIN_NAME` - Only read by `npm run db:seed`: the admin account's password (8+ characters) and optional display name (default `Admin`); not needed at runtime
 
 ## Key Patterns

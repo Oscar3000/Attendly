@@ -17,6 +17,12 @@ export interface Email {
 const RESEND_URL = "https://api.resend.com/emails";
 const TIMEOUT_MS = 10_000;
 
+// False in production without Resend, so the UI can hide actions that would send email
+export function canSendEmail(): boolean {
+  const { RESEND_API_KEY, EMAIL_FROM } = getEnv();
+  return Boolean(RESEND_API_KEY && EMAIL_FROM) || process.env.NODE_ENV !== "production";
+}
+
 export async function sendEmail(email: Email): Promise<void> {
   const { RESEND_API_KEY, EMAIL_FROM } = getEnv();
 
@@ -25,7 +31,7 @@ export async function sendEmail(email: Email): Promise<void> {
     return;
   }
 
-  // Fail loudly rather than drop a password reset in production
+  // Throw rather than pretend it was sent; Better Auth catches and logs this for its emails
   if (process.env.NODE_ENV === "production") {
     throw new Error("Email is not configured: set RESEND_API_KEY and EMAIL_FROM");
   }

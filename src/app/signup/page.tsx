@@ -30,7 +30,8 @@ export default function SignupPage() {
 
     // A network failure throws instead of returning an error; show the generic message for it
     const { error } = await authClient.signUp
-      .email({ name: name.trim(), email, password })
+      // callbackURL: where the verification email's link lands after verifying
+      .email({ name: name.trim(), email, password, callbackURL: "/admin" })
       .catch(() => ({ error: { status: 0 } }));
     if (error) {
       setErrors(toAuthFormErrors(error));

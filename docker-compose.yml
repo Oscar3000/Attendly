@@ -51,7 +51,8 @@ services:
       # Better Auth (T-201); required, no defaults
       BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET}
       BETTER_AUTH_URL: ${BETTER_AUTH_URL:-http://localhost:3000}
-      # Email via Resend (optional until password reset ships; both or neither)
+      # Email via Resend (optional; both or neither). Without them, verification and
+      # password-reset emails aren't sent
       RESEND_API_KEY: ${RESEND_API_KEY:-}
       EMAIL_FROM: ${EMAIL_FROM:-}
       

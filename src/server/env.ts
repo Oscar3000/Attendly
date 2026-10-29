@@ -22,7 +22,8 @@ const envSchema = z
       .string()
       .min(32, "must be at least 32 characters (openssl rand -base64 32)"),
     BETTER_AUTH_URL: z.url("must be a URL, e.g. http://localhost:3000"),
-    // Email (src/server/email). Optional: without a key, emails are logged in development
+    // Email (src/server/email). Optional: without them, development logs emails and production
+    // skips them (only verification and password-reset emails are affected)
     RESEND_API_KEY: optionalString,
     EMAIL_FROM: optionalString,
   })

@@ -41,6 +41,12 @@ describe("toAuthFormErrors", () => {
     });
   });
 
+  it("explains an invalid or expired reset link", () => {
+    expect(toAuthFormErrors({ code: "INVALID_TOKEN", status: 400 }).form).toMatch(
+      /invalid or has expired/,
+    );
+  });
+
   it("explains rate limiting", () => {
     expect(toAuthFormErrors({ status: 429 }).form).toMatch(/Too many attempts/);
   });
