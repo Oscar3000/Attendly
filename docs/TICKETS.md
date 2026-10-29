@@ -17,8 +17,8 @@ Goal: turn Attendly from a single hard-coded wedding into a product any host can
 | ----- | ---------------------------------------------------- | ------------- | ----------- |
 | 0     | Foundations (server layer, validation, tests, CI)    | T-001 – T-010 | T-010 open  |
 | 1     | Lock down security on the current app                | T-101 – T-108 | ✅ Done     |
-| 2     | Accounts with Better Auth (users, sign-up, sessions) | T-201 – T-209 | In progress |
-| 3     | Events & multi-tenancy                               | T-301 – T-312 | Not started |
+| 2     | Accounts with Better Auth (users, sign-up, sessions) | T-201 – T-209 | ✅ Done     |
+| 3     | Events & multi-tenancy                               | T-301 – T-312 | Next        |
 | 4     | Remove hard-coded content / theming                  | T-401 – T-409 | Not started |
 | 5     | Guest experience                                     | T-501 – T-508 | Not started |
 | 6     | Product features                                     | T-601 – T-610 | Not started |
@@ -259,9 +259,11 @@ Add `socialProviders.google` in `auth.ts` and a "Continue with Google" button on
 - **Depends on:** T-204
 - **Files:** ~4
 
-### T-209 · Account settings page · S
+### ✅ T-209 · Account settings page · S
 
 Change name (`authClient.updateUser`), password (`authClient.changePassword`, current password required), and email (`authClient.changeEmail`, which re-verifies through T-207).
+
+- **As built:** `/account` (any signed-in user; linked from the dashboard header and the "no access" page). A verified account confirms an email change from its current address before the new one is verified. Email changes are hidden when email isn't configured and for the `ADMIN_EMAIL` account (changing it would lock the dashboard until Phase 3). Password changes log out other sessions; Google-only accounts have no password section.
 
 - **Depends on:** T-205, T-207
 - **Files:** ~5

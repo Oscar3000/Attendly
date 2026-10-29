@@ -9,7 +9,7 @@ import { nextCookies } from "better-auth/next-js";
 import { prisma } from "@/server/db/client";
 import { sendEmail } from "@/server/email/send-email";
 import { getEnv } from "@/server/env";
-import { resetPasswordEmail, verificationEmail } from "./auth-emails";
+import { changeEmailConfirmation, resetPasswordEmail, verificationEmail } from "./auth-emails";
 
 function createAuth() {
   const env = getEnv();
@@ -31,6 +31,15 @@ function createAuth() {
     emailVerification: {
       sendOnSignUp: true,
       sendVerificationEmail: ({ user, url }) => sendEmail(verificationEmail(user.email, url)),
+    },
+    user: {
+      // A verified account confirms from its current address, then verifies the new one, so a
+      // stolen session can't quietly move the account to another email
+      changeEmail: {
+        enabled: true,
+        sendChangeEmailConfirmation: ({ user, newEmail, url }) =>
+          sendEmail(changeEmailConfirmation(user.email, newEmail, url)),
+      },
     },
     // Callback URL to register with Google: BETTER_AUTH_URL + /api/auth/callback/google.
     // Default linking rules apply: Google joins an existing account only when both Google and

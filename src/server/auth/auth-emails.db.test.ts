@@ -92,3 +92,84 @@ describe("password reset", () => {
     ).rejects.toMatchObject({ body: { code: "INVALID_TOKEN" } });
   });
 });
+
+describe("changing email", () => {
+  const headersFor = (cookie: string) => new Headers({ cookie });
+
+  it("confirms from the current address, then verifies the new one, before changing", async () => {
+    const cookie = await sessionCookieFor("ada@example.com");
+    await getAuth().api.verifyEmail({ query: { token: tokenFrom(lastEmail()) } });
+
+    await getAuth().api.changeEmail({
+      body: { newEmail: "ada@new.example.com", callbackURL: "/account" },
+      headers: headersFor(cookie),
+    });
+    const confirmation = lastEmail();
+    expect(confirmation.to).toBe("ada@example.com");
+    expect(confirmation.text).toContain("ada@new.example.com");
+    let user = await prisma.user.findFirstOrThrow();
+    expect(user.email).toBe("ada@example.com");
+
+    await getAuth().api.verifyEmail({ query: { token: tokenFrom(confirmation) } });
+    const verification = lastEmail();
+    expect(verification.to).toBe("ada@new.example.com");
+    user = await prisma.user.findFirstOrThrow();
+    expect(user.email).toBe("ada@example.com");
+
+    await getAuth().api.verifyEmail({ query: { token: tokenFrom(verification) } });
+    user = await prisma.user.findFirstOrThrow();
+    expect(user).toMatchObject({ email: "ada@new.example.com", emailVerified: true });
+  });
+
+  it("sends an unverified account's link straight to the new address", async () => {
+    const cookie = await sessionCookieFor("ada@example.com");
+
+    await getAuth().api.changeEmail({
+      body: { newEmail: "ada@new.example.com" },
+      headers: headersFor(cookie),
+    });
+    expect(lastEmail().to).toBe("ada@new.example.com");
+  });
+});
+
+describe("changing password", () => {
+  it("rejects a wrong current password", async () => {
+    const cookie = await sessionCookieFor("ada@example.com");
+
+    await expect(
+      getAuth().api.changePassword({
+        body: { currentPassword: "not-my-password", newPassword: "a-brand-new-password" },
+        headers: new Headers({ cookie }),
+      }),
+    ).rejects.toMatchObject({ body: { code: "INVALID_PASSWORD" } });
+  });
+
+  it("changes it and logs out other sessions", async () => {
+    const cookie = await sessionCookieFor("ada@example.com");
+    const { headers: otherDevice } = await getAuth().api.signInEmail({
+      body: { email: "ada@example.com", password: "correct-horse-battery" },
+      returnHeaders: true,
+    });
+    const otherCookie = otherDevice
+      .getSetCookie()
+      .map((c) => c.split(";")[0])
+      .join("; ");
+
+    await getAuth().api.changePassword({
+      body: {
+        currentPassword: "correct-horse-battery",
+        newPassword: "a-brand-new-password",
+        revokeOtherSessions: true,
+      },
+      headers: new Headers({ cookie }),
+    });
+
+    const other = await getAuth().api.getSession({ headers: new Headers({ cookie: otherCookie }) });
+    expect(other).toBeNull();
+    await expect(
+      getAuth().api.signInEmail({
+        body: { email: "ada@example.com", password: "a-brand-new-password" },
+      }),
+    ).resolves.toMatchObject({ user: { email: "ada@example.com" } });
+  });
+});

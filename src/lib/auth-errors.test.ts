@@ -47,6 +47,12 @@ describe("toAuthFormErrors", () => {
     );
   });
 
+  it("asks for a fresh login before sensitive changes", () => {
+    expect(toAuthFormErrors({ code: "SESSION_NOT_FRESH", status: 403 }).form).toMatch(
+      /log out and back in/,
+    );
+  });
+
   it("explains rate limiting", () => {
     expect(toAuthFormErrors({ status: 429 }).form).toMatch(/Too many attempts/);
   });

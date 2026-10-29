@@ -42,6 +42,12 @@ export default function DashboardHeader({ onCreateInvite }: DashboardHeaderProps
           Bulk Upload
         </button>
         <button
+          onClick={() => router.push("/account")}
+          className="flex-1 sm:flex-none px-4 py-2 rounded-lg font-medium text-gray-700 border border-gray-300 hover:bg-gray-50 transition-colors text-sm sm:text-base"
+        >
+          Account
+        </button>
+        <button
           onClick={handleLogout}
           className="flex-1 sm:flex-none px-4 py-2 rounded-lg font-medium text-gray-700 border border-gray-300 hover:bg-gray-50 transition-colors text-sm sm:text-base"
         >

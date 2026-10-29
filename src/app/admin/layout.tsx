@@ -1,4 +1,5 @@
 import { headers } from "next/headers";
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getAuth } from "@/server/auth/auth";
 import { getCurrentUser, isAdminEmail } from "@/server/auth/current-user";
@@ -37,6 +38,12 @@ function NoAccess({ email }: { email: string }) {
           You&apos;re signed in as <span className="font-medium text-[#333333]">{email}</span>, but
           this dashboard is only available to its owner for now.
         </p>
+        <Link
+          href="/account"
+          className="font-inter mb-3 block text-sm font-medium text-[#C07A54] hover:underline"
+        >
+          Account settings
+        </Link>
         <form action={signOut}>
           <button
             type="submit"
