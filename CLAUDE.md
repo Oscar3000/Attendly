@@ -118,6 +118,7 @@ All required variables are validated at startup (`src/instrumentation.ts` -> `sr
 - Server Components by default; `'use client'` for interactive UI
 - RTK Query for data fetching with tag-based cache invalidation
 - Repositories in `src/server/repositories/` hold all Prisma operations; route handlers stay thin
+- Invitation and metrics repository functions take `eventId` and only touch that event's invitations; another event's invitation behaves like a missing one. The only exceptions are `getInvitationForGuest` / `updateRsvpStatusForGuest` (shared-PIN guests, removed in T-505)
 - `utils.ts` has status converters between Prisma enums and app types
 - Path alias: `@/*` maps to `./src/*`
 - Security headers and the Content Security Policy live in `next.config.ts`. Everything loads from `'self'`; adding an external script, font, image or API means updating the CSP, or the browser blocks it

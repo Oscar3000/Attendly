@@ -1,6 +1,6 @@
 /**
  * Metrics repository
- * Dashboard aggregates and recent activity
+ * Dashboard aggregates and recent activity, always for one event (T-306)
  */
 import "server-only";
 import { prisma } from "@/server/db/client";
@@ -8,14 +8,14 @@ import type { AdminMetrics, StatusUpdate, PrismaRsvpStatus, StatusUpdateSelect }
 import { convertPrismaStatus } from "@/lib/utils";
 
 export const metricsRepo = {
-  // Get admin metrics
-  async getAdminMetrics(): Promise<AdminMetrics> {
+  // Get an event's metrics
+  async getAdminMetrics(eventId: string): Promise<AdminMetrics> {
     const [total, confirmed, pending, declined, plusOneAgg] = await Promise.all([
-      prisma.invitation.count(),
-      prisma.invitation.count({ where: { status: "CONFIRMED" } }),
-      prisma.invitation.count({ where: { status: "PENDING" } }),
-      prisma.invitation.count({ where: { status: "DECLINED" } }),
-      prisma.invitation.aggregate({ _sum: { plusOne: true } }),
+      prisma.invitation.count({ where: { eventId } }),
+      prisma.invitation.count({ where: { eventId, status: "CONFIRMED" } }),
+      prisma.invitation.count({ where: { eventId, status: "PENDING" } }),
+      prisma.invitation.count({ where: { eventId, status: "DECLINED" } }),
+      prisma.invitation.aggregate({ where: { eventId }, _sum: { plusOne: true } }),
     ]);
 
     const totalPlusOnes = plusOneAgg._sum.plusOne ?? 0;
@@ -30,9 +30,10 @@ export const metricsRepo = {
     };
   },
 
-  // Get recent status updates (last 5 invitations with recent updates)
-  async getRecentStatusUpdates(): Promise<StatusUpdate[]> {
+  // Get an event's recent status updates (last 5 invitations with recent updates)
+  async getRecentStatusUpdates(eventId: string): Promise<StatusUpdate[]> {
     const recentUpdates = await prisma.invitation.findMany({
+      where: { eventId },
       orderBy: { updatedAt: "desc" },
       take: 5,
       select: {

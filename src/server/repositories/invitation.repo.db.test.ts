@@ -1,10 +1,11 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
 import { prisma } from "@/server/db/client";
 import { eventRepo, type Event } from "./event.repo";
 import { invitationRepo } from "./invitation.repo";
 
 const eventDate = new Date("2026-05-23T10:00:00Z");
 let event: Event;
+let otherEvent: Event;
 
 // Tables are truncated before each test, so every test gets a fresh owner and event
 beforeEach(async () => {
@@ -19,6 +20,15 @@ beforeEach(async () => {
     timezone: "Africa/Lagos",
     venueName: "Test Venue",
   });
+  // Same owner: scoping is by event, not just by owner
+  otherEvent = await eventRepo.create(owner.id, {
+    slug: "other-event",
+    type: "BIRTHDAY",
+    title: "Other Event",
+    date: eventDate,
+    timezone: "Africa/Lagos",
+    venueName: "Other Venue",
+  });
 });
 
 function createGuest(name: string) {
@@ -31,7 +41,7 @@ describe("invitationRepo", () => {
 
     expect(created.qrCode).toMatch(/^data:image\/png;base64,/);
 
-    const found = await invitationRepo.getInvitationById(created.id);
+    const found = await invitationRepo.getInvitationById(event.id, created.id);
     expect(found).toMatchObject({
       id: created.id,
       name: "Ada Lovelace",
@@ -49,9 +59,9 @@ describe("invitationRepo", () => {
     const newDate = new Date("2026-06-01T15:00:00Z");
     await eventRepo.update(event.id, { date: newDate, venueName: "New Hall" });
 
-    const found = await invitationRepo.getInvitationById(created.id);
+    const found = await invitationRepo.getInvitationById(event.id, created.id);
     expect(found).toMatchObject({ venue: "New Hall", eventDate: newDate });
-    const [row] = (await invitationRepo.getAdminInvitations()).invitations;
+    const [row] = (await invitationRepo.getAdminInvitations(event.id)).invitations;
     expect(row).toMatchObject({ venue: "New Hall", eventDate: newDate });
   });
 
@@ -63,27 +73,23 @@ describe("invitationRepo", () => {
   });
 
   it("returns undefined for an unknown id", async () => {
-    expect(await invitationRepo.getInvitationById("missing")).toBeUndefined();
+    expect(await invitationRepo.getInvitationById(event.id, "missing")).toBeUndefined();
   });
 
   it("updates the RSVP status", async () => {
     const created = await createGuest("Grace Hopper");
 
-    const updated = await invitationRepo.updateRsvpStatus(created.id, "confirmed");
+    const updated = await invitationRepo.updateRsvpStatus(event.id, created.id, "confirmed");
 
     expect(updated?.status).toBe("confirmed");
   });
 
   it("deletes an invitation once", async () => {
     const created = await createGuest("Alan Turing");
-    // The repo logs the failed second delete; keep test output clean
-    const log = vi.spyOn(console, "error").mockImplementation(() => {});
 
-    expect(await invitationRepo.deleteInvitation(created.id)).toBe(true);
-    expect(await invitationRepo.deleteInvitation(created.id)).toBe(false);
-    expect(await invitationRepo.getInvitationById(created.id)).toBeUndefined();
-
-    log.mockRestore();
+    expect(await invitationRepo.deleteInvitation(event.id, created.id)).toBe(true);
+    expect(await invitationRepo.deleteInvitation(event.id, created.id)).toBe(false);
+    expect(await invitationRepo.getInvitationById(event.id, created.id)).toBeUndefined();
   });
 
   it("paginates and searches admin invitations case-insensitively", async () => {
@@ -91,14 +97,58 @@ describe("invitationRepo", () => {
     await createGuest("Grace Hopper");
     await createGuest("Ada Byron");
 
-    const page = await invitationRepo.getAdminInvitations(1, 2);
+    const page = await invitationRepo.getAdminInvitations(event.id, 1, 2);
     expect(page.invitations).toHaveLength(2);
     expect(page.pagination).toEqual({ page: 1, limit: 2, total: 3, totalPages: 2 });
 
-    const search = await invitationRepo.getAdminInvitations(1, 10, "  ada ");
+    const search = await invitationRepo.getAdminInvitations(event.id, 1, 10, "  ada ");
     expect(search.invitations.map((invite) => invite.name).sort()).toEqual([
       "Ada Byron",
       "Ada Lovelace",
     ]);
+  });
+});
+
+describe("scoping by event", () => {
+  it("never reads, lists, changes or deletes another event's invitation", async () => {
+    const theirs = await invitationRepo.createInvitation(otherEvent, {
+      name: "Other guest",
+      status: "pending",
+    });
+    await createGuest("Ada Lovelace");
+
+    expect(await invitationRepo.getInvitationById(event.id, theirs.id)).toBeUndefined();
+    expect((await invitationRepo.getAllInvitations(event.id)).map((i) => i.name)).toEqual([
+      "Ada Lovelace",
+    ]);
+    const page = await invitationRepo.getAdminInvitations(event.id);
+    expect(page.pagination.total).toBe(1);
+    expect(page.invitations.map((i) => i.name)).toEqual(["Ada Lovelace"]);
+    // A search can't reach across events either
+    expect(
+      (await invitationRepo.getAdminInvitations(event.id, 1, 10, "other")).invitations,
+    ).toEqual([]);
+
+    expect(
+      await invitationRepo.updateInvitation(event.id, theirs.id, { name: "x" }),
+    ).toBeUndefined();
+    expect(await invitationRepo.updateRsvpStatus(event.id, theirs.id, "declined")).toBeUndefined();
+    expect(await invitationRepo.deleteInvitation(event.id, theirs.id)).toBe(false);
+
+    const untouched = await invitationRepo.getInvitationById(otherEvent.id, theirs.id);
+    expect(untouched).toMatchObject({ name: "Other guest", status: "pending" });
+  });
+
+  it("lets a guest read and RSVP by invitation id alone (PIN flow, until T-505)", async () => {
+    const created = await createGuest("Ada Lovelace");
+
+    expect(await invitationRepo.getInvitationForGuest(created.id)).toMatchObject({
+      name: "Ada Lovelace",
+    });
+    expect(await invitationRepo.updateRsvpStatusForGuest(created.id, "confirmed")).toMatchObject({
+      status: "confirmed",
+    });
+    expect(await invitationRepo.getInvitationForGuest("missing")).toBeUndefined();
+    expect(await invitationRepo.updateRsvpStatusForGuest("missing", "confirmed")).toBeUndefined();
   });
 });

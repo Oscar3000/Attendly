@@ -12,8 +12,9 @@ import { parseBody } from "@/server/http/validate";
 import { createInvitationSchema } from "@/server/validation/invitation.schemas";
 
 export const GET = handleRoute(async (request) => {
-  await requireAdminUser(request.headers);
-  const invitations = await invitationRepo.getAllInvitations();
+  const user = await requireAdminUser(request.headers);
+  const event = await requireCurrentEvent(user.id);
+  const invitations = await invitationRepo.getAllInvitations(event.id);
   return NextResponse.json({ invitations }, { status: 200 });
 });
 
