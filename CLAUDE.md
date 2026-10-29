@@ -34,6 +34,7 @@ npm run db:migrate       # Prisma migrate dev
 npm run db:studio        # Prisma Studio
 npm run db:reset         # Reset database (then runs the seed)
 npm run db:seed          # Create the admin user (needs ADMIN_EMAIL + app env); idempotent
+npm run db:backfill-wedding # T-303: create the wedding Event for ADMIN_EMAIL, link unlinked invitations; idempotent
 npm run docker:up        # Docker Compose up
 npm run docker:down      # Docker Compose down
 npm run docker:logs      # View container logs
