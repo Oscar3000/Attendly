@@ -356,12 +356,13 @@ Move the `admin/*` pages (dashboard, create, edit, bulk upload, success) under t
 - **Files:** ~8
 - **As built:** `POST /api/events` lets any signed-in user create an event they own (`createEventSchema` converts the datetime-local values from the event's zone via `src/lib/timezones.ts`; the RSVP deadline must be before the start). `createEvent()` slugifies the title ("Pamela & Oscar" → `pamela-and-oscar`, accents stripped, `event` if nothing is left) and retries `-2`, `-3`... on the unique index, so concurrent creates are safe. `/dashboard` lists events with times on the event's own clock; the form defaults to the browser's zone. `/admin` (page deleted) and `/admin/*` redirect to `/dashboard` in `next.config.ts`; sign-in, sign-up, Google and email callbacks point to `/dashboard`.
 
-### T-311 · Tenant isolation tests · S
+### ✅ T-311 · Tenant isolation tests · S
 
 User A cannot read, update, delete, or list user B's events or invitations, through any route.
 
 - **Depends on:** T-307
 - **Files:** ~3
+- **As built:** `src/app/api/tenant-isolation.db.test.ts` finds every `route.ts` with `import.meta.glob` and requires each route/method in `ROUTE_POLICY`, so new routes can't skip it. Two attackers (the `ADMIN_EMAIL` account, which also passes the old admin routes, and an ordinary account) call every handler against a victim's event and invitation; "victim" routes must answer 403/404, no response may contain the victim's titles, names or ids, and a full snapshot of the victim's events and invitations must be unchanged. Calls aimed at the victim run before the attacker's "own" calls, since `POST /api/events` gives the attacker a second event and the old routes then refuse with 409 before reaching the scoped queries. It also checks the event dashboard layout 404s for other accounts and that `/dashboard` (T-310) lists only the caller's events. Verified by breaking `requireEventOwner`, the repository's event scoping, the layout check and `listByOwner`'s owner filter: each made the test fail.
 
 ### T-312 · Cleanup: drop old columns and `/admin` routes · S
 
