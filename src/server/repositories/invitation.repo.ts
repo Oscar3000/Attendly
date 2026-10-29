@@ -85,7 +85,7 @@ export const invitationRepo = {
 
   // Create new invitation for an event
   async createInvitation(
-    event: Pick<Event, "id" | "date" | "venueName" | "venueAddress">,
+    event: Pick<Event, "id">,
     invitation: { name: string; status: RsvpStatus; plusOne?: number | undefined },
   ): Promise<InviteDetails> {
     // Create invitation first to get the ID
@@ -94,9 +94,6 @@ export const invitationRepo = {
         name: invitation.name,
         qrCode: "PLACEHOLDER", // Temporary placeholder
         eventId: event.id,
-        // Legacy columns, still NOT NULL until T-312; copied from the event so a rollback works
-        eventDate: event.date,
-        venue: eventVenueLabel(event),
         status: convertToPrismaStatus(invitation.status),
         plusOne: invitation.plusOne ?? 0,
       },

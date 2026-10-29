@@ -380,9 +380,10 @@ Drop `Invitation.eventDate` and `Invitation.venue`. Delete the old `/admin` page
 - Remove the env var (`env.ts`, `vitest.config.mts`, `docker-compose.yml`, `DEPLOYMENT.md`), `isAdminEmail` / `requireAdminUser`, and the account page's email lock and `isAdmin` prop; nothing after T-312a needs it. The seed and the T-303 backfill read `ADMIN_EMAIL` as their own input and keep doing so. Collapse the tenant isolation test's two attackers into one.
 - **As built:** as above. With email configured, every account can now change its email on `/account`. The seed is documented as an optional way to create an account; `ADMIN_EMAIL` stays only as its (and the backfill's) input.
 
-### T-312c · Stop writing `eventDate` / `venue` · S
+### ✅ T-312c · Stop writing `eventDate` / `venue` · S
 
 - Make both columns nullable and stop copying the event's date and venue into them in `invitation.repo.ts`. Deploy this before T-312d: the old container keeps writing them until it's replaced, which nullable columns allow.
+- **As built:** migration `20261030090000_make_legacy_invitation_columns_nullable` only drops the NOT NULL constraints (instant, no rewrite). Checked that the previous release's insert (with both columns) and this release's (without) both succeed on the migrated schema. `createInvitation` now only needs the event's id.
 
 ### T-312d · Drop `eventDate` / `venue` · S
 
