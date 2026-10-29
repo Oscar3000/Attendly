@@ -306,11 +306,12 @@ Add a migration script that creates the event for your user from the current har
 - **Files:** ~12
 - **As built:** the migration refuses (with instructions) if any invitation has no event, and `entrypoint.sh` now stops on a failed migration instead of starting anyway. The repository joins the event on every read; API responses keep `eventDate`/`venue` (filled from the event, venue = `venueName ?? venueAddress`) so display pages didn't change. Create/edit/bulk forms dropped their date and venue inputs; the API ignores them if sent. New invitations go to the admin's only event via `requireCurrentEvent()` (409 otherwise) until T-307. The legacy columns are still written (copied from the event) so a rollback works. The T-303 backfill now uses raw SQL so it still runs against a database the migration refused.
 
-### T-305 · Ownership guard: `requireEventOwner(eventId)` · S
+### ✅ T-305 · Ownership guard: `requireEventOwner(eventId)` · S
 
 Loads the event and throws 404 if the current user is not its owner. Return 404, not 403, so event ids aren't leaked.
 
 - **Files:** ~2
+- **As built:** `requireEventOwner(eventId, headers?)` in `src/server/events/require-event-owner.ts` returns `{ user, event }`; signed out is 401 (via `requireUser`), and a missing or someone else's event is the same 404. It checks ownership only, not `ADMIN_EMAIL`, so it's what lets any host reach their own events once T-310 lets them create one.
 
 ### T-306 · Scope invitation repository by `eventId` · M
 
