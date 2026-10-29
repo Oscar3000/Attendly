@@ -1,16 +1,28 @@
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { prisma } from "@/server/db/client";
+import { eventRepo, type Event } from "./event.repo";
 import { invitationRepo } from "./invitation.repo";
 
 const eventDate = new Date("2026-05-23T10:00:00Z");
+let event: Event;
+
+// Tables are truncated before each test, so every test gets a fresh owner and event
+beforeEach(async () => {
+  const owner = await prisma.user.create({
+    data: { id: crypto.randomUUID(), name: "Host", email: "host@example.com" },
+  });
+  event = await eventRepo.create(owner.id, {
+    slug: "test-event",
+    type: "WEDDING",
+    title: "Test Event",
+    date: eventDate,
+    timezone: "Africa/Lagos",
+    venueName: "Test Venue",
+  });
+});
 
 function createGuest(name: string) {
-  return invitationRepo.createInvitation({
-    name,
-    eventDate,
-    venue: "Test Venue",
-    status: "pending",
-    plusOne: 1,
-  });
+  return invitationRepo.createInvitation(event, { name, status: "pending", plusOne: 1 });
 }
 
 describe("invitationRepo", () => {
@@ -28,6 +40,26 @@ describe("invitationRepo", () => {
       plusOne: 1,
     });
     expect(found?.eventDate.toISOString()).toBe(eventDate.toISOString());
+  });
+
+  it("takes the date and venue from the event, so changing the event changes every invitation", async () => {
+    const created = await createGuest("Ada Lovelace");
+    expect(created).toMatchObject({ eventId: event.id, venue: "Test Venue" });
+
+    const newDate = new Date("2026-06-01T15:00:00Z");
+    await eventRepo.update(event.id, { date: newDate, venueName: "New Hall" });
+
+    const found = await invitationRepo.getInvitationById(created.id);
+    expect(found).toMatchObject({ venue: "New Hall", eventDate: newDate });
+    const [row] = (await invitationRepo.getAdminInvitations()).invitations;
+    expect(row).toMatchObject({ venue: "New Hall", eventDate: newDate });
+  });
+
+  it("falls back to the venue's address when it has no name", async () => {
+    await eventRepo.update(event.id, { venueName: null, venueAddress: "1 Main St" });
+    const created = await createGuest("Ada Lovelace");
+
+    expect(created.venue).toBe("1 Main St");
   });
 
   it("returns undefined for an unknown id", async () => {

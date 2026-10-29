@@ -76,8 +76,7 @@ export const invitationApi = createApi({
         summary: { total: number; createdCount: number; failedCount: number };
       },
       {
-        eventDate: string;
-        venue: string;
+        // The date and venue come from the event
         status?: RsvpStatus;
         rows: { name: string; plusOne?: number }[];
       }

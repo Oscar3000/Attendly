@@ -4,6 +4,7 @@ import { useState, use, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { EditInviteForm, RsvpStatus } from "@/lib/types";
 import { Button } from "@/components/button";
+import { formatDate, formatTime } from "@/lib/utils";
 import { useGetInvitationQuery, useUpdateInvitationMutation } from "@/store/invitationApi";
 
 interface EditInvitePageProps {
@@ -27,8 +28,6 @@ export default function EditInvitePage({ params }: EditInvitePageProps) {
       return {
         id: invitation.id,
         name: invitation.name,
-        eventDate: new Date(invitation.eventDate).toISOString().slice(0, 16),
-        venue: invitation.venue,
         status: invitation.status,
         plusOne: invitation.plusOne ?? 0,
       };
@@ -36,8 +35,6 @@ export default function EditInvitePage({ params }: EditInvitePageProps) {
     return {
       id: resolvedParams.id,
       name: "",
-      eventDate: "",
-      venue: "",
       status: "pending" as RsvpStatus,
       plusOne: 0,
     };
@@ -58,8 +55,6 @@ export default function EditInvitePage({ params }: EditInvitePageProps) {
         id: resolvedParams.id,
         data: {
           name: form.name,
-          eventDate: form.eventDate,
-          venue: form.venue,
           status: form.status,
           plusOne: form.plusOne,
         },
@@ -151,50 +146,14 @@ export default function EditInvitePage({ params }: EditInvitePageProps) {
             />
           </div>
 
-          {/* Event Date Field */}
-          <div>
-            <label
-              htmlFor="eventDate"
-              className="block text-base sm:text-lg font-medium text-gray-900 mb-2 sm:mb-3"
-            >
-              Event Date & Time
-            </label>
-            <input
-              type="datetime-local"
-              id="eventDate"
-              value={form.eventDate}
-              onChange={(e) => handleInputChange("eventDate", e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              style={{
-                fontFamily: "Inter",
-                fontSize: "16px",
-              }}
-              required
-            />
-          </div>
-
-          {/* Venue Field */}
-          <div>
-            <label
-              htmlFor="venue"
-              className="block text-base sm:text-lg font-medium text-gray-900 mb-2 sm:mb-3"
-            >
-              Venue
-            </label>
-            <input
-              type="text"
-              id="venue"
-              value={form.venue}
-              onChange={(e) => handleInputChange("venue", e.target.value)}
-              placeholder="Enter venue"
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              style={{
-                fontFamily: "Inter",
-                fontSize: "16px",
-              }}
-              required
-            />
-          </div>
+          {/* The date and venue belong to the event, shown here for reference */}
+          {invitation && (
+            <p className="text-sm text-gray-600">
+              Event: {formatDate(new Date(invitation.eventDate))} at{" "}
+              {formatTime(new Date(invitation.eventDate))}
+              {invitation.venue && ` · ${invitation.venue}`}
+            </p>
+          )}
 
           {/* Plus One Field */}
           <div>

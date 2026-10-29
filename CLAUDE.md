@@ -81,7 +81,7 @@ middleware.ts                  # Auth route protection
 
 ## Database Schema
 
-- `Invitation` (`invitations`): id (cuid), name, qrCode, eventDate, venue, status (PENDING|CONFIRMED|DECLINED|RESCINDED), plusOne, eventId? → Event (cascade delete; nullable until the T-303 backfill, required from T-304), createdAt, updatedAt
+- `Invitation` (`invitations`): id (cuid), name, qrCode, status (PENDING|CONFIRMED|DECLINED|RESCINDED), plusOne, eventId → Event (required, cascade delete), createdAt, updatedAt. The date and venue come from the event; the legacy `eventDate`/`venue` columns are still written (copied from the event) until T-312 drops them
 - `Event` (`events`): id (cuid), ownerId → User (cascade delete), slug (unique), type (WEDDING|BIRTHDAY|CORPORATE|OTHER), title, date (UTC) + timezone (IANA), venueName?, venueAddress?, rsvpDeadline?, createdAt, updatedAt
 - Better Auth tables: `users`, `sessions`, `accounts`, `verifications` (create users through Better Auth, never with Prisma directly)
 
@@ -110,6 +110,8 @@ All required variables are validated at startup (`src/instrumentation.ts` -> `sr
 - `ADMIN_PASSWORD`, `ADMIN_NAME` - Only read by `npm run db:seed`: the admin account's password (8+ characters) and optional display name (default `Admin`); not needed at runtime
 
 ## Key Patterns
+
+- New invitations go to the admin's only event via `requireCurrentEvent()` (`src/server/events/current-event.ts`, 409 if there are none or several) until routes are scoped by event id (T-307)
 
 - Server Components by default; `'use client'` for interactive UI
 - RTK Query for data fetching with tag-based cache invalidation

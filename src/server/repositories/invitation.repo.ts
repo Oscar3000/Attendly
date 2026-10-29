@@ -1,8 +1,10 @@
 /**
  * Invitation repository
  * All Prisma reads and writes for invitations
+ * The date and venue come from the invitation's event (T-304)
  */
 import "server-only";
+import type { Event } from "@prisma/client";
 import { prisma } from "@/server/db/client";
 import type {
   InviteDetails,
@@ -10,45 +12,53 @@ import type {
   RsvpStatus,
   PrismaRsvpStatus,
   Invitation,
-  InvitationSelect,
 } from "@/lib/types";
 import {
   generateQRCode,
   convertPrismaStatus,
   convertToPrismaStatus,
   convertToInviteDetails,
+  eventVenueLabel,
 } from "@/lib/utils";
+
+// Joined on every read so callers get the event's date and venue
+const withEvent = {
+  event: { select: { date: true, venueName: true, venueAddress: true } },
+} as const;
 
 export const invitationRepo = {
   // Get all invitations
   async getAllInvitations(): Promise<InviteDetails[]> {
     const invitations = await prisma.invitation.findMany({
       orderBy: { createdAt: "desc" },
+      include: withEvent,
     });
-    return invitations.map((invitation: InvitationSelect) =>
-      convertToInviteDetails(invitation as Invitation),
-    );
+    return invitations.map((invitation) => convertToInviteDetails(invitation as Invitation));
   },
 
   // Get invitation by ID
   async getInvitationById(id: string): Promise<InviteDetails | undefined> {
     const invitation = await prisma.invitation.findUnique({
       where: { id },
+      include: withEvent,
     });
     return invitation ? convertToInviteDetails(invitation as Invitation) : undefined;
   },
 
-  // Create new invitation
+  // Create new invitation for an event
   async createInvitation(
-    invitation: Omit<InviteDetails, "id" | "qrCode" | "createdAt" | "updatedAt">,
+    event: Pick<Event, "id" | "date" | "venueName" | "venueAddress">,
+    invitation: { name: string; status: RsvpStatus; plusOne?: number | undefined },
   ): Promise<InviteDetails> {
     // Create invitation first to get the ID
     const newInvitation = await prisma.invitation.create({
       data: {
         name: invitation.name,
         qrCode: "PLACEHOLDER", // Temporary placeholder
-        eventDate: invitation.eventDate,
-        venue: invitation.venue,
+        eventId: event.id,
+        // Legacy columns, still NOT NULL until T-312; copied from the event so a rollback works
+        eventDate: event.date,
+        venue: eventVenueLabel(event),
         status: convertToPrismaStatus(invitation.status),
         plusOne: invitation.plusOne ?? 0,
       },
@@ -61,37 +71,37 @@ export const invitationRepo = {
     const updatedInvitation = await prisma.invitation.update({
       where: { id: newInvitation.id },
       data: { qrCode },
+      include: withEvent,
     });
 
     return convertToInviteDetails(updatedInvitation as Invitation);
   },
 
-  // Update invitation
+  // Update invitation (the date and venue are changed on the event)
   async updateInvitation(
     id: string,
     // Fields that are missing or undefined are left unchanged
     updates: {
-      [K in keyof Omit<InviteDetails, "id" | "createdAt">]?: InviteDetails[K] | undefined;
+      name?: string | undefined;
+      status?: RsvpStatus | undefined;
+      plusOne?: number | undefined;
     },
   ): Promise<InviteDetails | undefined> {
     try {
       const updateData: Partial<{
         name: string;
-        venue: string;
-        eventDate: Date;
         plusOne: number;
         status: PrismaRsvpStatus;
       }> = {};
 
       if (updates.name !== undefined) updateData.name = updates.name;
-      if (updates.venue !== undefined) updateData.venue = updates.venue;
-      if (updates.eventDate !== undefined) updateData.eventDate = updates.eventDate;
       if (updates.plusOne !== undefined) updateData.plusOne = updates.plusOne;
       if (updates.status !== undefined) updateData.status = convertToPrismaStatus(updates.status);
 
       const updatedInvitation = await prisma.invitation.update({
         where: { id },
         data: updateData,
+        include: withEvent,
       });
 
       return convertToInviteDetails(updatedInvitation as Invitation);
@@ -151,20 +161,19 @@ export const invitationRepo = {
           createdAt: true,
           updatedAt: true,
           qrCode: true,
-          eventDate: true,
-          venue: true,
           plusOne: true,
+          ...withEvent,
         },
       }),
       prisma.invitation.count({ where }),
     ]);
 
     return {
-      invitations: invitations.map((invitation: InvitationSelect) => ({
+      invitations: invitations.map((invitation) => ({
         id: invitation.id,
         name: invitation.name,
-        eventDate: invitation.eventDate,
-        venue: invitation.venue,
+        eventDate: invitation.event.date,
+        venue: eventVenueLabel(invitation.event),
         status: convertPrismaStatus(invitation.status as PrismaRsvpStatus),
         hasQrCode: Boolean(invitation.qrCode),
         qrCode: invitation.qrCode ?? undefined,

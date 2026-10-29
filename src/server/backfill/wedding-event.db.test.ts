@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it } from "vitest";
+import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { prisma } from "@/server/db/client";
 import { WEDDING_EVENT, backfillWeddingEvent } from "./wedding-event";
 
@@ -9,10 +9,20 @@ async function createUser(email: string) {
   return user.id;
 }
 
+// eventId is NOT NULL since T-304; recreate the state the backfill was written for
 const createInvitation = (name: string, eventId: string | null = null) =>
-  prisma.invitation.create({
-    data: { name, qrCode: "qr", eventDate: WEDDING_EVENT.date, venue: "Canary World", eventId },
-  });
+  prisma.$executeRaw`
+    INSERT INTO "invitations" ("id", "name", "qrCode", "eventDate", "venue", "eventId", "updatedAt")
+    VALUES (${crypto.randomUUID()}, ${name}, 'qr', ${WEDDING_EVENT.date}, 'Canary World', ${eventId}, now())`;
+
+beforeAll(async () => {
+  await prisma.$executeRaw`ALTER TABLE "invitations" ALTER COLUMN "eventId" DROP NOT NULL`;
+});
+
+afterAll(async () => {
+  await prisma.$executeRaw`DELETE FROM "invitations" WHERE "eventId" IS NULL`;
+  await prisma.$executeRaw`ALTER TABLE "invitations" ALTER COLUMN "eventId" SET NOT NULL`;
+});
 
 beforeEach(async () => {
   adminId = await createUser("admin@example.com");

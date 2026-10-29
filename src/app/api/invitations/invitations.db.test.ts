@@ -1,6 +1,8 @@
 import { beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { NextRequest } from "next/server";
+import { prisma } from "@/server/db/client";
 import { signSession } from "@/server/auth/session";
+import { eventRepo } from "@/server/repositories/event.repo";
 import { sessionCookieFor, stubAuthEnv } from "../../../../tests/helpers/auth";
 import { GET as listInvitations, POST as createInvitation } from "./route";
 import { POST as bulkCreate } from "./bulk/route";
@@ -21,10 +23,22 @@ beforeAll(async () => {
   cookies.guest = `invite_token=${await signSession("guest")}`;
 });
 
-// Accounts are truncated before each test, so sign in again each time
+const eventDate = new Date("2026-05-23T14:00:00Z");
+
+// Accounts are truncated before each test, so sign in again each time.
+// New invitations go to the admin's only event (requireCurrentEvent)
 beforeEach(async () => {
   cookies.admin = await sessionCookieFor("admin@example.com");
   cookies.user = await sessionCookieFor("someone@example.com");
+  const admin = await prisma.user.findUniqueOrThrow({ where: { email: "admin@example.com" } });
+  await eventRepo.create(admin.id, {
+    slug: "wedding",
+    type: "WEDDING",
+    title: "Wedding",
+    date: eventDate,
+    timezone: "Africa/Lagos",
+    venueName: "Hall",
+  });
 });
 
 function jsonRequest(method: string, body?: unknown, as: Caller = "admin") {
@@ -43,37 +57,48 @@ async function call(response: Promise<Response>) {
 }
 
 async function createGuest() {
-  const { body } = await call(
-    createInvitation(
-      jsonRequest("POST", { name: "Ada", eventDate: "2026-05-23T14:00", venue: "Hall" }),
-      {},
-    ),
-  );
-  return body.invitation as { id: string; status: string; plusOne: number };
+  const { body } = await call(createInvitation(jsonRequest("POST", { name: "Ada" }), {}));
+  return body.invitation as { id: string; status: string; plusOne: number; eventId: string };
 }
 
 describe("POST /api/invitations", () => {
-  it("creates an invitation with defaults", async () => {
+  it("creates an invitation with defaults, on the admin's event", async () => {
     const invitation = await createGuest();
-    expect(invitation).toMatchObject({ status: "pending", plusOne: 0 });
+    const event = await prisma.event.findFirstOrThrow();
+    expect(invitation).toMatchObject({
+      status: "pending",
+      plusOne: 0,
+      eventId: event.id,
+      venue: "Hall",
+      eventDate: eventDate.toISOString(),
+    });
+  });
+
+  it("ignores a date or venue sent with the invitation: they belong to the event", async () => {
+    const { body } = await call(
+      createInvitation(
+        jsonRequest("POST", { name: "Ada", eventDate: "2030-01-01T00:00", venue: "Elsewhere" }),
+        {},
+      ),
+    );
+    expect(body.invitation).toMatchObject({ venue: "Hall", eventDate: eventDate.toISOString() });
+  });
+
+  it("returns 409 when the admin has no event yet", async () => {
+    await prisma.event.deleteMany();
+    const { status, body } = await call(createInvitation(jsonRequest("POST", { name: "Ada" }), {}));
+    expect(status).toBe(409);
+    expect(body.error).toMatch(/no event yet/);
   });
 
   it("rejects invalid fields with a 400 and field errors", async () => {
     const { status, body } = await call(
-      createInvitation(
-        jsonRequest("POST", { name: " ", eventDate: "not a date", plusOne: -1 }),
-        {},
-      ),
+      createInvitation(jsonRequest("POST", { name: " ", plusOne: -1 }), {}),
     );
 
     expect(status).toBe(400);
     expect(body.error).toBe("Invalid request body");
-    expect(Object.keys(body.details.fieldErrors).sort()).toEqual([
-      "eventDate",
-      "name",
-      "plusOne",
-      "venue",
-    ]);
+    expect(Object.keys(body.details.fieldErrors).sort()).toEqual(["name", "plusOne"]);
   });
 });
 
@@ -108,14 +133,7 @@ describe("/api/invitations/[id]", () => {
 describe("POST /api/invitations/bulk", () => {
   it("creates valid rows and reports empty names per row", async () => {
     const { status, body } = await call(
-      bulkCreate(
-        jsonRequest("POST", {
-          eventDate: "2026-05-23T14:00",
-          venue: "Hall",
-          rows: [{ name: "Ada", plusOne: 1 }, { name: "  " }],
-        }),
-        {},
-      ),
+      bulkCreate(jsonRequest("POST", { rows: [{ name: "Ada", plusOne: 1 }, { name: "  " }] }), {}),
     );
 
     expect(status).toBe(201);
@@ -124,12 +142,7 @@ describe("POST /api/invitations/bulk", () => {
   });
 
   it("rejects an empty rows array", async () => {
-    const { status } = await call(
-      bulkCreate(
-        jsonRequest("POST", { eventDate: "2026-05-23T14:00", venue: "Hall", rows: [] }),
-        {},
-      ),
-    );
+    const { status } = await call(bulkCreate(jsonRequest("POST", { rows: [] }), {}));
     expect(status).toBe(400);
   });
 });
@@ -154,7 +167,7 @@ describe("access control", () => {
   it("returns 401 when a guest calls an admin-only endpoint", async () => {
     const created = await createGuest();
     const guest = (method: string, body?: unknown) => jsonRequest(method, body, "guest");
-    const valid = { name: "Eve", eventDate: "2026-05-23T14:00", venue: "Hall" };
+    const valid = { name: "Eve" };
 
     const responses = await Promise.all([
       listInvitations(guest("GET"), {}),
