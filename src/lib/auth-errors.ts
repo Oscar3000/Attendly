@@ -32,6 +32,7 @@ const FIELD_ERRORS: Record<string, { field: AuthField; message: string }> = {
 const FORM_ERRORS: Record<string, string> = {
   // Deliberately vague so it doesn't reveal which emails have accounts
   INVALID_EMAIL_OR_PASSWORD: "Incorrect email or password",
+  INVALID_TOKEN: "This reset link is invalid or has expired. Request a new one.",
 };
 
 // Request-body validation fails before Better Auth's own checks, as

@@ -7,7 +7,9 @@ import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import { nextCookies } from "better-auth/next-js";
 import { prisma } from "@/server/db/client";
+import { sendEmail } from "@/server/email/send-email";
 import { getEnv } from "@/server/env";
+import { resetPasswordEmail, verificationEmail } from "./auth-emails";
 
 function createAuth() {
   const env = getEnv();
@@ -17,7 +19,19 @@ function createAuth() {
     secret: env.BETTER_AUTH_SECRET,
     baseURL: env.BETTER_AUTH_URL,
     database: prismaAdapter(prisma, { provider: "postgresql" }),
-    emailAndPassword: { enabled: true },
+    // Better Auth catches send failures and only logs them: sign-up still succeeds, and a
+    // reset request answers the same either way (it never reveals whether an account exists)
+    emailAndPassword: {
+      enabled: true,
+      // Unverified users can still sign in; the dashboard shows a banner instead
+      requireEmailVerification: false,
+      revokeSessionsOnPasswordReset: true,
+      sendResetPassword: ({ user, url }) => sendEmail(resetPasswordEmail(user.email, url)),
+    },
+    emailVerification: {
+      sendOnSignUp: true,
+      sendVerificationEmail: ({ user, url }) => sendEmail(verificationEmail(user.email, url)),
+    },
     // Lets server actions set auth cookies; keep it last in the plugin list
     plugins: [nextCookies()],
   });

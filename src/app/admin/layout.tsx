@@ -2,6 +2,8 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { getAuth } from "@/server/auth/auth";
 import { getCurrentUser, isAdminEmail } from "@/server/auth/current-user";
+import { canSendEmail } from "@/server/email/send-email";
+import { VerifyEmailBanner } from "@/components/admin/verify-email-banner";
 
 /**
  * Server-side gate for every /admin page (middleware only checks a session cookie exists)
@@ -11,7 +13,13 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   const user = await getCurrentUser();
   if (!user) redirect("/login");
   if (!isAdminEmail(user.email)) return <NoAccess email={user.email} />;
-  return children;
+  return (
+    <>
+      {/* Hidden when email isn't configured: the resend button could never succeed */}
+      {!user.emailVerified && canSendEmail() && <VerifyEmailBanner email={user.email} />}
+      {children}
+    </>
+  );
 }
 
 async function signOut() {
