@@ -130,3 +130,4 @@ All required variables are validated at startup (`src/instrumentation.ts` -> `sr
 - Security headers and the Content Security Policy live in `next.config.ts`. Everything loads from `'self'`; adding an external script, font, image or API means updating the CSP, or the browser blocks it
 - Pagination defaults: 10 items per page
 - Tests: Vitest, colocated as `*.test.ts` (unit) and `*.db.test.ts` (real Postgres, tables truncated before each test)
+- `src/app/api/tenant-isolation.db.test.ts` discovers every API route; a new route fails it until it's added to `ROUTE_POLICY` ("victim": must refuse another account's data, "own": works on the caller's data, or "not tenant data")
