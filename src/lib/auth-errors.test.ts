@@ -53,6 +53,12 @@ describe("toAuthFormErrors", () => {
     );
   });
 
+  it("explains a request from an address that doesn't match BETTER_AUTH_URL", () => {
+    expect(toAuthFormErrors({ code: "INVALID_ORIGIN", status: 403 }).form).toMatch(
+      /isn't allowed from this address/,
+    );
+  });
+
   it("explains rate limiting", () => {
     expect(toAuthFormErrors({ status: 429 }).form).toMatch(/Too many attempts/);
   });

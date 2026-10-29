@@ -34,6 +34,11 @@ const FORM_ERRORS: Record<string, string> = {
   INVALID_EMAIL_OR_PASSWORD: "Incorrect email or password",
   INVALID_TOKEN: "This reset link is invalid or has expired. Request a new one.",
   SESSION_NOT_FRESH: "For your security, log out and back in, then try again.",
+  // The page's address doesn't match BETTER_AUTH_URL (e.g. 127.0.0.1 vs localhost, http vs https)
+  INVALID_ORIGIN:
+    "Sign-in isn't allowed from this address. Open the site at its usual URL and try again.",
+  MISSING_OR_NULL_ORIGIN:
+    "Sign-in isn't allowed from this address. Open the site at its usual URL and try again.",
 };
 
 // Request-body validation fails before Better Auth's own checks, as
