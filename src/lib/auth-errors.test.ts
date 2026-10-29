@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { toAuthFormErrors } from "./auth-errors";
+import { oauthErrorMessage, toAuthFormErrors } from "./auth-errors";
 
 describe("toAuthFormErrors", () => {
   it("puts email problems on the email field", () => {
@@ -55,5 +55,21 @@ describe("toAuthFormErrors", () => {
     expect(
       toAuthFormErrors({ code: "FAILED_TO_CREATE_USER", message: "db exploded", status: 500 }),
     ).toEqual({ fields: {}, form: "Something went wrong. Please try again." });
+  });
+});
+
+describe("oauthErrorMessage", () => {
+  it("is empty without an error", () => {
+    expect(oauthErrorMessage(undefined)).toBeUndefined();
+  });
+
+  it("explains an existing account that couldn't be linked", () => {
+    expect(oauthErrorMessage("account_not_linked")).toMatch(/already exists/);
+  });
+
+  it("falls back to a generic message", () => {
+    expect(oauthErrorMessage("access_denied")).toBe(
+      "Google sign-in didn't complete. Please try again.",
+    );
   });
 });

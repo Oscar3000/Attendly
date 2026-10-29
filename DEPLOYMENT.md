@@ -94,11 +94,13 @@ In the Railway dashboard, click on your **app service** (not the database), go t
 | `BETTER_AUTH_URL`         | `https://your-app.up.railway.app`   | **Required.** Public URL of the app, used by Better Auth                        |
 | `RESEND_API_KEY`          | `re_...`                            | Optional. Resend API key; without it, verification and reset emails aren't sent |
 | `EMAIL_FROM`              | `Attendly <hello@yourdomain.com>`   | Required with `RESEND_API_KEY`; the domain must be verified in Resend           |
+| `GOOGLE_CLIENT_ID`        | `....apps.googleusercontent.com`    | Optional. Google sign-in; see "Google Sign-In" below                            |
+| `GOOGLE_CLIENT_SECRET`    | `GOCSPX-...`                        | Required with `GOOGLE_CLIENT_ID`                                                |
 | `PORT`                    | `3000`                              | The port the app listens on                                                     |
 | `NODE_ENV`                | `production`                        |                                                                                 |
 | `NEXT_TELEMETRY_DISABLED` | `1`                                 | Optional                                                                        |
 
-If `DATABASE_URL`, `AUTH_SECRET`, `ADMIN_EMAIL`, `INVITE_PIN`, `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL` is missing or invalid (or `RESEND_API_KEY` is set without `EMAIL_FROM`), the app logs which one and exits at startup, so the deploy fails instead of serving errors.
+If `DATABASE_URL`, `AUTH_SECRET`, `ADMIN_EMAIL`, `INVITE_PIN`, `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL` is missing or invalid (or only one of `RESEND_API_KEY` / `EMAIL_FROM`, or of the two Google variables, is set), the app logs which one and exits at startup, so the deploy fails instead of serving errors.
 
 ### Linking the Database URL
 
@@ -157,6 +159,19 @@ railway run sh -c 'DATABASE_URL="<DATABASE_PUBLIC_URL>" ADMIN_PASSWORD="<passwor
 2. Test the guest PIN entry at the root URL
 3. Test admin login at `/login` with your `ADMIN_EMAIL` and the password the seed set
 4. Test the health endpoint at `/api/health`
+
+---
+
+## Google Sign-In (Optional)
+
+The "Continue with Google" button appears on `/login` and `/signup` once both Google variables are set.
+
+1. In [Google Cloud Console](https://console.cloud.google.com/), create a project (or pick one), then go to **APIs & Services** → **OAuth consent screen** and set it up (app name, support email; the default scopes are enough).
+2. Go to **Credentials** → **Create credentials** → **OAuth client ID** → **Web application**.
+3. Under **Authorized redirect URIs**, add `https://<your BETTER_AUTH_URL host>/api/auth/callback/google` (and `http://localhost:3000/api/auth/callback/google` for local development).
+4. Copy the client ID and secret into `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` on Railway and redeploy.
+
+Google joins an existing email + password account only when that account's email is verified. Until then, Google sign-in with the same email is refused and `/login` explains why. If you move to a custom domain, add its redirect URI in Google too.
 
 ---
 

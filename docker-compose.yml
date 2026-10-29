@@ -55,6 +55,9 @@ services:
       # password-reset emails aren't sent
       RESEND_API_KEY: ${RESEND_API_KEY:-}
       EMAIL_FROM: ${EMAIL_FROM:-}
+      # Google sign-in (optional; both or neither). Without them the Google button is hidden
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
       
       # Disable Next.js telemetry
       NEXT_TELEMETRY_DISABLED: 1

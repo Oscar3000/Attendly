@@ -101,6 +101,7 @@ All required variables are validated at startup (`src/instrumentation.ts` -> `sr
 - `BETTER_AUTH_URL` - Public app URL for Better Auth, e.g. `http://localhost:3000` (required)
 - `NEXT_PUBLIC_BASE_URL` - App URL for QR codes (default: http://localhost:3000)
 - `RESEND_API_KEY`, `EMAIL_FROM` - Send email through Resend (`EMAIL_FROM` like `Attendly <hello@yourdomain.com>`, on a domain verified in Resend). Optional: without them, development logs emails (with their links) to the console, and production skips them (sign-up still works; verification and password-reset emails aren't sent, and the verify banner is hidden)
+- `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` - Google sign-in (OAuth client from Google Cloud; redirect URI `BETTER_AUTH_URL/api/auth/callback/google`). Optional, both or neither: without them the "Continue with Google" button is hidden
 - `ADMIN_PASSWORD`, `ADMIN_NAME` - Only read by `npm run db:seed`: the admin account's password (8+ characters) and optional display name (default `Admin`); not needed at runtime
 
 ## Key Patterns

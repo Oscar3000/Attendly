@@ -32,9 +32,27 @@ function createAuth() {
       sendOnSignUp: true,
       sendVerificationEmail: ({ user, url }) => sendEmail(verificationEmail(user.email, url)),
     },
+    // Callback URL to register with Google: BETTER_AUTH_URL + /api/auth/callback/google.
+    // Default linking rules apply: Google joins an existing account only when both Google and
+    // the account have verified that email
+    socialProviders: isGoogleEnabled()
+      ? {
+          google: {
+            clientId: env.GOOGLE_CLIENT_ID!,
+            clientSecret: env.GOOGLE_CLIENT_SECRET!,
+            prompt: "select_account",
+          },
+        }
+      : {},
     // Lets server actions set auth cookies; keep it last in the plugin list
     plugins: [nextCookies()],
   });
+}
+
+// Read per request so the login and sign-up pages can hide the Google button
+export function isGoogleEnabled(): boolean {
+  const env = getEnv();
+  return Boolean(env.GOOGLE_CLIENT_ID && env.GOOGLE_CLIENT_SECRET);
 }
 
 let instance: ReturnType<typeof createAuth> | undefined;
