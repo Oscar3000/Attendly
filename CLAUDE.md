@@ -53,8 +53,7 @@ src/
       invite/verify-pin/      # Guest PIN verification
       events/                 # POST: create an event (any signed-in user becomes its owner)
       events/[eventId]/       # Event-scoped, owner only (requireEventOwner): invitations (+ [id], bulk), metrics, status
-      invitations/[id]/       # Old CRUD, used by the UI until T-308 and by PIN guests (GET/PATCH); removed in T-312
-      admin/                  # Old dashboard metrics & status updates; removed in T-312
+      invitations/[id]/       # PIN guests only: GET their invitation, PATCH its RSVP (requireGuest); removed in T-505
       health/                 # Health check
     invite/[id]/              # Guest invitation view
     invite-pin/               # Guest PIN entry
@@ -92,10 +91,10 @@ middleware.ts                  # Auth route protection
 ## Auth Flow
 
 - **Accounts**: Better Auth email + password (`/signup`, `/login`), endpoints at `/api/auth/*`, server instance from `getAuth()` in `src/server/auth/auth.ts`, client in `src/lib/auth-client.ts`
-- **Dashboard pages** (`/dashboard/events/[eventId]/*`): owning the event is the permission; the layout redirects signed-out users to `/login` and 404s other accounts. The old API routes (`/api/admin/*`, `/api/invitations*`) still require the `ADMIN_EMAIL` account until T-312 removes them
+- **Dashboard pages** (`/dashboard/events/[eventId]/*`) and the event API (`/api/events/...`): owning the event is the permission; other accounts get 404, signed-out users go to `/login` (pages) or get 401 (API)
 - **Guest**: PIN verification -> signed `invite_token` cookie (role `guest`, `src/server/auth/session.ts`) -> access to `/invite/*` (replaced by per-invitation links in Phase 5)
 - Session helpers live in `src/server/auth/current-user.ts`: `getCurrentUser()`, `requireUser()` (401) and `requireAdminUser()` (adds the `ADMIN_EMAIL` 403). Route handlers pass `request.headers`; pages and server actions call them without arguments
-- Endpoints guests share with the dashboard use `requireAdminOrGuest()` from `src/server/auth/guards.ts` (guests may only GET one invitation and PATCH its status)
+- PIN guests use `GET`/`PATCH /api/invitations/[id]`, guarded by `requireGuest()` from `src/server/auth/guards.ts`; account sessions get 401 there
 - **Middleware** is optimistic for accounts: it only checks a Better Auth session cookie is present (`getSessionCookie()`), redirecting to `/login` (pages) or returning 401 (API). Guest tokens are verified there
 
 ## Environment Variables

@@ -28,61 +28,46 @@ const forged = Buffer.from(`admin:${Date.now()}`).toString("base64");
 const session_token = "any-value";
 const sessionCookie = { "better-auth.session_token": session_token };
 
-describe("admin routes", () => {
+describe("account routes (/dashboard, /api/events)", () => {
   it("lets a request with a session cookie through", async () => {
-    expect(passedThrough(await middleware(request("/admin", sessionCookie)))).toBe(true);
-    expect(passedThrough(await middleware(request("/api/admin", sessionCookie)))).toBe(true);
+    expect(passedThrough(await middleware(request("/dashboard", sessionCookie)))).toBe(true);
+    expect(passedThrough(await middleware(request("/api/events/abc/metrics", sessionCookie)))).toBe(
+      true,
+    );
     // Production sets it with the __Secure- prefix over https
     const secure = { "__Secure-better-auth.session_token": session_token };
-    expect(passedThrough(await middleware(request("/api/admin", secure)))).toBe(true);
+    expect(passedThrough(await middleware(request("/api/events/abc/metrics", secure)))).toBe(true);
   });
 
   it("without a session cookie: redirect for pages, 401 for the API", async () => {
-    const page = await middleware(request("/admin"));
-    expect(page.status).toBe(307);
-    expect(page.headers.get("location")).toBe("http://localhost/login");
-
-    expect((await middleware(request("/api/admin"))).status).toBe(401);
-  });
-
-  it("no longer accepts the old admin token", async () => {
-    const auth_token = await signSession("admin");
-    expect((await middleware(request("/api/admin", { auth_token }))).status).toBe(401);
-  });
-
-  it("sends signed-out visitors of the event dashboard to /login", async () => {
     const page = await middleware(request("/dashboard/events/abc"));
     expect(page.status).toBe(307);
     expect(page.headers.get("location")).toBe("http://localhost/login");
-    expect(passedThrough(await middleware(request("/dashboard/events/abc", sessionCookie)))).toBe(
-      true,
-    );
+
+    expect((await middleware(request("/api/events/abc/invitations"))).status).toBe(401);
   });
 
-  it("requires a session cookie for event-scoped API routes", async () => {
-    const path = "/api/events/abc/invitations";
-    expect((await middleware(request(path))).status).toBe(401);
-    expect(passedThrough(await middleware(request(path, sessionCookie)))).toBe(true);
-  });
-
-  it("rejects a guest session on admin routes", async () => {
+  it("doesn't accept the old admin token or a guest session", async () => {
+    const auth_token = await signSession("admin");
     const invite_token = await signSession("guest");
-    expect((await middleware(request("/api/admin", { invite_token }))).status).toBe(401);
+    expect((await middleware(request("/api/events/abc/metrics", { auth_token }))).status).toBe(401);
+    expect((await middleware(request("/api/events/abc/metrics", { invite_token }))).status).toBe(
+      401,
+    );
   });
 });
 
-describe("/api/invitations", () => {
-  it("accepts a session cookie or a guest session", async () => {
+describe("/api/invitations (PIN guests only)", () => {
+  it("accepts a guest session", async () => {
     const invite_token = await signSession("guest");
-
-    expect(passedThrough(await middleware(request("/api/invitations", sessionCookie)))).toBe(true);
-    expect(passedThrough(await middleware(request("/api/invitations", { invite_token })))).toBe(
+    expect(passedThrough(await middleware(request("/api/invitations/abc", { invite_token })))).toBe(
       true,
     );
   });
 
-  it("rejects a forged guest cookie without a session cookie", async () => {
-    const response = await middleware(request("/api/invitations", { invite_token: forged }));
+  it("rejects an account session or a forged guest cookie", async () => {
+    expect((await middleware(request("/api/invitations/abc", sessionCookie))).status).toBe(401);
+    const response = await middleware(request("/api/invitations/abc", { invite_token: forged }));
     expect(response.status).toBe(401);
   });
 });

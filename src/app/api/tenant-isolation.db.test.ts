@@ -20,7 +20,8 @@ type Method = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
 type Handler = (request: NextRequest, context: { params: Promise<object> }) => Promise<Response>;
 
 /*
- * - "victim": addressed at the victim's event or invitation; must be refused (403/404)
+ * - "victim": addressed at the victim's event or invitation; must be refused (401/403/404;
+ *   401 where the route doesn't accept account sessions at all)
  * - "own": works on the caller's own data (or creates for them); may succeed, but must not
  *   reveal or touch the victim's data
  * - "not tenant data": no event or invitation data behind it
@@ -40,12 +41,8 @@ const ROUTE_POLICY: Record<string, Partial<Record<Method, Policy>> | "not tenant
   "/api/events/[eventId]/status": { GET: "victim" },
   // Creating an event makes the caller its owner (T-310)
   "/api/events": { POST: "own" },
-  // Old routes (removed in T-312): the ADMIN_EMAIL account works on its own event only
-  "/api/admin": { GET: "own" },
-  "/api/admin/status": { GET: "own" },
-  "/api/invitations": { GET: "own", POST: "own" },
-  "/api/invitations/bulk": { POST: "own" },
-  "/api/invitations/[id]": { GET: "victim", PUT: "victim", PATCH: "victim", DELETE: "victim" },
+  // PIN guests only (T-312a): account sessions are refused outright
+  "/api/invitations/[id]": { GET: "victim", PATCH: "victim" },
   "/api/auth/[...all]": "not tenant data",
   "/api/health": "not tenant data",
   "/api/invite/verify-pin": "not tenant data",
@@ -60,9 +57,9 @@ const routes = Object.entries(import.meta.glob("./**/route.ts", { eager: true })
 );
 const METHODS: Method[] = ["GET", "POST", "PUT", "PATCH", "DELETE"];
 
-// Every classified route/method to attack. "victim" calls come first: "own" calls change the
-// attacker's state (POST /api/events gives them a second event, after which the old routes
-// refuse with 409 before reaching the event-scoped queries this test is meant to exercise)
+// Every classified route/method to attack. "victim" calls come first, so "own" calls (which
+// change the attacker's state, e.g. POST /api/events adds an event) can't change how the
+// victim-addressed routes are reached
 const attacks = routes
   .flatMap(({ path, handlers }) => {
     const policy = ROUTE_POLICY[path];
@@ -87,9 +84,6 @@ const BODIES: Partial<Record<string, unknown>> = {
     date: "2030-01-01T12:00",
     timezone: "Europe/London",
   },
-  "POST /api/invitations": { name: "Intruder" },
-  "POST /api/invitations/bulk": { rows: [{ name: "Intruder" }] },
-  "PUT /api/invitations/[id]": { name: "Hacked", plusOne: 9 },
   "PATCH /api/invitations/[id]": { status: "declined" },
 };
 
@@ -163,12 +157,12 @@ describe("route coverage", () => {
 
     expect(unclassified, "add these to ROUTE_POLICY with their isolation behaviour").toEqual([]);
     // Guards against the glob silently matching nothing
-    expect(routes.length).toBeGreaterThan(10);
+    expect(routes.map((route) => route.path)).toContain("/api/events/[eventId]/invitations");
   });
 });
 
-// ADMIN_EMAIL (admin@example.com, vitest.config.mts) is the strongest account: it also passes
-// the old admin routes. A plain account must be stopped just the same
+// The ADMIN_EMAIL account (admin@example.com, vitest.config.mts) had extra access through the
+// old admin routes, removed in T-312a; it stays here until ADMIN_EMAIL itself goes (T-312b)
 describe.each([
   { attacker: "the ADMIN_EMAIL account", email: "admin@example.com" },
   { attacker: "an ordinary account", email: "someone@example.com" },
@@ -190,8 +184,8 @@ describe.each([
       const text = await response.text();
 
       const label = `${method} ${path} -> ${response.status}`;
-      if (expectation === "victim" && ![403, 404].includes(response.status)) {
-        failures.push(`${label}: expected 403 or 404`);
+      if (expectation === "victim" && ![401, 403, 404].includes(response.status)) {
+        failures.push(`${label}: expected 401, 403 or 404`);
       }
       for (const secret of [VICTIM.eventTitle, VICTIM.guest, victimEvent.id, victimInvitationId]) {
         if (text.includes(secret)) failures.push(`${label}: response contains "${secret}"`);

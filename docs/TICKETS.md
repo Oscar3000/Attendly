@@ -368,11 +368,24 @@ User A cannot read, update, delete, or list user B's events or invitations, thro
 
 Drop `Invitation.eventDate` and `Invitation.venue`. Delete the old `/admin` pages and the old API routes. Update the middleware matcher.
 
-- Remove `ADMIN_EMAIL` entirely (env var, `isAdminEmail`, `requireAdminUser`, the account page's email lock and `isAdmin` prop): after T-309/T-310 only the old API routes use it.
-- The old API routes are `/api/admin`, `/api/admin/status`, `/api/invitations` and `/api/invitations/bulk`; keep `/api/invitations/[id]`'s guest GET/PATCH until T-505 if the PIN flow is still live. Delete `src/server/events/current-event.ts` (`requireCurrentEvent`) with them.
-
 - **Depends on:** T-309, T-310, T-311
-- **Files:** ~15
+- Split into four PRs to stay under the file limit, with the column drop done in two deploys so no request fails while the old container is still serving:
+
+### ✅ T-312a · Remove the old API routes · S
+
+- **As built:** deleted `/api/admin`, `/api/admin/status`, `/api/invitations` (GET/POST), `/api/invitations/bulk` and the `requireCurrentEvent()` bridge. `/api/invitations/[id]` keeps only the PIN guest's GET/PATCH, guarded by the new `requireGuest()` (account sessions get 401; hosts use `/api/events/...`). Middleware now covers `/dashboard` and `/api/events` for accounts and `/api/invitations` for guests only; `/admin` is redirected by `next.config.ts` before middleware runs. The tenant isolation policy dropped the deleted routes and accepts 401 for the guest route.
+
+### T-312b · Remove `ADMIN_EMAIL` · S
+
+- Remove the env var (`env.ts`, `vitest.config.mts`, `docker-compose.yml`, `DEPLOYMENT.md`), `isAdminEmail` / `requireAdminUser`, and the account page's email lock and `isAdmin` prop; nothing after T-312a needs it. The seed and the T-303 backfill read `ADMIN_EMAIL` as their own input and keep doing so. Collapse the tenant isolation test's two attackers into one.
+
+### T-312c · Stop writing `eventDate` / `venue` · S
+
+- Make both columns nullable and stop copying the event's date and venue into them in `invitation.repo.ts`. Deploy this before T-312d: the old container keeps writing them until it's replaced, which nullable columns allow.
+
+### T-312d · Drop `eventDate` / `venue` · S
+
+- Drop the two columns, and delete the finished T-303 backfill (`prisma/backfill-wedding-event.ts`, `src/server/backfill/`, `db:backfill-wedding`). Deploy after T-312c is live.
 
 ---
 

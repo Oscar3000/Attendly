@@ -6,15 +6,16 @@ export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // Optimistic: only checks that a Better Auth session cookie is present (no DB call here).
-  // Route handlers and pages verify the session and the admin account themselves
+  // Route handlers and pages verify the session and event ownership themselves
   const isSignedIn = () => getSessionCookie(request) !== null;
   // Guest tokens are signed, so a missing, forged or expired cookie counts as signed out
   const isGuest = async () =>
     (await verifySession(request.cookies.get("invite_token")?.value, "guest")) !== null;
 
   // Define protected routes
-  // Need a signed-in account; pages and route handlers then check admin or event ownership
-  const adminRoutes = ["/admin", "/dashboard", "/api/admin", "/api/events"];
+  // Need a signed-in account; pages and route handlers then check event ownership.
+  // (/admin redirects to /dashboard in next.config.ts, before middleware runs)
+  const adminRoutes = ["/dashboard", "/api/events"];
   const inviteRoutes = ["/invite"];
   const apiInvitationsRoutes = ["/api/invitations"];
 
@@ -44,8 +45,8 @@ export async function middleware(request: NextRequest) {
     }
   }
 
-  // Check API invitations authentication (either admin OR guest session)
-  if (isApiInvitationsRoute && !isSignedIn() && !(await isGuest())) {
+  // /api/invitations/[id] is for PIN guests only; hosts use /api/events/...
+  if (isApiInvitationsRoute && !(await isGuest())) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
@@ -62,12 +63,5 @@ export async function middleware(request: NextRequest) {
 
 // Apply middleware to specific routes
 export const config = {
-  matcher: [
-    "/admin/:path*",
-    "/dashboard/:path*",
-    "/api/admin/:path*",
-    "/api/events/:path*",
-    "/api/invitations/:path*",
-    "/invite/:path*",
-  ],
+  matcher: ["/dashboard/:path*", "/api/events/:path*", "/api/invitations/:path*", "/invite/:path*"],
 };
