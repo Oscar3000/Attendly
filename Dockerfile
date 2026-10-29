@@ -1,5 +1,7 @@
 # Multi-stage build for production optimization
-FROM node:20.15.0-alpine3.19 AS base
+FROM node:22.23.4-alpine3.24 AS base
+# Prisma's query engine needs OpenSSL, which this Alpine base image doesn't include
+RUN apk add --no-cache openssl
 
 # Install dependencies only when needed
 FROM base AS deps
@@ -29,7 +31,7 @@ FROM base AS prod-deps
 RUN apk add --no-cache libc6-compat
 WORKDIR /app
 COPY package.json package-lock.json* ./
-RUN npm ci --only=production
+RUN npm ci --omit=dev
 
 # Production image, copy all the files and run next
 FROM base AS runner

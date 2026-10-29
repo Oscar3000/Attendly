@@ -6,6 +6,7 @@ Attendly is a wedding invitation management system with QR codes, RSVP tracking,
 
 ## Tech Stack
 
+- **Runtime**: Node.js 22 LTS (`.tool-versions`; `engines` in `package.json`)
 - **Framework**: Next.js 16 (App Router, standalone output, React Compiler enabled)
 - **Language**: TypeScript 5 (strict mode)
 - **Database**: PostgreSQL 16 + Prisma 5.19
