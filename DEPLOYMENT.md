@@ -87,7 +87,8 @@ In the Railway dashboard, click on your **app service** (not the database), go t
 | ------------------------- | ----------------------------------- | -------------------------------------------------------------------------- |
 | `DATABASE_URL`            | `${{Postgres.DATABASE_URL}}`        | Use Railway's variable reference to auto-link to your DB                   |
 | `NEXT_PUBLIC_BASE_URL`    | `https://your-app.up.railway.app`   | Your Railway public URL (set after first deploy)                           |
-| `ADMIN_PASSWORD`          | `your-secure-password`              | **Required.** Used for admin dashboard login                               |
+| `ADMIN_EMAIL`             | `you@example.com`                   | **Required.** The only account allowed into the dashboard                  |
+| `ADMIN_PASSWORD`          | `your-secure-password`              | **Required.** Password the seed gives the admin account (8+ characters)    |
 | `INVITE_PIN`              | `your-pin`                          | **Required.** PIN guests use to access invitations (4+ chars)              |
 | `AUTH_SECRET`             | output of `openssl rand -base64 32` | **Required.** Signs login cookies; changing it logs everyone out           |
 | `BETTER_AUTH_SECRET`      | output of `openssl rand -base64 32` | **Required.** Better Auth secret; use a different value from `AUTH_SECRET` |
@@ -96,7 +97,7 @@ In the Railway dashboard, click on your **app service** (not the database), go t
 | `NODE_ENV`                | `production`                        |                                                                            |
 | `NEXT_TELEMETRY_DISABLED` | `1`                                 | Optional                                                                   |
 
-If `DATABASE_URL`, `AUTH_SECRET`, `ADMIN_PASSWORD`, `INVITE_PIN`, `BETTER_AUTH_SECRET` or `BETTER_AUTH_URL` is missing or invalid, the app logs which one and exits at startup, so the deploy fails instead of serving errors.
+If `DATABASE_URL`, `AUTH_SECRET`, `ADMIN_EMAIL`, `ADMIN_PASSWORD`, `INVITE_PIN`, `BETTER_AUTH_SECRET` or `BETTER_AUTH_URL` is missing or invalid, the app logs which one and exits at startup, so the deploy fails instead of serving errors.
 
 ### Linking the Database URL
 
@@ -141,7 +142,7 @@ Once the Better Auth migration has run, create the admin's account from your mac
 
 ```bash
 # ADMIN_PASSWORD (at least 8 characters) becomes the account password
-ADMIN_EMAIL=you@example.com railway run npm run db:seed
+railway run npm run db:seed
 ```
 
 `railway run` injects the service's variables. If the database's internal hostname doesn't resolve from your machine, prefix the command with `DATABASE_URL=<the database's public URL>`.
@@ -152,7 +153,7 @@ ADMIN_EMAIL=you@example.com railway run npm run db:seed
 
 1. Visit your Railway URL (e.g., `https://attendly-production.up.railway.app`)
 2. Test the guest PIN entry at the root URL
-3. Test admin login at `/login` with your `ADMIN_PASSWORD`
+3. Test admin login at `/login` with your `ADMIN_EMAIL` and the password the seed set
 4. Test the health endpoint at `/api/health`
 
 ---

@@ -1,6 +1,7 @@
-import { beforeAll, describe, expect, it, vi } from "vitest";
+import { beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { NextRequest } from "next/server";
 import { signSession } from "@/server/auth/session";
+import { sessionCookieFor, stubAuthEnv } from "../../../../tests/helpers/auth";
 import { GET as listInvitations, POST as createInvitation } from "./route";
 import { POST as bulkCreate } from "./bulk/route";
 import {
@@ -12,13 +13,18 @@ import {
 
 const url = "http://localhost/api/invitations";
 
-type Caller = "admin" | "guest" | "anonymous";
-const cookies: Record<Caller, string> = { admin: "", guest: "", anonymous: "" };
+type Caller = "admin" | "user" | "guest" | "anonymous";
+const cookies: Record<Caller, string> = { admin: "", user: "", guest: "", anonymous: "" };
 
 beforeAll(async () => {
-  vi.stubEnv("AUTH_SECRET", "test-secret-that-is-at-least-32-characters-long");
-  cookies.admin = `auth_token=${await signSession("admin")}`;
+  stubAuthEnv();
   cookies.guest = `invite_token=${await signSession("guest")}`;
+});
+
+// Accounts are truncated before each test, so sign in again each time
+beforeEach(async () => {
+  cookies.admin = await sessionCookieFor("admin@example.com");
+  cookies.user = await sessionCookieFor("someone@example.com");
 });
 
 function jsonRequest(method: string, body?: unknown, as: Caller = "admin") {
@@ -160,6 +166,18 @@ describe("access control", () => {
     expect(responses.map((r) => r.status)).toEqual([403, 403, 403, 403, 403]);
     const stillThere = await call(getInvitation(jsonRequest("GET"), params(created.id)));
     expect(stillThere.body.invitation.name).toBe("Ada");
+  });
+
+  it("returns 403 when a signed-in account other than ADMIN_EMAIL calls the API", async () => {
+    const created = await createGuest();
+
+    const responses = await Promise.all([
+      listInvitations(jsonRequest("GET", undefined, "user"), {}),
+      getInvitation(jsonRequest("GET", undefined, "user"), params(created.id)),
+      deleteInvitation(jsonRequest("DELETE", undefined, "user"), params(created.id)),
+    ]);
+
+    expect(responses.map((r) => r.status)).toEqual([403, 403, 403]);
   });
 
   it("returns 401 without a session, before validating the body", async () => {

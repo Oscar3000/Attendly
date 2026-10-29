@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/button";
+import { authClient } from "@/lib/auth-client";
 
 interface DashboardHeaderProps {
   onCreateInvite: () => void;
@@ -12,9 +13,8 @@ export default function DashboardHeader({ onCreateInvite }: DashboardHeaderProps
 
   const handleLogout = async () => {
     try {
-      await fetch("/api/auth/logout", {
-        method: "POST",
-      });
+      const { error } = await authClient.signOut();
+      if (error) throw error;
       router.push("/login");
     } catch (error) {
       console.error("Logout error:", error);

@@ -37,20 +37,12 @@ export default function LoginPage() {
     <AuthCard
       title="Log in"
       footer={
-        <>
-          <p>
-            No account yet?{" "}
-            <Link href="/signup" className="font-medium text-[#C07A54] hover:underline">
-              Sign up
-            </Link>
-          </p>
-          {/* Temporary until T-204 moves the dashboard to these accounts */}
-          <p>
-            <Link href="/login/admin-password" className="hover:underline">
-              Admin password login
-            </Link>
-          </p>
-        </>
+        <p>
+          No account yet?{" "}
+          <Link href="/signup" className="font-medium text-[#C07A54] hover:underline">
+            Sign up
+          </Link>
+        </p>
       }
     >
       <form onSubmit={handleSubmit} noValidate>

@@ -210,7 +210,7 @@ Cover: forged cookie → 401, guest calling an admin route → 401/403, guest `P
 - **Files:** ~5
 - **As built:** `/admin` still checks the old cookie until T-204, so the old password form moved to `/login/admin-password` (linked from `/login`) to keep the dashboard reachable. Error codes are mapped to fields in `src/lib/auth-errors.ts`; shared form pieces live in `src/components/auth/`.
 
-### T-204 · Cut over: middleware, logout, remove old auth · M
+### ✅ T-204 · Cut over: middleware, logout, remove old auth · M
 
 - Delete `api/auth/login`, `api/auth/logout`, and the T-101 token helpers.
 - Delete the temporary `/login/admin-password` page and its link on `/login` (T-203).
@@ -219,10 +219,13 @@ Cover: forged cookie → 401, guest calling an admin route → 401/403, guest `P
 - The logout button calls `authClient.signOut()`.
 - **Depends on:** T-202, T-203
 - **Files:** ~8
+- **As built:** while there is one shared guest list, only the account matching the new required `ADMIN_EMAIL` env var may use the dashboard and admin APIs; other accounts get 403 (`isAdminEmail()` in `guards.ts`). `requireAdmin()` now verifies the Better Auth session. `session.ts` still signs guest tokens, so only its admin use was removed; narrowing it to guest-only moved to T-205. 22 files, over the guide because the docs had to change with the behaviour.
 
 ### T-205 · Replace admin guards with `requireUser()` · S
 
-- Use `requireUser()` in admin pages and API routes in place of `requireAdmin()` from T-103.
+- Use `requireUser()` in admin pages and API routes in place of `requireAdmin()` from T-103. Keep the `ADMIN_EMAIL` restriction from T-204 until Phase 3 scopes invitations per owner.
+- Add a server-side check in an `/admin` layout: redirect signed-out users to `/login` and show a "no access" message to accounts other than `ADMIN_EMAIL` (today they see the dashboard shell with failing API calls).
+- Narrow `session.ts` to guest tokens only (drop the `admin` role) and fix the stale T-204 note in `current-user.ts`.
 - Remove the `ADMIN_PASSWORD` env var.
 - **Depends on:** T-204
 - **Files:** ~10

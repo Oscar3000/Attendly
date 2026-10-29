@@ -1,8 +1,7 @@
 import { getAuth } from "@/server/auth/auth";
 
 /**
- * Better Auth endpoints (sign-up, sign-in, sessions)
- * Moves to /api/auth/[...all] in T-204
+ * Better Auth endpoints (sign-up, sign-in, sign-out, sessions) at its default basePath
  */
 export function GET(request: Request) {
   return getAuth().handler(request);

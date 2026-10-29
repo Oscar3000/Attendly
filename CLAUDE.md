@@ -79,24 +79,25 @@ Single model: `Invitation` with fields: id (cuid), name, qrCode, eventDate, venu
 
 ## Auth Flow
 
-- **Admin**: Password login -> signed `auth_token` cookie (HS256 JWT, role `admin`) -> access to `/admin/*` and `/api/admin/*`
-- **Guest**: PIN verification -> signed `invite_token` cookie (role `guest`) -> access to `/invite/*`
-- Route handlers also call `requireAdmin()` / `requireAdminOrGuest()` from `src/server/auth/guards.ts` (guests may only GET one invitation and PATCH its status)
-- Tokens are signed and verified in `src/server/auth/session.ts` (edge-safe; stopgap until Better Auth in T-204)
-- **Middleware** verifies the signed cookies; a missing, forged or expired token redirects to `/login` or `/invite-pin` (pages) or returns 401 (API)
+- **Accounts**: Better Auth email + password (`/signup`, `/login`), endpoints at `/api/auth/*`, server instance from `getAuth()` in `src/server/auth/auth.ts`, client in `src/lib/auth-client.ts`
+- **Admin**: any account can sign in, but only the `ADMIN_EMAIL` account may use `/admin/*`, `/api/admin/*` and the admin invitation APIs until invitations are scoped per owner (Phase 3); other accounts get 403
+- **Guest**: PIN verification -> signed `invite_token` cookie (role `guest`, `src/server/auth/session.ts`) -> access to `/invite/*` (replaced by per-invitation links in Phase 5)
+- Route handlers call `requireAdmin()` / `requireAdminOrGuest()` from `src/server/auth/guards.ts`, which verify the Better Auth session against the database (guests may only GET one invitation and PATCH its status)
+- **Middleware** is optimistic for accounts: it only checks a Better Auth session cookie is present (`getSessionCookie()`), redirecting to `/login` (pages) or returning 401 (API). Guest tokens are verified there
 
 ## Environment Variables
 
 All required variables are validated at startup (`src/instrumentation.ts` -> `src/server/env.ts`); the server exits if any is missing. Read them with `getEnv()`, not `process.env`.
 
 - `DATABASE_URL` - PostgreSQL connection string (required)
-- `ADMIN_PASSWORD` - Admin login password (required)
+- `ADMIN_EMAIL` - The one account allowed into the dashboard; also the email `npm run db:seed` creates (required)
+- `ADMIN_PASSWORD` - Password `npm run db:seed` gives the admin account (required until T-205)
 - `AUTH_SECRET` - Signs session cookies; at least 32 characters (required, generate with `openssl rand -base64 32`)
 - `INVITE_PIN` - Guest PIN, at least 4 characters (required, no default)
 - `BETTER_AUTH_SECRET` - Better Auth secret; at least 32 characters, different from `AUTH_SECRET` (required)
 - `BETTER_AUTH_URL` - Public app URL for Better Auth, e.g. `http://localhost:3000` (required)
 - `NEXT_PUBLIC_BASE_URL` - App URL for QR codes (default: http://localhost:3000)
-- `ADMIN_EMAIL`, `ADMIN_NAME` - Only read by `npm run db:seed` (`prisma/seed.ts`), not at startup; the seed uses `ADMIN_PASSWORD` as the account password
+- `ADMIN_NAME` - Optional display name for `npm run db:seed` (default `Admin`)
 
 ## Key Patterns
 

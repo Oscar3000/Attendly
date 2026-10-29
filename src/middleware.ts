@@ -1,12 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getSessionCookie } from "better-auth/cookies";
 import { verifySession } from "@/server/auth/session";
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Signed session checks; a missing, forged or expired cookie counts as signed out
-  const isAdmin = async () =>
-    (await verifySession(request.cookies.get("auth_token")?.value, "admin")) !== null;
+  // Optimistic: only checks that a Better Auth session cookie is present (no DB call here).
+  // Route handlers and pages verify the session and the admin account themselves
+  const isSignedIn = () => getSessionCookie(request) !== null;
+  // Guest tokens are signed, so a missing, forged or expired cookie counts as signed out
   const isGuest = async () =>
     (await verifySession(request.cookies.get("invite_token")?.value, "guest")) !== null;
 
@@ -33,7 +35,7 @@ export async function middleware(request: NextRequest) {
   }
 
   // Check admin authentication
-  if (isAdminRoute && !(await isAdmin())) {
+  if (isAdminRoute && !isSignedIn()) {
     if (pathname.startsWith("/api/")) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     } else {
@@ -42,7 +44,7 @@ export async function middleware(request: NextRequest) {
   }
 
   // Check API invitations authentication (either admin OR guest session)
-  if (isApiInvitationsRoute && !(await isAdmin()) && !(await isGuest())) {
+  if (isApiInvitationsRoute && !isSignedIn() && !(await isGuest())) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
