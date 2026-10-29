@@ -18,7 +18,7 @@ Goal: turn Attendly from a single hard-coded wedding into a product any host can
 | 0     | Foundations (server layer, validation, tests, CI)    | T-001 – T-010 | ✅ Done     |
 | 1     | Lock down security on the current app                | T-101 – T-108 | ✅ Done     |
 | 2     | Accounts with Better Auth (users, sign-up, sessions) | T-201 – T-209 | ✅ Done     |
-| 3     | Events & multi-tenancy                               | T-301 – T-312 | Next        |
+| 3     | Events & multi-tenancy                               | T-301 – T-312 | In progress |
 | 4     | Remove hard-coded content / theming                  | T-401 – T-409 | Not started |
 | 5     | Guest experience                                     | T-501 – T-508 | Not started |
 | 6     | Product features                                     | T-601 – T-610 | Not started |
@@ -273,9 +273,11 @@ Change name (`authClient.updateUser`), password (`authClient.changePassword`, cu
 
 ## Phase 3 — Events & multi-tenancy
 
-### T-301 · `Event` model + migration · S
+### ✅ T-301 · `Event` model + migration · S
 
 Add an `Event` model: `id`, `ownerId → User`, `slug` (unique), `type` (enum: WEDDING, BIRTHDAY, CORPORATE, OTHER), `title`, `date`, `timezone`, `venueName`, `venueAddress`, `rsvpDeadline`, timestamps. Add `event.repo.ts`.
+
+- **As built:** `venueName`, `venueAddress` and `rsvpDeadline` are optional; deleting a user cascades to their events (T-706). `eventRepo` has `create`, `findById`, `findBySlug`, `listByOwner` (soonest first), `update` (undefined leaves a field unchanged, null clears it) and `delete`; only Prisma's not-found error maps to `undefined`/`false`, other errors are rethrown. A taken slug throws Prisma's unique-constraint error (`P2002`) for T-310 to handle.
 
 - **Depends on:** T-201
 - **Files:** ~4

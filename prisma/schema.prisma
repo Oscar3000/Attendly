@@ -40,6 +40,7 @@ model User {
   updatedAt     DateTime  @updatedAt
   sessions      Session[]
   accounts      Account[]
+  events        Event[]
 
   @@unique([email])
   @@map("users")
@@ -91,4 +92,37 @@ model Verification {
 
   @@index([identifier])
   @@map("verifications")
+}
+
+// An event a host runs (wedding, birthday...). Invitations move onto events in T-302 – T-304
+model Event {
+  id           String    @id @default(cuid())
+  // Deleting the owner's account deletes their events
+  ownerId      String
+  owner        User      @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  // Public URL segment for the event page (/e/[slug], T-403)
+  slug         String    @unique
+  type         EventType
+  title        String
+  // When the event starts, stored in UTC; timezone is the IANA zone to display it in
+  date         DateTime
+  timezone     String
+  // Optional so an event can be created before the venue is settled
+  venueName    String?
+  venueAddress String?
+  rsvpDeadline DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  @@index([ownerId])
+  @@map("events")
+}
+
+enum EventType {
+  WEDDING
+  BIRTHDAY
+  CORPORATE
+  OTHER
+
+  @@map("event_type")
 }
