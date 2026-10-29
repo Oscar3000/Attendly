@@ -1,5 +1,8 @@
 /**
  * RTK Query API slice for managing invitation-related API calls
+ * Event-scoped endpoints are injected from eventInvitationApi.ts (T-308). The admin endpoints
+ * below use the old unscoped routes and go away when the dashboard moves to them (T-309);
+ * getInvitation and updateRsvpStatus also serve PIN guests until T-503
  */
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import type {
@@ -16,7 +19,15 @@ export const invitationApi = createApi({
   baseQuery: fetchBaseQuery({
     baseUrl: "/api/",
   }),
-  tagTypes: ["Invitation", "AdminData", "StatusUpdates"],
+  // Event* tags are per event (id = eventId), used by eventInvitationApi.ts
+  tagTypes: [
+    "Invitation",
+    "AdminData",
+    "StatusUpdates",
+    "EventInvitations",
+    "EventMetrics",
+    "EventStatus",
+  ],
   endpoints: (builder) => ({
     // Get single invitation
     getInvitation: builder.query<{ invitation: InviteDetails }, string>({
