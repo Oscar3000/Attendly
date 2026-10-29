@@ -29,14 +29,12 @@ export function AccountSettings(props: AccountSettingsProps) {
       <div className="mx-auto w-full max-w-lg space-y-6">
         <div className="flex items-center justify-between">
           <h1 className="font-inter text-2xl font-bold text-black sm:text-3xl">Account</h1>
-          {props.isAdmin && (
-            <Link
-              href="/admin"
-              className="font-inter text-sm font-medium text-[#C07A54] hover:underline"
-            >
-              Back to dashboard
-            </Link>
-          )}
+          <Link
+            href="/dashboard"
+            className="font-inter text-sm font-medium text-[#C07A54] hover:underline"
+          >
+            Your events
+          </Link>
         </div>
         <NameSection name={props.name} />
         <EmailSection

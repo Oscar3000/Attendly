@@ -39,7 +39,7 @@ export function LoginForm({ googleEnabled, oauthError }: LoginFormProps) {
       return;
     }
 
-    router.push("/admin");
+    router.push("/dashboard");
   };
 
   return (

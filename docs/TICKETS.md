@@ -349,11 +349,12 @@ Move the `admin/*` pages (dashboard, create, edit, bulk upload, success) under t
 - **Files:** ~15
 - **As built:** pages moved with `git mv` and use the T-308 hooks; the old admin endpoints are gone from `invitationApi.ts`. The event layout checks ownership server-side (signed out → `/login`, other accounts or missing events → 404) and shows the verify-email banner, replacing the `ADMIN_EMAIL` gate and "no access" page for pages. `/admin` is now a redirect hub (sign-in, sign-up, Google and email links still land there): it sends you to your soonest event, or shows "No events yet". `next.config.ts` redirects old `/admin/*` bookmarks to `/admin`; middleware covers `/dashboard/*`.
 
-### T-310 · Events list + create event page · M
+### ✅ T-310 · Events list + create event page · M
 
 - `/dashboard` lists the user's events. Point sign-in, sign-up, Google and email callbacks there instead of `/admin`, and replace the `/admin` redirect hub (T-309) with a redirect to `/dashboard`.
 - `/dashboard/events/new` has a form for the basic fields and auto-generates the slug.
 - **Files:** ~8
+- **As built:** `POST /api/events` lets any signed-in user create an event they own (`createEventSchema` converts the datetime-local values from the event's zone via `src/lib/timezones.ts`; the RSVP deadline must be before the start). `createEvent()` slugifies the title ("Pamela & Oscar" → `pamela-and-oscar`, accents stripped, `event` if nothing is left) and retries `-2`, `-3`... on the unique index, so concurrent creates are safe. `/dashboard` lists events with times on the event's own clock; the form defaults to the browser's zone. `/admin` (page deleted) and `/admin/*` redirect to `/dashboard` in `next.config.ts`; sign-in, sign-up, Google and email callbacks point to `/dashboard`.
 
 ### T-311 · Tenant isolation tests · S
 
@@ -366,6 +367,7 @@ User A cannot read, update, delete, or list user B's events or invitations, thro
 
 Drop `Invitation.eventDate` and `Invitation.venue`. Delete the old `/admin` pages and the old API routes. Update the middleware matcher.
 
+- Remove `ADMIN_EMAIL` entirely (env var, `isAdminEmail`, `requireAdminUser`, the account page's email lock and `isAdmin` prop): after T-309/T-310 only the old API routes use it.
 - The old API routes are `/api/admin`, `/api/admin/status`, `/api/invitations` and `/api/invitations/bulk`; keep `/api/invitations/[id]`'s guest GET/PATCH until T-505 if the PIN flow is still live. Delete `src/server/events/current-event.ts` (`requireCurrentEvent`) with them.
 
 - **Depends on:** T-309, T-310, T-311

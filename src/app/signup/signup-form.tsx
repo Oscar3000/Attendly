@@ -32,7 +32,7 @@ export function SignupForm({ googleEnabled }: { googleEnabled: boolean }) {
     // A network failure throws instead of returning an error; show the generic message for it
     const { error } = await authClient.signUp
       // callbackURL: where the verification email's link lands after verifying
-      .email({ name: name.trim(), email, password, callbackURL: "/admin" })
+      .email({ name: name.trim(), email, password, callbackURL: "/dashboard" })
       .catch(() => ({ error: { status: 0 } }));
     if (error) {
       setErrors(toAuthFormErrors(error));
@@ -40,7 +40,7 @@ export function SignupForm({ googleEnabled }: { googleEnabled: boolean }) {
       return;
     }
 
-    router.push("/admin");
+    router.push("/dashboard");
   };
 
   return (

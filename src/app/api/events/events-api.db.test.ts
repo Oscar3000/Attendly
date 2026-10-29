@@ -9,6 +9,7 @@ import * as invitation from "./[eventId]/invitations/[id]/route";
 import * as bulk from "./[eventId]/invitations/bulk/route";
 import * as metrics from "./[eventId]/metrics/route";
 import * as status from "./[eventId]/status/route";
+import * as events from "./route";
 
 let hostCookie = "";
 let otherCookie = "";
@@ -171,5 +172,74 @@ describe("access control", () => {
   it("returns 404 for an event that doesn't exist", async () => {
     const { status: code } = await call(metrics.GET(req(hostCookie), ctx("no-such-event")));
     expect(code).toBe(404);
+  });
+});
+
+describe("POST /api/events", () => {
+  const valid = {
+    title: "Ada's 30th",
+    type: "BIRTHDAY",
+    date: "2027-07-01T19:30",
+    timezone: "Europe/London",
+    venueName: "  The Hall  ",
+    venueAddress: "",
+    rsvpDeadline: "2027-06-15T23:59",
+  };
+
+  it("creates an event owned by any signed-in account, converting times from its zone", async () => {
+    const { status: code, body } = await call(events.POST(req(otherCookie, "POST", valid), {}));
+
+    expect(code).toBe(201);
+    const other = await prisma.user.findUniqueOrThrow({ where: { email: "other@example.com" } });
+    expect(body.event).toMatchObject({
+      ownerId: other.id,
+      slug: "ada-s-30th",
+      type: "BIRTHDAY",
+      // 19:30 BST is 18:30 UTC
+      date: "2027-07-01T18:30:00.000Z",
+      timezone: "Europe/London",
+      venueName: "The Hall",
+      venueAddress: null,
+      rsvpDeadline: "2027-06-15T22:59:00.000Z",
+    });
+  });
+
+  it("returns field errors for invalid input", async () => {
+    const { status: code, body } = await call(
+      events.POST(
+        req(hostCookie, "POST", {
+          ...valid,
+          title: " ",
+          type: "PARTY",
+          date: "tomorrow",
+          timezone: "Mars/Base",
+        }),
+        {},
+      ),
+    );
+
+    expect(code).toBe(400);
+    expect(Object.keys(body.details.fieldErrors).sort()).toEqual([
+      "date",
+      "timezone",
+      "title",
+      "type",
+    ]);
+  });
+
+  it("rejects an RSVP deadline after the event starts", async () => {
+    const { status: code, body } = await call(
+      events.POST(req(hostCookie, "POST", { ...valid, rsvpDeadline: "2027-07-02T10:00" }), {}),
+    );
+
+    expect(code).toBe(400);
+    expect(body.details.fieldErrors.rsvpDeadline).toEqual([
+      "The RSVP deadline must be before the event starts",
+    ]);
+  });
+
+  it("requires a signed-in account", async () => {
+    const { status: code } = await call(events.POST(req("", "POST", valid), {}));
+    expect(code).toBe(401);
   });
 });
