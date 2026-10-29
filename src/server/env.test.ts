@@ -5,6 +5,7 @@ const valid = {
   DATABASE_URL: "postgresql://user:pass@localhost:5432/db",
   AUTH_SECRET: "test-secret-that-is-at-least-32-characters-long",
   ADMIN_PASSWORD: "correct-horse",
+  ADMIN_EMAIL: "admin@example.com",
   INVITE_PIN: "2468",
   BETTER_AUTH_SECRET: "better-auth-test-secret-at-least-32-characters",
   BETTER_AUTH_URL: "http://localhost:3000",

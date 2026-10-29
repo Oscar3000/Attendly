@@ -44,6 +44,8 @@ services:
       # Authentication Configuration
       # Required, no defaults: the app refuses to start without them
       ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+      # The only account allowed into the dashboard; required, no default
+      ADMIN_EMAIL: ${ADMIN_EMAIL}
       # Signs session cookies; required, no default (openssl rand -base64 32)
       AUTH_SECRET: ${AUTH_SECRET}
       INVITE_PIN: ${INVITE_PIN}
