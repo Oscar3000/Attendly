@@ -282,11 +282,12 @@ Add an `Event` model: `id`, `ownerId → User`, `slug` (unique), `type` (enum: W
 - **Depends on:** T-201
 - **Files:** ~4
 
-### T-302 · Add nullable `eventId` to `Invitation` · S
+### ✅ T-302 · Add nullable `eventId` to `Invitation` · S
 
 An additive migration. Add an index on `eventId`.
 
 - **Files:** ~2
+- **As built:** deleting an event deletes its invitations (`onDelete: Cascade`), matching user → event. Nothing reads or writes `eventId` yet.
 
 ### T-303 · Backfill: create your wedding as an `Event` · S
 
