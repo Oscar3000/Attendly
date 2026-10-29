@@ -12,8 +12,6 @@ export default defineConfig({
   },
   test: {
     environment: "node",
-    // Required by getEnv() but not under test anywhere else; individual tests stub the rest
-    env: { ADMIN_EMAIL: "admin@example.com" },
     // db test files share one database, so run files one at a time (root-only option)
     fileParallelism: false,
     projects: [

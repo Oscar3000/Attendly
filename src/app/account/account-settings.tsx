@@ -8,14 +8,13 @@ import { toAuthFormErrors, type AuthClientError } from "@/lib/auth-errors";
 import { FormError, SubmitButton } from "@/components/auth/auth-card";
 import { TextField } from "@/components/auth/text-field";
 
-export type EmailChange = "allowed" | "admin" | "unavailable";
+export type EmailChange = "allowed" | "unavailable";
 
 interface AccountSettingsProps {
   name: string;
   email: string;
   emailVerified: boolean;
   hasPassword: boolean;
-  isAdmin: boolean;
   emailChange: EmailChange;
 }
 
@@ -137,9 +136,7 @@ function EmailSection({
       <Section title="Email">
         {current}
         <p className="font-inter text-sm text-[#666666]">
-          {emailChange === "admin"
-            ? "This account's email can't be changed here: dashboard access is tied to it through the ADMIN_EMAIL setting."
-            : "Email changes are unavailable because email sending isn't set up."}
+          {"Email changes are unavailable because email sending isn't set up."}
         </p>
       </Section>
     );

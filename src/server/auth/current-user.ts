@@ -5,8 +5,7 @@
  */
 import "server-only";
 import { headers } from "next/headers";
-import { getEnv } from "@/server/env";
-import { ForbiddenError, UnauthorizedError } from "@/server/http/errors";
+import { UnauthorizedError } from "@/server/http/errors";
 import { getAuth } from "./auth";
 
 type AuthSession = NonNullable<
@@ -28,18 +27,5 @@ export async function getCurrentUser(requestHeaders?: Headers): Promise<CurrentU
 export async function requireUser(requestHeaders?: Headers): Promise<CurrentUser> {
   const user = await getCurrentUser(requestHeaders);
   if (!user) throw new UnauthorizedError();
-  return user;
-}
-
-// Every account can sign in, but only ADMIN_EMAIL may use the dashboard until
-// invitations are scoped per owner (Phase 3)
-export function isAdminEmail(email: string): boolean {
-  return email.toLowerCase() === getEnv().ADMIN_EMAIL.toLowerCase();
-}
-
-// requireUser(), plus a 403 for any account other than ADMIN_EMAIL
-export async function requireAdminUser(requestHeaders?: Headers): Promise<CurrentUser> {
-  const user = await requireUser(requestHeaders);
-  if (!isAdminEmail(user.email)) throw new ForbiddenError();
   return user;
 }

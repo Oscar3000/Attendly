@@ -5,7 +5,7 @@
 import { vi } from "vitest";
 import { getAuth } from "@/server/auth/auth";
 
-// The env getAuth() needs; ADMIN_EMAIL comes from vitest.config.mts
+// The env getAuth() needs
 export function stubAuthEnv(): void {
   vi.stubEnv("AUTH_SECRET", "test-secret-that-is-at-least-32-characters-long");
   vi.stubEnv("INVITE_PIN", "2468");

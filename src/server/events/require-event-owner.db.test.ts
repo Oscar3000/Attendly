@@ -15,7 +15,7 @@ beforeAll(() => {
 
 // Accounts and events are truncated before each test
 beforeEach(async () => {
-  // Not ADMIN_EMAIL: owning the event is what grants access
+  // Any account: owning the event is what grants access
   ownerHeaders = new Headers({ cookie: await sessionCookieFor("host@example.com") });
   otherHeaders = new Headers({ cookie: await sessionCookieFor("other@example.com") });
   const owner = await prisma.user.findUniqueOrThrow({ where: { email: "host@example.com" } });
