@@ -2,7 +2,8 @@
  * Event-scoped endpoints (T-308), injected into invitationApi so they share its cache
  * Every endpoint takes eventId and calls /api/events/[eventId]/...; cache tags carry the event,
  * so a change in one event never refetches another event's data
- * Used by the event dashboard under /dashboard/events/[eventId] (T-309)
+ * Used by the event dashboard under /dashboard/events/[eventId] (T-309), plus createEvent
+ * for /dashboard/events/new (T-310)
  */
 import type {
   AdminMetrics,
@@ -22,6 +23,17 @@ interface Pagination {
   limit: number;
   total: number;
   totalPages: number;
+}
+
+// The fields a host fills in; dates are datetime-local values on the event's wall clock
+export interface CreateEventForm {
+  title: string;
+  type: "WEDDING" | "BIRTHDAY" | "CORPORATE" | "OTHER";
+  date: string;
+  timezone: string;
+  venueName: string;
+  venueAddress: string;
+  rsvpDeadline: string;
 }
 
 export interface BulkCreateResult {
@@ -53,6 +65,11 @@ const base = (eventId: string) => `events/${encodeURIComponent(eventId)}`;
 
 export const eventInvitationApi = invitationApi.injectEndpoints({
   endpoints: (builder) => ({
+    // The events list is server-rendered, so nothing in this cache needs invalidating
+    createEvent: builder.mutation<{ event: { id: string; slug: string } }, CreateEventForm>({
+      query: (body) => ({ url: "events", method: "POST", body }),
+    }),
+
     // Paginated invitation list for the dashboard table
     getEventInvitations: builder.query<
       { invitations: InvitationTableEntry[]; pagination: Pagination },
@@ -143,6 +160,7 @@ export const eventInvitationApi = invitationApi.injectEndpoints({
 });
 
 export const {
+  useCreateEventMutation,
   useGetEventInvitationsQuery,
   useGetEventMetricsQuery,
   useGetEventStatusUpdatesQuery,

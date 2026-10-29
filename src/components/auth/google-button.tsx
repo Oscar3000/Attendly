@@ -15,7 +15,7 @@ export function GoogleButton({ disabled }: { disabled?: boolean | undefined }) {
     setFailed(false);
     setLoading(true);
     const { error } = await authClient.signIn
-      .social({ provider: "google", callbackURL: "/admin", errorCallbackURL: "/login" })
+      .social({ provider: "google", callbackURL: "/dashboard", errorCallbackURL: "/login" })
       .catch(() => ({ error: { status: 0 } }));
     // On success the page is already navigating to Google
     if (error) {

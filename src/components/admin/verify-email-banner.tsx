@@ -13,7 +13,7 @@ export function VerifyEmailBanner({ email }: { email: string }) {
   const resend = async () => {
     setStatus("sending");
     const { error } = await authClient
-      .sendVerificationEmail({ email, callbackURL: "/admin" })
+      .sendVerificationEmail({ email, callbackURL: "/dashboard" })
       .catch(() => ({ error: { status: 0 } }));
     setStatus(error ? "failed" : "sent");
   };

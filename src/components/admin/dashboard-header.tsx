@@ -24,7 +24,15 @@ export default function DashboardHeader({ eventId, onCreateInvite }: DashboardHe
 
   return (
     <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6 sm:mb-8">
-      <h1 className="text-2xl sm:text-4xl font-bold text-gray-900">Dashboard</h1>
+      <div>
+        <button
+          onClick={() => router.push("/dashboard")}
+          className="mb-1 text-sm text-gray-600 hover:text-gray-900"
+        >
+          ← Your events
+        </button>
+        <h1 className="text-2xl sm:text-4xl font-bold text-gray-900">Dashboard</h1>
+      </div>
       <div className="flex gap-3 sm:gap-4">
         <Button
           variant="attendly"

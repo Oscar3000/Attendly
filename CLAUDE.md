@@ -45,11 +45,13 @@ npm run docker:logs      # View container logs
 ```
 src/
   app/
-    admin/                    # Redirect hub: sign-in lands here and goes to the user's event ("no events yet" otherwise)
+    dashboard/                # The user's events (sign-in and email links land here); /admin/* redirects here
+    dashboard/events/new/     # Create an event (POST /api/events); slug generated from the title
     dashboard/events/[eventId]/ # Event dashboard, create/edit/bulk/success pages; layout checks ownership (404 otherwise)
     api/
       auth/login|logout/      # Admin auth endpoints
       invite/verify-pin/      # Guest PIN verification
+      events/                 # POST: create an event (any signed-in user becomes its owner)
       events/[eventId]/       # Event-scoped, owner only (requireEventOwner): invitations (+ [id], bulk), metrics, status
       invitations/[id]/       # Old CRUD, used by the UI until T-308 and by PIN guests (GET/PATCH); removed in T-312
       admin/                  # Old dashboard metrics & status updates; removed in T-312
@@ -112,6 +114,8 @@ All required variables are validated at startup (`src/instrumentation.ts` -> `sr
 - `ADMIN_PASSWORD`, `ADMIN_NAME` - Only read by `npm run db:seed`: the admin account's password (8+ characters) and optional display name (default `Admin`); not needed at runtime
 
 ## Key Patterns
+
+- Event times are stored in UTC with an IANA `timezone`; hosts enter wall-clock times. Convert with `zonedTimeToUtc()` and display with `formatEventDateTime()` from `src/lib/timezones.ts` (built on `Intl`, no date library)
 
 - Event-scoped code calls `requireEventOwner(eventId, headers?)` (`src/server/events/require-event-owner.ts`): 401 when signed out, the same 404 for a missing event and someone else's event, and returns `{ user, event }`. Ownership is the permission; there's no `ADMIN_EMAIL` check
 
