@@ -48,6 +48,15 @@ function validationField(message: string | undefined): AuthField | undefined {
   return field && field in VALIDATION_MESSAGES ? (field as AuthField) : undefined;
 }
 
+// Better Auth redirects back from Google with ?error=<code> when sign-in doesn't complete
+export function oauthErrorMessage(code: string | undefined): string | undefined {
+  if (!code) return undefined;
+  if (code === "account_not_linked") {
+    return "An account with this email already exists. Log in with your password; Google sign-in works for it once the email is verified.";
+  }
+  return "Google sign-in didn't complete. Please try again.";
+}
+
 export function toAuthFormErrors(error: AuthClientError): AuthFormErrors {
   const fieldError = error.code ? FIELD_ERRORS[error.code] : undefined;
   if (fieldError) return { fields: { [fieldError.field]: fieldError.message } };

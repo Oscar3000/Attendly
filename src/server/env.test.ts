@@ -59,6 +59,16 @@ describe("getEnv", () => {
     expect(getEnv()).toMatchObject({ EMAIL_FROM: "Attendly <hello@example.com>" });
   });
 
+  it("requires both Google variables or neither", () => {
+    vi.stubEnv("GOOGLE_CLIENT_ID", "client-id.apps.googleusercontent.com");
+    expect(() => getEnv()).toThrow(
+      "GOOGLE_CLIENT_SECRET is required: set both Google variables or neither",
+    );
+
+    vi.stubEnv("GOOGLE_CLIENT_SECRET", "client-secret");
+    expect(getEnv()).toMatchObject({ GOOGLE_CLIENT_ID: "client-id.apps.googleusercontent.com" });
+  });
+
   it("treats empty optional variables as unset", () => {
     vi.stubEnv("RESEND_API_KEY", "");
     vi.stubEnv("EMAIL_FROM", "");

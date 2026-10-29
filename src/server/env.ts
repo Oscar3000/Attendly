@@ -26,8 +26,19 @@ const envSchema = z
     // skips them (only verification and password-reset emails are affected)
     RESEND_API_KEY: optionalString,
     EMAIL_FROM: optionalString,
+    // Google sign-in. Optional (both or neither): without them the Google button is hidden
+    GOOGLE_CLIENT_ID: optionalString,
+    GOOGLE_CLIENT_SECRET: optionalString,
   })
   .superRefine((env, ctx) => {
+    if (Boolean(env.GOOGLE_CLIENT_ID) !== Boolean(env.GOOGLE_CLIENT_SECRET)) {
+      const missing = env.GOOGLE_CLIENT_ID ? "GOOGLE_CLIENT_SECRET" : "GOOGLE_CLIENT_ID";
+      ctx.addIssue({
+        code: "custom",
+        path: [missing],
+        message: "is required: set both Google variables or neither",
+      });
+    }
     if (env.RESEND_API_KEY && !env.EMAIL_FROM) {
       ctx.addIssue({
         code: "custom",

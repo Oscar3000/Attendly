@@ -250,9 +250,11 @@ These are built into Better Auth; this ticket wires them up.
 - **Files:** ~7
 - **As built:** email content lives in `src/server/auth/auth-emails.ts`; the banner (`src/components/admin/verify-email-banner.tsx`, with a resend button) is rendered by the `/admin` layout. Better Auth catches send failures and only logs them, so sign-up still succeeds and a reset request shows the same "if an account exists" message either way; a Resend outage shows up only in the server logs. `RESEND_API_KEY` / `EMAIL_FROM` stay optional: without them production skips these emails and hides the verify banner (`canSendEmail()`). `/login` links to `/forgot-password`.
 
-### T-208 · Google sign-in (optional) · S
+### ✅ T-208 · Google sign-in (optional) · S
 
 Add `socialProviders.google` in `auth.ts` and a "Continue with Google" button on the login and sign-up pages.
+
+- **As built:** `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` are optional (both or neither); without them the button is hidden. `/login` and `/signup` are now small server pages (`connection()`, so the env is read per request) around `login-form.tsx` / `signup-form.tsx`. Default account linking: Google joins an existing account only when both sides have verified the email; otherwise `/login?error=account_not_linked` explains it. Setup steps are in `DEPLOYMENT.md`.
 
 - **Depends on:** T-204
 - **Files:** ~4
