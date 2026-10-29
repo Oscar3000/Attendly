@@ -24,6 +24,7 @@
     "db:studio": "prisma studio",
     "db:reset": "prisma migrate reset",
     "db:seed": "prisma db seed",
+    "db:backfill-wedding": "tsx --conditions=react-server --env-file-if-exists=.env prisma/backfill-wedding-event.ts",
     "docker:build": "docker build -t attendly .",
     "docker:run": "docker run -p 3000:3000 attendly",
     "docker:up": "docker-compose up -d",

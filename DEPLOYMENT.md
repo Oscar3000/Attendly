@@ -151,6 +151,16 @@ railway run sh -c 'DATABASE_URL="<DATABASE_PUBLIC_URL>" ADMIN_PASSWORD="<passwor
 - `DATABASE_URL` must be the database's **public** URL: the Postgres service's `DATABASE_PUBLIC_URL` (`…proxy.rlwy.net:<port>`). The app's own `DATABASE_URL` points at `postgres.railway.internal`, which only resolves inside Railway.
 - `ADMIN_PASSWORD` (8+ characters) becomes the account password. Only this command reads it, so there's no need to keep it as a Railway variable.
 
+### Link existing invitations to the wedding event
+
+Run once after the `events` migration has deployed and the admin account exists, and before the release that makes events required (T-304). It creates the "Pamela & Oscar" event for `ADMIN_EMAIL` and attaches every invitation that has no event. Running it again only links invitations created since.
+
+```bash
+railway run sh -c 'DATABASE_URL="<DATABASE_PUBLIC_URL>" npm run db:backfill-wedding'
+```
+
+It prints how many invitations it linked. If it says there's no account for your email, run the seed above first.
+
 ---
 
 ## Step 8: Verify the Deployment

@@ -289,16 +289,17 @@ An additive migration. Add an index on `eventId`.
 - **Files:** ~2
 - **As built:** deleting an event deletes its invitations (`onDelete: Cascade`), matching user → event. Nothing reads or writes `eventId` yet.
 
-### T-303 · Backfill: create your wedding as an `Event` · S
+### ✅ T-303 · Backfill: create your wedding as an `Event` · S
 
 Add a migration script that creates the event for your user from the current hard-coded values and sets `eventId` on all existing invitations.
 
 - **Depends on:** T-202, T-301, T-302
 - **Files:** ~2
+- **As built:** `npm run db:backfill-wedding` (`prisma/backfill-wedding-event.ts`, logic in `src/server/backfill/wedding-event.ts`) creates "Pamela & Oscar" (`pamela-and-oscar`, WEDDING, May 23 2026 3:00 PM `Africa/Lagos`, Canary World) for the `ADMIN_EMAIL` account and links every invitation with no event, in one transaction. It's a script rather than a SQL migration because it needs the admin's account; it's safe to re-run. The church service (10:00 AM, Archangels Catholic Church) belongs in the event's notes once T-401 adds them.
 
 ### T-304 · Make `eventId` required; move `eventDate`/`venue` off `Invitation` · M
 
-- Make `eventId` NOT NULL.
+- Make `eventId` NOT NULL. Run `npm run db:backfill-wedding` in production first; the migration should fail with a clear message if any invitation still has no event.
 - Stop reading `invitation.eventDate` and `invitation.venue` and read them from `event` instead. Drop those columns in T-312.
 - Update types in `src/lib/types.ts`.
 - **Depends on:** T-303
