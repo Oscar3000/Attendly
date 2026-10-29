@@ -15,9 +15,14 @@ model Invitation {
   venue     String
   status    RsvpStatus @default(PENDING)
   plusOne   Int        @default(0)
+  // Nullable until existing invitations are backfilled (T-303); required from T-304.
+  // Deleting an event deletes its invitations
+  eventId   String?
+  event     Event?     @relation(fields: [eventId], references: [id], onDelete: Cascade)
   createdAt DateTime   @default(now())
   updatedAt DateTime   @updatedAt
 
+  @@index([eventId])
   @@map("invitations")
 }
 
@@ -96,12 +101,12 @@ model Verification {
 
 // An event a host runs (wedding, birthday...). Invitations move onto events in T-302 – T-304
 model Event {
-  id           String    @id @default(cuid())
+  id           String       @id @default(cuid())
   // Deleting the owner's account deletes their events
   ownerId      String
-  owner        User      @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  owner        User         @relation(fields: [ownerId], references: [id], onDelete: Cascade)
   // Public URL segment for the event page (/e/[slug], T-403)
-  slug         String    @unique
+  slug         String       @unique
   type         EventType
   title        String
   // When the event starts, stored in UTC; timezone is the IANA zone to display it in
@@ -111,8 +116,9 @@ model Event {
   venueName    String?
   venueAddress String?
   rsvpDeadline DateTime?
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
+  invitations  Invitation[]
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
 
   @@index([ownerId])
   @@map("events")
