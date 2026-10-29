@@ -90,7 +90,7 @@ describe("eventRepo", () => {
   it("deletes an event's invitations with it, leaving other events' invitations", async () => {
     const event = await eventRepo.create(ownerId, wedding);
     const other = await eventRepo.create(ownerId, { ...wedding, slug: "other-event" });
-    const guest = { qrCode: "qr", eventDate: wedding.date, venue: "Hall" };
+    const guest = { qrCode: "qr" };
     await prisma.invitation.create({ data: { ...guest, name: "Ada", eventId: event.id } });
     await prisma.invitation.create({ data: { ...guest, name: "Other guest", eventId: other.id } });
 
