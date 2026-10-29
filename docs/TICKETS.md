@@ -15,7 +15,7 @@ Goal: turn Attendly from a single hard-coded wedding into a product any host can
 
 | Phase | Theme                                                | Tickets       | Status      |
 | ----- | ---------------------------------------------------- | ------------- | ----------- |
-| 0     | Foundations (server layer, validation, tests, CI)    | T-001 – T-010 | T-010 open  |
+| 0     | Foundations (server layer, validation, tests, CI)    | T-001 – T-010 | ✅ Done     |
 | 1     | Lock down security on the current app                | T-101 – T-108 | ✅ Done     |
 | 2     | Accounts with Better Auth (users, sign-up, sessions) | T-201 – T-209 | ✅ Done     |
 | 3     | Events & multi-tenancy                               | T-301 – T-312 | Next        |
@@ -95,7 +95,7 @@ Run Prettier on the `src/app` pages (everything except `src/app/api`) and on `RE
 - **Depends on:** T-006, T-008
 - **Files:** ~14
 
-### T-010 · Upgrade Node to 22 LTS · S
+### ✅ T-010 · Upgrade Node to 22 LTS · S
 
 Node 20 reached end of life in April 2026. Better Auth's dependencies (`@noble/ciphers`, `@noble/hashes`) already require Node >= 20.19, and the project pins 20.10 locally and in CI and 20.15 in Docker. The npm that ships with Node 20.10 (10.2.3) also has a resolver bug that rejects `npm install better-auth`.
 
@@ -106,6 +106,7 @@ Node 20 reached end of life in April 2026. Better Auth's dependencies (`@noble/c
 - Reinstall with the npm that ships with Node 22 and commit the lockfile if it changes.
 - **Done when:** CI passes on Node 22, `npm install` works without workarounds, and the Docker image builds and passes `/api/health` locally.
 - **Files:** ~5
+- **As built:** Node 22.23.4 (npm 10.9.9) in `.tool-versions` and `node:22.23.4-alpine3.24` in Docker. That Alpine image has no OpenSSL, which Prisma's engine needs, so the base stage installs `openssl`. `npm ci --only=production` became `--omit=dev` (the old flag is deprecated). `@types/node` is 22.20.5.
 
 ---
 
