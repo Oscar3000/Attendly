@@ -30,27 +30,33 @@
   }
 }
 
-/* Base styles */
-* {
-  border-color: rgb(229 231 235); /* Gray-200 */
-}
+/*
+ * Base styles. They must stay inside @layer base: Tailwind 4 puts utilities in a cascade layer,
+ * and unlayered rules beat every layer, so e.g. an unlayered `button { background: none }`
+ * silently removes the background from any <button class="bg-..."> on the site
+ */
+@layer base {
+  * {
+    border-color: rgb(229 231 235); /* Gray-200 */
+  }
 
-/* Focus styles for accessibility */
-*:focus-visible {
-  outline: 2px solid rgb(var(--color-primary));
-  outline-offset: 2px;
-}
+  /* Focus styles for accessibility */
+  *:focus-visible {
+    outline: 2px solid rgb(var(--color-primary));
+    outline-offset: 2px;
+  }
 
-/* Smooth scrolling */
-html {
-  scroll-behavior: smooth;
-}
+  /* Smooth scrolling */
+  html {
+    scroll-behavior: smooth;
+  }
 
-/* Remove default button styles */
-button {
-  background: none;
-  border: none;
-  cursor: pointer;
+  /* Remove default button styles */
+  button {
+    background: none;
+    border: none;
+    cursor: pointer;
+  }
 }
 
 /* Custom font weight classes for Inter */
