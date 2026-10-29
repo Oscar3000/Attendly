@@ -313,12 +313,13 @@ Loads the event and throws 404 if the current user is not its owner. Return 404,
 - **Files:** ~2
 - **As built:** `requireEventOwner(eventId, headers?)` in `src/server/events/require-event-owner.ts` returns `{ user, event }`; signed out is 401 (via `requireUser`), and a missing or someone else's event is the same 404. It checks ownership only, not `ADMIN_EMAIL`, so it's what lets any host reach their own events once T-310 lets them create one.
 
-### T-306 · Scope invitation repository by `eventId` · M
+### ✅ T-306 · Scope invitation repository by `eventId` · M
 
 Every repository function takes `eventId`, and there are no unscoped queries left. Metrics and status updates are scoped too.
 
 - **Depends on:** T-304
 - **Files:** ~5
+- **As built:** `eventId` is part of each query (`where: { id, eventId }`), so another event's invitation is indistinguishable from a missing one; update/delete now treat only Prisma's not-found error as "not found" and rethrow the rest. Shared-PIN guests aren't tied to an event, so they get two explicit exceptions, `getInvitationForGuest(id)` and `updateRsvpStatusForGuest(id, status)` (remove in T-505). Routes pass the admin's event from `requireCurrentEvent()` until T-307.
 
 ### T-307 · Event-scoped API routes · M
 
@@ -457,6 +458,8 @@ Update QR generation and regenerate codes for existing invitations.
 ### T-505 · Remove shared PIN flow · S
 
 Delete `invite-pin/`, `api/invite/verify-pin`, the `INVITE_PIN` env var, and the guest cookie logic in middleware.
+
+- Delete `invitationRepo.getInvitationForGuest` / `updateRsvpStatusForGuest` (T-306), the last unscoped invitation queries.
 
 - Delete `src/server/auth/session.ts` (the T-101 token code, now only used for guest tokens) and `requireAdminOrGuest()`; the remaining tests that sign an `admin` token go with it.
 

@@ -1,10 +1,12 @@
 /**
  * Invitation repository
  * All Prisma reads and writes for invitations
+ * Every query is scoped to one event (T-306): an invitation in another event behaves exactly
+ * like a missing one. The only exceptions are the two *ForGuest functions at the end
  * The date and venue come from the invitation's event (T-304)
  */
 import "server-only";
-import type { Event } from "@prisma/client";
+import { Prisma, type Event } from "@prisma/client";
 import { prisma } from "@/server/db/client";
 import type {
   InviteDetails,
@@ -26,20 +28,50 @@ const withEvent = {
   event: { select: { date: true, venueName: true, venueAddress: true } },
 } as const;
 
+// Prisma's "record to update/delete does not exist" (including a match on id but not eventId)
+const isNotFound = (error: unknown) =>
+  error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2025";
+
+type InvitationUpdates = {
+  name?: string | undefined;
+  status?: RsvpStatus | undefined;
+  plusOne?: number | undefined;
+};
+
+// Shared by the scoped and guest updates. The date and venue are changed on the event
+async function update(
+  where: Prisma.InvitationWhereUniqueInput,
+  updates: InvitationUpdates,
+): Promise<InviteDetails | undefined> {
+  const data: Partial<{ name: string; plusOne: number; status: PrismaRsvpStatus }> = {};
+  if (updates.name !== undefined) data.name = updates.name;
+  if (updates.plusOne !== undefined) data.plusOne = updates.plusOne;
+  if (updates.status !== undefined) data.status = convertToPrismaStatus(updates.status);
+
+  try {
+    const updated = await prisma.invitation.update({ where, data, include: withEvent });
+    return convertToInviteDetails(updated as Invitation);
+  } catch (error) {
+    if (isNotFound(error)) return undefined;
+    throw error;
+  }
+}
+
 export const invitationRepo = {
-  // Get all invitations
-  async getAllInvitations(): Promise<InviteDetails[]> {
+  // Get all invitations in an event
+  async getAllInvitations(eventId: string): Promise<InviteDetails[]> {
     const invitations = await prisma.invitation.findMany({
+      where: { eventId },
       orderBy: { createdAt: "desc" },
       include: withEvent,
     });
     return invitations.map((invitation) => convertToInviteDetails(invitation as Invitation));
   },
 
-  // Get invitation by ID
-  async getInvitationById(id: string): Promise<InviteDetails | undefined> {
+  // Get an invitation by ID within an event
+  async getInvitationById(eventId: string, id: string): Promise<InviteDetails | undefined> {
     const invitation = await prisma.invitation.findUnique({
-      where: { id },
+      where: { id, eventId },
       include: withEvent,
     });
     return invitation ? convertToInviteDetails(invitation as Invitation) : undefined;
@@ -77,60 +109,38 @@ export const invitationRepo = {
     return convertToInviteDetails(updatedInvitation as Invitation);
   },
 
-  // Update invitation (the date and venue are changed on the event)
+  // Update an invitation within an event. Missing or undefined fields are left unchanged
   async updateInvitation(
+    eventId: string,
     id: string,
-    // Fields that are missing or undefined are left unchanged
-    updates: {
-      name?: string | undefined;
-      status?: RsvpStatus | undefined;
-      plusOne?: number | undefined;
-    },
+    updates: InvitationUpdates,
   ): Promise<InviteDetails | undefined> {
-    try {
-      const updateData: Partial<{
-        name: string;
-        plusOne: number;
-        status: PrismaRsvpStatus;
-      }> = {};
-
-      if (updates.name !== undefined) updateData.name = updates.name;
-      if (updates.plusOne !== undefined) updateData.plusOne = updates.plusOne;
-      if (updates.status !== undefined) updateData.status = convertToPrismaStatus(updates.status);
-
-      const updatedInvitation = await prisma.invitation.update({
-        where: { id },
-        data: updateData,
-        include: withEvent,
-      });
-
-      return convertToInviteDetails(updatedInvitation as Invitation);
-    } catch (error) {
-      console.error("Error updating invitation:", error);
-      return undefined;
-    }
+    return update({ id, eventId }, updates);
   },
 
-  // Delete invitation
-  async deleteInvitation(id: string): Promise<boolean> {
+  // Delete an invitation within an event
+  async deleteInvitation(eventId: string, id: string): Promise<boolean> {
     try {
-      await prisma.invitation.delete({
-        where: { id },
-      });
+      await prisma.invitation.delete({ where: { id, eventId } });
       return true;
     } catch (error) {
-      console.error("Error deleting invitation:", error);
-      return false;
+      if (isNotFound(error)) return false;
+      throw error;
     }
   },
 
-  // Update RSVP status
-  async updateRsvpStatus(id: string, status: RsvpStatus): Promise<InviteDetails | undefined> {
-    return await invitationRepo.updateInvitation(id, { status });
+  // Update the RSVP status of an invitation within an event
+  async updateRsvpStatus(
+    eventId: string,
+    id: string,
+    status: RsvpStatus,
+  ): Promise<InviteDetails | undefined> {
+    return update({ id, eventId }, { status });
   },
 
-  // Get admin invitation list with pagination
+  // Get an event's invitation list with pagination
   async getAdminInvitations(
+    eventId: string,
     page: number = 1,
     limit: number = 10,
     search: string = "",
@@ -145,8 +155,8 @@ export const invitationRepo = {
   }> {
     const skip = (page - 1) * limit;
     const where = search.trim()
-      ? { name: { contains: search.trim(), mode: "insensitive" as const } }
-      : {};
+      ? { eventId, name: { contains: search.trim(), mode: "insensitive" as const } }
+      : { eventId };
 
     const [invitations, total] = await Promise.all([
       prisma.invitation.findMany({
@@ -188,5 +198,22 @@ export const invitationRepo = {
         totalPages: Math.ceil(total / limit),
       },
     };
+  },
+
+  /*
+   * Guest (shared PIN) access, by invitation id alone: the PIN isn't tied to an event, and the
+   * id in the guest's link is what identifies their invitation. Only for the guest branch of
+   * GET/PATCH /api/invitations/[id]; removed with the PIN flow in T-505
+   */
+  async getInvitationForGuest(id: string): Promise<InviteDetails | undefined> {
+    const invitation = await prisma.invitation.findUnique({ where: { id }, include: withEvent });
+    return invitation ? convertToInviteDetails(invitation as Invitation) : undefined;
+  },
+
+  async updateRsvpStatusForGuest(
+    id: string,
+    status: RsvpStatus,
+  ): Promise<InviteDetails | undefined> {
+    return update({ id }, { status });
   },
 };

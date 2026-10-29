@@ -8,15 +8,17 @@ import { invitationRepo } from "@/server/repositories/invitation.repo";
 import { metricsRepo } from "@/server/repositories/metrics.repo";
 import { handleRoute } from "@/server/http/errors";
 import { requireAdminUser } from "@/server/auth/current-user";
+import { requireCurrentEvent } from "@/server/events/current-event";
 import { parseQuery } from "@/server/http/validate";
 import { adminInvitationsQuerySchema } from "@/server/validation/invitation.schemas";
 
 export const GET = handleRoute(async (request) => {
-  await requireAdminUser(request.headers);
+  const user = await requireAdminUser(request.headers);
   const { page, limit, search } = parseQuery(request, adminInvitationsQuerySchema);
+  const event = await requireCurrentEvent(user.id);
 
-  const metrics = await metricsRepo.getAdminMetrics();
-  const invitationData = await invitationRepo.getAdminInvitations(page, limit, search);
+  const metrics = await metricsRepo.getAdminMetrics(event.id);
+  const invitationData = await invitationRepo.getAdminInvitations(event.id, page, limit, search);
 
   return NextResponse.json(
     {
