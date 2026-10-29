@@ -221,14 +221,15 @@ Cover: forged cookie → 401, guest calling an admin route → 401/403, guest `P
 - **Files:** ~8
 - **As built:** while there is one shared guest list, only the account matching the new required `ADMIN_EMAIL` env var may use the dashboard and admin APIs; other accounts get 403 (`isAdminEmail()` in `guards.ts`). `requireAdmin()` now verifies the Better Auth session. `session.ts` still signs guest tokens, so only its admin use was removed; narrowing it to guest-only moved to T-205. 22 files, over the guide because the docs had to change with the behaviour.
 
-### T-205 · Replace admin guards with `requireUser()` · S
+### ✅ T-205 · Replace admin guards with `requireUser()` · S
 
 - Use `requireUser()` in admin pages and API routes in place of `requireAdmin()` from T-103. Keep the `ADMIN_EMAIL` restriction from T-204 until Phase 3 scopes invitations per owner.
 - Add a server-side check in an `/admin` layout: redirect signed-out users to `/login` and show a "no access" message to accounts other than `ADMIN_EMAIL` (today they see the dashboard shell with failing API calls).
-- Narrow `session.ts` to guest tokens only (drop the `admin` role) and fix the stale T-204 note in `current-user.ts`.
+- Fix the stale T-204 note in `current-user.ts`.
 - Remove the `ADMIN_PASSWORD` env var.
 - **Depends on:** T-204
 - **Files:** ~10
+- **As built:** admin-only endpoints call `requireAdminUser()` (`requireUser()` plus the `ADMIN_EMAIL` check) from `current-user.ts`, passing `request.headers`; `guards.ts` keeps only `requireAdminOrGuest()`. A guest calling an admin-only endpoint now gets 401 (no account session) instead of 403. `ADMIN_PASSWORD` is now read only by the seed. Narrowing `session.ts` to guest tokens moved to T-505, which deletes that code anyway.
 
 ### T-206 · Transactional email provider · S
 
@@ -439,6 +440,8 @@ Update QR generation and regenerate codes for existing invitations.
 ### T-505 · Remove shared PIN flow · S
 
 Delete `invite-pin/`, `api/invite/verify-pin`, the `INVITE_PIN` env var, and the guest cookie logic in middleware.
+
+- Delete `src/server/auth/session.ts` (the T-101 token code, now only used for guest tokens) and `requireAdminOrGuest()`; the remaining tests that sign an `admin` token go with it.
 
 - **Depends on:** T-502, T-503, T-504
 - **Files:** ~6

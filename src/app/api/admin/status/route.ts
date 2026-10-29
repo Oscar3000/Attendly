@@ -5,10 +5,10 @@
 import { NextResponse } from "next/server";
 import { metricsRepo } from "@/server/repositories/metrics.repo";
 import { handleRoute } from "@/server/http/errors";
-import { requireAdmin } from "@/server/auth/guards";
+import { requireAdminUser } from "@/server/auth/current-user";
 
 export const GET = handleRoute(async (request) => {
-  await requireAdmin(request);
+  await requireAdminUser(request.headers);
   const statusUpdates = await metricsRepo.getRecentStatusUpdates();
   return NextResponse.json({ statusUpdates }, { status: 200 });
 });

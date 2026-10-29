@@ -8,7 +8,8 @@
 import { NextResponse } from "next/server";
 import { invitationRepo } from "@/server/repositories/invitation.repo";
 import { handleRoute, NotFoundError } from "@/server/http/errors";
-import { requireAdmin, requireAdminOrGuest } from "@/server/auth/guards";
+import { requireAdminUser } from "@/server/auth/current-user";
+import { requireAdminOrGuest } from "@/server/auth/guards";
 import { parseBody } from "@/server/http/validate";
 import {
   updateInvitationSchema,
@@ -32,7 +33,7 @@ export const GET = handleRoute(async (request, { params }: RouteParams) => {
 });
 
 export const PUT = handleRoute(async (request, { params }: RouteParams) => {
-  await requireAdmin(request);
+  await requireAdminUser(request.headers);
   const { id } = await params;
   const updates = await parseBody(request, updateInvitationSchema);
 
@@ -46,7 +47,7 @@ export const PUT = handleRoute(async (request, { params }: RouteParams) => {
 });
 
 export const DELETE = handleRoute(async (request, { params }: RouteParams) => {
-  await requireAdmin(request);
+  await requireAdminUser(request.headers);
   const { id } = await params;
   const deleted = await invitationRepo.deleteInvitation(id);
 

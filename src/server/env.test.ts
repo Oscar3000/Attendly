@@ -4,7 +4,6 @@ import { getEnv } from "./env";
 const valid = {
   DATABASE_URL: "postgresql://user:pass@localhost:5432/db",
   AUTH_SECRET: "test-secret-that-is-at-least-32-characters-long",
-  ADMIN_PASSWORD: "correct-horse",
   ADMIN_EMAIL: "admin@example.com",
   INVITE_PIN: "2468",
   BETTER_AUTH_SECRET: "better-auth-test-secret-at-least-32-characters",
@@ -25,10 +24,10 @@ describe("getEnv", () => {
   });
 
   it("names every missing variable", () => {
-    vi.stubEnv("ADMIN_PASSWORD", undefined);
+    vi.stubEnv("AUTH_SECRET", undefined);
     vi.stubEnv("INVITE_PIN", undefined);
 
-    expect(() => getEnv()).toThrow(/ADMIN_PASSWORD is required[\s\S]*INVITE_PIN is required/);
+    expect(() => getEnv()).toThrow(/AUTH_SECRET is required[\s\S]*INVITE_PIN is required/);
   });
 
   it("explains invalid values without printing them", () => {
