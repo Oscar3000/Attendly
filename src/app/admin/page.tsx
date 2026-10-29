@@ -1,145 +1,54 @@
-"use client";
+import { headers } from "next/headers";
+import Link from "next/link";
+import { redirect } from "next/navigation";
+import { getAuth } from "@/server/auth/auth";
+import { getCurrentUser } from "@/server/auth/current-user";
+import { eventRepo } from "@/server/repositories/event.repo";
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import DashboardHeader from "@/components/admin/dashboard-header";
-import InvitationCounter from "@/components/admin/invitation-counter";
-import StatusUpdates from "@/components/admin/status-updates";
-import MetricsChart from "@/components/admin/metrics-chart";
-import InvitationsTable from "@/components/admin/invitations-table";
-import { DashboardMetrics, InvitationTableEntry } from "@/lib/types";
-import { useGetAdminDataQuery, useGetStatusUpdatesQuery } from "@/store/invitationApi";
+/**
+ * Where sign-in, sign-up and email links land: sends the user to their event's dashboard
+ * Until the events list exists (T-310) that's the soonest event; T-310 replaces this with /dashboard
+ */
+export default async function AdminRedirectPage() {
+  const user = await getCurrentUser();
+  if (!user) redirect("/login");
 
-export default function AdminDashboard() {
-  const router = useRouter();
-  const [currentPage, setCurrentPage] = useState(1);
-  const [search, setSearch] = useState("");
-  const [debouncedSearch, setDebouncedSearch] = useState("");
-  const limit = 10;
+  const [event] = await eventRepo.listByOwner(user.id);
+  if (event) redirect(`/dashboard/events/${event.id}`);
 
-  useEffect(() => {
-    const t = setTimeout(() => setDebouncedSearch(search), 300);
-    return () => clearTimeout(t);
-  }, [search]);
+  return <NoEvents email={user.email} />;
+}
 
-  const handleSearchChange = (value: string) => {
-    setSearch(value);
-    setCurrentPage(1);
-  };
+async function signOut() {
+  "use server";
+  await getAuth().api.signOut({ headers: await headers() });
+  redirect("/login");
+}
 
-  // RTK Query hooks
-  const {
-    data: adminData,
-    isLoading: loading,
-    isError,
-  } = useGetAdminDataQuery({ page: currentPage, limit, search: debouncedSearch });
-
-  const { data: statusUpdatesData } = useGetStatusUpdatesQuery();
-
-  // Transform API data to dashboard format
-  const metrics: DashboardMetrics = adminData
-    ? {
-        totalInvitations: adminData.metrics.totalInvitations,
-        totalGuests: adminData.metrics.totalGuests,
-        pendingCount: adminData.metrics.pendingRsvps,
-        confirmedCount: adminData.metrics.confirmedRsvps,
-        rescindedCount: adminData.metrics.declinedRsvps,
-      }
-    : {
-        totalInvitations: 0,
-        totalGuests: 0,
-        pendingCount: 0,
-        confirmedCount: 0,
-        rescindedCount: 0,
-      };
-
-  const invitations: InvitationTableEntry[] = adminData
-    ? adminData.invitations.map((inv) => ({
-        ...inv,
-        status: inv.status === "declined" ? "rescinded" : inv.status, // Map declined to rescinded for UI
-      }))
-    : [];
-
-  const handleCreateInvite = () => {
-    router.push("/admin/create-invite");
-  };
-
-  const handleEditInvitation = (id: string) => {
-    router.push(`/admin/edit-invite/${id}`);
-  };
-
-  if (loading) {
-    return (
-      <div
-        className="min-h-screen flex items-center justify-center"
-        style={{ backgroundColor: "#FFF9F4" }}
-      >
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading admin dashboard...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (isError) {
-    return (
-      <div
-        className="min-h-screen flex items-center justify-center"
-        style={{ backgroundColor: "#FFF9F4" }}
-      >
-        <div className="text-center">
-          <p className="text-red-600 mb-4">Failed to load admin data</p>
-          <button
-            onClick={() => window.location.reload()}
-            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-          >
-            Retry
-          </button>
-        </div>
-      </div>
-    );
-  }
-
+function NoEvents({ email }: { email: string }) {
   return (
-    <div className="min-h-screen px-4 py-4 sm:p-6" style={{ backgroundColor: "#FFF9F4" }}>
-      <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        <DashboardHeader onCreateInvite={handleCreateInvite} />
-
-        {/* Top Row - Counter and Status Updates */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-          {/* Left Column - Counter */}
-          <div>
-            <InvitationCounter
-              totalInvitations={metrics.totalInvitations}
-              totalGuests={metrics.totalGuests}
-            />
-          </div>
-
-          {/* Right Column - Status Updates */}
-          <div>
-            <StatusUpdates updates={statusUpdatesData?.statusUpdates || []} />
-          </div>
-        </div>
-
-        {/* Middle Row - Metrics Chart */}
-        <div className="mb-6">
-          <MetricsChart metrics={metrics} />
-        </div>
-
-        {/* Bottom Row - Invitations Table */}
-        <div>
-          <InvitationsTable
-            invitations={invitations}
-            onEdit={handleEditInvitation}
-            pagination={adminData?.pagination}
-            onPageChange={setCurrentPage}
-            search={search}
-            onSearchChange={handleSearchChange}
-          />
-        </div>
+    <main className="flex min-h-screen items-center justify-center bg-[#FFF9F4] px-4 py-8">
+      <div className="w-full max-w-sm rounded-lg bg-white p-6 text-center shadow-[0_2px_8px_rgba(0,0,0,0.1)]">
+        <h1 className="font-inter mb-3 text-xl font-bold text-black">No events yet</h1>
+        <p className="font-inter mb-6 text-sm text-[#666666]">
+          You&apos;re signed in as <span className="font-medium text-[#333333]">{email}</span>.
+          Creating your own events is coming soon.
+        </p>
+        <Link
+          href="/account"
+          className="font-inter mb-3 block text-sm font-medium text-[#C07A54] hover:underline"
+        >
+          Account settings
+        </Link>
+        <form action={signOut}>
+          <button
+            type="submit"
+            className="font-inter w-full rounded-lg bg-[#C07A54] px-4 py-2 text-base font-medium text-white transition-all hover:opacity-90"
+          >
+            Log out
+          </button>
+        </form>
       </div>
-    </div>
+    </main>
   );
 }

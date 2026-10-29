@@ -14,7 +14,7 @@ export async function middleware(request: NextRequest) {
 
   // Define protected routes
   // Need a signed-in account; pages and route handlers then check admin or event ownership
-  const adminRoutes = ["/admin", "/api/admin", "/api/events"];
+  const adminRoutes = ["/admin", "/dashboard", "/api/admin", "/api/events"];
   const inviteRoutes = ["/invite"];
   const apiInvitationsRoutes = ["/api/invitations"];
 
@@ -64,6 +64,7 @@ export async function middleware(request: NextRequest) {
 export const config = {
   matcher: [
     "/admin/:path*",
+    "/dashboard/:path*",
     "/api/admin/:path*",
     "/api/events/:path*",
     "/api/invitations/:path*",

@@ -41,6 +41,11 @@ const nextConfig: NextConfig = {
   // Enable standalone output for Docker optimization
   output: "standalone",
   poweredByHeader: false,
+  // The dashboard moved under /dashboard/events/[eventId] (T-309); /admin itself now redirects
+  // to the user's event, so old bookmarks to its sub-pages land there too
+  async redirects() {
+    return [{ source: "/admin/:path+", destination: "/admin", permanent: false }];
+  },
   async headers() {
     return [{ source: "/:path*", headers: securityHeaders }];
   },

@@ -1,23 +1,25 @@
 "use client";
 
-import { useSearchParams } from "next/navigation";
-import { useRouter } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { Button } from "@/components/button";
 import { QrCode } from "@/components/qr-code";
-import { useGetInvitationQuery } from "@/store/invitationApi";
+import { useGetEventInvitationQuery } from "@/store/eventInvitationApi";
 import { downloadQRCode, shareQRCodeAsImage } from "@/lib/utils";
 
 export function SuccessPageContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
+  const { eventId } = useParams<{ eventId: string }>();
+  const dashboard = `/dashboard/events/${eventId}`;
   const invitationId = searchParams.get("id");
   const [copied, setCopied] = useState(false);
   const [shareMethod, setShareMethod] = useState<"link" | "qr">("qr");
 
-  const { data, isLoading, error } = useGetInvitationQuery(invitationId || "", {
-    skip: !invitationId,
-  });
+  const { data, isLoading, error } = useGetEventInvitationQuery(
+    { eventId, id: invitationId || "" },
+    { skip: !invitationId },
+  );
 
   const invitation = data?.invitation;
   const inviteUrl = `${typeof window !== "undefined" ? window.location.origin : ""}/invite/${invitationId}`;
@@ -97,7 +99,7 @@ export function SuccessPageContent() {
           <p className="text-gray-600 mb-6">
             We couldn&apos;t find the invitation you&apos;re looking for.
           </p>
-          <Button variant="primary" onClick={() => router.push("/admin")}>
+          <Button variant="primary" onClick={() => router.push(dashboard)}>
             Back to Dashboard
           </Button>
         </div>
@@ -311,7 +313,7 @@ export function SuccessPageContent() {
           </Button>
           <Button
             variant="secondary"
-            onClick={() => router.push(`/admin/edit-invite/${invitation.id}`)}
+            onClick={() => router.push(`${dashboard}/edit-invite/${invitation.id}`)}
           >
             <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
@@ -323,7 +325,7 @@ export function SuccessPageContent() {
             </svg>
             Edit Invitation
           </Button>
-          <Button variant="secondary" onClick={() => router.push("/admin")}>
+          <Button variant="secondary" onClick={() => router.push(dashboard)}>
             <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
                 strokeLinecap="round"
@@ -340,7 +342,7 @@ export function SuccessPageContent() {
             </svg>
             Back to Dashboard
           </Button>
-          <Button variant="secondary" onClick={() => router.push("/admin/create-invite")}>
+          <Button variant="secondary" onClick={() => router.push(`${dashboard}/create-invite`)}>
             <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
                 strokeLinecap="round"

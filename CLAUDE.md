@@ -45,7 +45,8 @@ npm run docker:logs      # View container logs
 ```
 src/
   app/
-    admin/                    # Admin dashboard, create/edit invite pages
+    admin/                    # Redirect hub: sign-in lands here and goes to the user's event ("no events yet" otherwise)
+    dashboard/events/[eventId]/ # Event dashboard, create/edit/bulk/success pages; layout checks ownership (404 otherwise)
     api/
       auth/login|logout/      # Admin auth endpoints
       invite/verify-pin/      # Guest PIN verification
@@ -89,7 +90,7 @@ middleware.ts                  # Auth route protection
 ## Auth Flow
 
 - **Accounts**: Better Auth email + password (`/signup`, `/login`), endpoints at `/api/auth/*`, server instance from `getAuth()` in `src/server/auth/auth.ts`, client in `src/lib/auth-client.ts`
-- **Admin**: any account can sign in, but only the `ADMIN_EMAIL` account may use `/admin/*`, `/api/admin/*` and the admin invitation APIs until invitations are scoped per owner (Phase 3); other accounts get 403 from the API and a "no access" page from `src/app/admin/layout.tsx`
+- **Dashboard pages** (`/dashboard/events/[eventId]/*`): owning the event is the permission; the layout redirects signed-out users to `/login` and 404s other accounts. The old API routes (`/api/admin/*`, `/api/invitations*`) still require the `ADMIN_EMAIL` account until T-312 removes them
 - **Guest**: PIN verification -> signed `invite_token` cookie (role `guest`, `src/server/auth/session.ts`) -> access to `/invite/*` (replaced by per-invitation links in Phase 5)
 - Session helpers live in `src/server/auth/current-user.ts`: `getCurrentUser()`, `requireUser()` (401) and `requireAdminUser()` (adds the `ADMIN_EMAIL` 403). Route handlers pass `request.headers`; pages and server actions call them without arguments
 - Endpoints guests share with the dashboard use `requireAdminOrGuest()` from `src/server/auth/guards.ts` (guests may only GET one invitation and PATCH its status)

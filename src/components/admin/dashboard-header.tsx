@@ -5,10 +5,11 @@ import { Button } from "@/components/button";
 import { authClient } from "@/lib/auth-client";
 
 interface DashboardHeaderProps {
+  eventId: string;
   onCreateInvite: () => void;
 }
 
-export default function DashboardHeader({ onCreateInvite }: DashboardHeaderProps) {
+export default function DashboardHeader({ eventId, onCreateInvite }: DashboardHeaderProps) {
   const router = useRouter();
 
   const handleLogout = async () => {
@@ -36,7 +37,7 @@ export default function DashboardHeader({ onCreateInvite }: DashboardHeaderProps
           Create Invite
         </Button>
         <button
-          onClick={() => router.push("/admin/bulk-upload")}
+          onClick={() => router.push(`/dashboard/events/${eventId}/bulk-upload`)}
           className="flex-1 sm:flex-none px-4 py-2 rounded-lg font-medium text-gray-700 border border-gray-300 hover:bg-gray-50 transition-colors text-sm sm:text-base"
         >
           Bulk Upload

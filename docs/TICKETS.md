@@ -339,7 +339,7 @@ Every endpoint takes `eventId`. Scope cache tags by event.
 - **Files:** ~3
 - **As built:** added alongside the old endpoints, not in place of them, because the `/admin` pages have no `eventId` until T-309 moves them: `src/store/eventInvitationApi.ts` injects `getEventInvitations`, `getEventMetrics`, `getEventStatusUpdates`, `getEventInvitation` and the create / bulk / update / RSVP / delete mutations into `invitationApi`. Tags are per event (`EventInvitations`, `EventMetrics`, `EventStatus` with `id: eventId`, plus `Invitation` per id).
 
-### T-309 · Dashboard routes under `/dashboard/events/[eventId]` · M
+### ✅ T-309 · Dashboard routes under `/dashboard/events/[eventId]` · M
 
 Move the `admin/*` pages (dashboard, create, edit, bulk upload, success) under the new path and pass `eventId` through.
 
@@ -347,10 +347,11 @@ Move the `admin/*` pages (dashboard, create, edit, bulk upload, success) under t
 
 - **Depends on:** T-308
 - **Files:** ~15
+- **As built:** pages moved with `git mv` and use the T-308 hooks; the old admin endpoints are gone from `invitationApi.ts`. The event layout checks ownership server-side (signed out → `/login`, other accounts or missing events → 404) and shows the verify-email banner, replacing the `ADMIN_EMAIL` gate and "no access" page for pages. `/admin` is now a redirect hub (sign-in, sign-up, Google and email links still land there): it sends you to your soonest event, or shows "No events yet". `next.config.ts` redirects old `/admin/*` bookmarks to `/admin`; middleware covers `/dashboard/*`.
 
 ### T-310 · Events list + create event page · M
 
-- `/dashboard` lists the user's events.
+- `/dashboard` lists the user's events. Point sign-in, sign-up, Google and email callbacks there instead of `/admin`, and replace the `/admin` redirect hub (T-309) with a redirect to `/dashboard`.
 - `/dashboard/events/new` has a form for the basic fields and auto-generates the slug.
 - **Files:** ~8
 
