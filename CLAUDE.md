@@ -56,6 +56,7 @@ src/
     signup/                   # Account sign-up (sends a verification email)
     forgot-password/          # Request a password reset email
     reset-password/           # Set a new password from the emailed link (?token= or ?error=)
+    account/                  # Account settings: name, email (confirmed by email), password
   components/
     admin/                    # Dashboard components (header, table, metrics, status)
     button.tsx                # Reusable button (variants: primary, secondary, danger, attendly)

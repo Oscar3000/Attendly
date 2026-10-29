@@ -1,5 +1,5 @@
 /**
- * Emails Better Auth sends: verify an address, reset a password
+ * Emails Better Auth sends: verify an address, reset a password, confirm an email change
  * Links come from Better Auth (BETTER_AUTH_URL + a single-use token)
  */
 import "server-only";
@@ -37,7 +37,7 @@ export function verificationEmail(to: string, url: string): Email {
   return linkEmail(
     to,
     "Verify your email for Attendly",
-    "Confirm this is your email address to finish setting up your Attendly account.",
+    "Confirm this is your email address for your Attendly account.",
     "Verify email",
     url,
     "If you didn't create an Attendly account, you can ignore this email.",
@@ -52,5 +52,17 @@ export function resetPasswordEmail(to: string, url: string): Email {
     "Choose a new password",
     url,
     "The link expires in 1 hour. If you didn't ask for this, you can ignore this email; your password won't change.",
+  );
+}
+
+// Sent to the current address first; the new address is verified after this link is clicked
+export function changeEmailConfirmation(to: string, newEmail: string, url: string): Email {
+  return linkEmail(
+    to,
+    "Confirm your new email for Attendly",
+    `Someone asked to change your Attendly account's email to ${newEmail}. Confirm it's you, then we'll send a verification link to the new address.`,
+    "Confirm email change",
+    url,
+    "If you didn't ask for this, ignore this email and your account's email won't change.",
   );
 }
