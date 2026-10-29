@@ -117,7 +117,7 @@ All required variables are validated at startup (`src/instrumentation.ts` -> `sr
 - New invitations go to the admin's only event via `requireCurrentEvent()` (`src/server/events/current-event.ts`, 409 if there are none or several) until routes are scoped by event id (T-307)
 
 - Server Components by default; `'use client'` for interactive UI
-- RTK Query for data fetching with tag-based cache invalidation
+- RTK Query for data fetching with tag-based cache invalidation. Event-scoped hooks (`useGetEventInvitationsQuery`, `useCreateEventInvitationMutation`, ...) live in `src/store/eventInvitationApi.ts`; their tags carry the event id, so a write only refetches that event's data
 - Repositories in `src/server/repositories/` hold all Prisma operations; route handlers stay thin
 - Invitation and metrics repository functions take `eventId` and only touch that event's invitations; another event's invitation behaves like a missing one. The only exceptions are `getInvitationForGuest` / `updateRsvpStatusForGuest` (shared-PIN guests, removed in T-505)
 - `utils.ts` has status converters between Prisma enums and app types

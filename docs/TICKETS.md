@@ -331,16 +331,19 @@ Move routes to `/api/events/[eventId]/invitations`, `/bulk`, `/metrics`, and `/s
 - **Files:** ~12
 - **As built:** `/api/events/[eventId]/invitations` (GET paginated `?page&limit&search`, POST), `/invitations/[id]` (GET, PUT, PATCH, DELETE), `/invitations/bulk`, `/metrics` and `/status`, each starting with `requireEventOwner` (owner only: 404 for other accounts and other events' invitations, 401 signed out; no guest access). Metrics and the invitation list are separate endpoints (`/api/admin` returned both). The old routes are unchanged: they can't redirect without knowing the event, the UI still uses them until T-308, and PIN guests use `/api/invitations/[id]` until T-503. Bulk row handling moved to `invitationRepo.createInvitations()`, shared by both bulk routes. Middleware covers `/api/events/*`.
 
-### T-308 · Update RTK Query slice for event-scoped endpoints · S
+### ✅ T-308 · Update RTK Query slice for event-scoped endpoints · S
 
 Every endpoint takes `eventId`. Scope cache tags by event.
 
 - **Depends on:** T-307
 - **Files:** ~3
+- **As built:** added alongside the old endpoints, not in place of them, because the `/admin` pages have no `eventId` until T-309 moves them: `src/store/eventInvitationApi.ts` injects `getEventInvitations`, `getEventMetrics`, `getEventStatusUpdates`, `getEventInvitation` and the create / bulk / update / RSVP / delete mutations into `invitationApi`. Tags are per event (`EventInvitations`, `EventMetrics`, `EventStatus` with `id: eventId`, plus `Invitation` per id).
 
 ### T-309 · Dashboard routes under `/dashboard/events/[eventId]` · M
 
 Move the `admin/*` pages (dashboard, create, edit, bulk upload, success) under the new path and pass `eventId` through.
+
+- Switch the pages to the `eventInvitationApi.ts` hooks (T-308), then delete the old admin endpoints from `invitationApi.ts` (`getAllInvitations`, `getAdminData`, `getStatusUpdates`, `createInvitation`, `bulkCreateInvitations`, `updateInvitation`, `deleteInvitation`) and their `AdminData` / `StatusUpdates` tags. Keep `getInvitation` and `updateRsvpStatus` for the PIN guest page until T-503.
 
 - **Depends on:** T-308
 - **Files:** ~15
