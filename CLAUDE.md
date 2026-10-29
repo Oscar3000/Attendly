@@ -67,7 +67,7 @@ src/
     utils.ts                  # Formatting, QR generation, status helpers
   server/                     # Server-only code (`import 'server-only'`)
     db/client.ts              # Prisma client singleton
-    repositories/             # invitation.repo.ts, metrics.repo.ts (all Prisma queries)
+    repositories/             # invitation.repo.ts, event.repo.ts, metrics.repo.ts (all Prisma queries)
     email/send-email.ts       # sendEmail(): Resend when RESEND_API_KEY is set, console log in dev
   store/
     store.ts                  # Redux store config
@@ -80,7 +80,9 @@ middleware.ts                  # Auth route protection
 
 ## Database Schema
 
-Single model: `Invitation` with fields: id (cuid), name, qrCode, eventDate, venue, status (PENDING|CONFIRMED|DECLINED|RESCINDED), plusOne, createdAt, updatedAt. Table name: `invitations`.
+- `Invitation` (`invitations`): id (cuid), name, qrCode, eventDate, venue, status (PENDING|CONFIRMED|DECLINED|RESCINDED), plusOne, createdAt, updatedAt. Not linked to an event yet (T-302 – T-304)
+- `Event` (`events`): id (cuid), ownerId → User (cascade delete), slug (unique), type (WEDDING|BIRTHDAY|CORPORATE|OTHER), title, date (UTC) + timezone (IANA), venueName?, venueAddress?, rsvpDeadline?, createdAt, updatedAt
+- Better Auth tables: `users`, `sessions`, `accounts`, `verifications` (create users through Better Auth, never with Prisma directly)
 
 ## Auth Flow
 
