@@ -111,6 +111,8 @@ All required variables are validated at startup (`src/instrumentation.ts` -> `sr
 
 ## Key Patterns
 
+- Event-scoped code calls `requireEventOwner(eventId, headers?)` (`src/server/events/require-event-owner.ts`): 401 when signed out, the same 404 for a missing event and someone else's event, and returns `{ user, event }`. Ownership is the permission; there's no `ADMIN_EMAIL` check
+
 - New invitations go to the admin's only event via `requireCurrentEvent()` (`src/server/events/current-event.ts`, 409 if there are none or several) until routes are scoped by event id (T-307)
 
 - Server Components by default; `'use client'` for interactive UI
