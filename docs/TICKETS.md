@@ -201,17 +201,19 @@ Cover: forged cookie → 401, guest calling an admin route → 401/403, guest `P
 - **Files:** ~4
 - **As built:** the helpers live in `src/server/auth/current-user.ts`, because `session.ts` still holds the T-101 token code until T-204. The seed is `prisma/seed.ts` (run with `npm run db:seed`; Prisma also runs it after `db:reset`). It reads `ADMIN_EMAIL`, `ADMIN_PASSWORD` and an optional `ADMIN_NAME`, leaves an existing user unchanged, and runs through `tsx --conditions=react-server` so `server-only` imports resolve.
 
-### T-203 · Sign-up + login pages · M
+### ✅ T-203 · Sign-up + login pages · M
 
 - Add a `/signup` page using `authClient.signUp.email()`.
 - Rewrite the `/login` page with email and password fields, using `authClient.signIn.email()`.
 - Show field errors from the Better Auth error responses.
 - **Depends on:** T-201
 - **Files:** ~5
+- **As built:** `/admin` still checks the old cookie until T-204, so the old password form moved to `/login/admin-password` (linked from `/login`) to keep the dashboard reachable. Error codes are mapped to fields in `src/lib/auth-errors.ts`; shared form pieces live in `src/components/auth/`.
 
 ### T-204 · Cut over: middleware, logout, remove old auth · M
 
 - Delete `api/auth/login`, `api/auth/logout`, and the T-101 token helpers.
+- Delete the temporary `/login/admin-password` page and its link on `/login` (T-203).
 - Move Better Auth to the default `basePath` (`/api/auth`) by renaming the route folder to `api/auth/[...all]` and updating the auth client.
 - Middleware uses `getSessionCookie()` to redirect signed-out users away from `/admin/*` and return 401 for `/api/admin/*`. The guest `invite_token` logic stays as it is until Phase 5.
 - The logout button calls `authClient.signOut()`.

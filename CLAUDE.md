@@ -52,7 +52,8 @@ src/
       health/                 # Health check
     invite/[id]/              # Guest invitation view
     invite-pin/               # Guest PIN entry
-    login/                    # Admin login
+    login/                    # Email + password login (admin-password/ is the old form, removed in T-204)
+    signup/                   # Account sign-up
   components/
     admin/                    # Dashboard components (header, table, metrics, status)
     button.tsx                # Reusable button (variants: primary, secondary, danger, attendly)
