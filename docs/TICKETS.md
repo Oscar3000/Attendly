@@ -15,9 +15,9 @@ Goal: turn Attendly from a single hard-coded wedding into a product any host can
 
 | Phase | Theme                                                | Tickets       | Status      |
 | ----- | ---------------------------------------------------- | ------------- | ----------- |
-| 0     | Foundations (server layer, validation, tests, CI)    | T-001 – T-009 | ✅ Done     |
+| 0     | Foundations (server layer, validation, tests, CI)    | T-001 – T-010 | T-010 open  |
 | 1     | Lock down security on the current app                | T-101 – T-108 | ✅ Done     |
-| 2     | Accounts with Better Auth (users, sign-up, sessions) | T-201 – T-209 | Next        |
+| 2     | Accounts with Better Auth (users, sign-up, sessions) | T-201 – T-209 | In progress |
 | 3     | Events & multi-tenancy                               | T-301 – T-312 | Not started |
 | 4     | Remove hard-coded content / theming                  | T-401 – T-409 | Not started |
 | 5     | Guest experience                                     | T-501 – T-508 | Not started |
@@ -95,6 +95,18 @@ Run Prettier on the `src/app` pages (everything except `src/app/api`) and on `RE
 - **Depends on:** T-006, T-008
 - **Files:** ~14
 
+### T-010 · Upgrade Node to 22 LTS · S
+
+Node 20 reached end of life in April 2026. Better Auth's dependencies (`@noble/ciphers`, `@noble/hashes`) already require Node >= 20.19, and the project pins 20.10 locally and in CI and 20.15 in Docker. The npm that ships with Node 20.10 (10.2.3) also has a resolver bug that rejects `npm install better-auth`.
+
+- Bump `.tool-versions` to the latest Node 22 (CI reads it through `node-version-file`).
+- Bump the `Dockerfile` base image from `node:20.15.0-alpine3.19` to `node:22-alpine`, pinned to an exact version and alpine release.
+- Bump `@types/node` to `22.x`.
+- Add `"engines": { "node": ">=22" }` to `package.json`.
+- Reinstall with the npm that ships with Node 22 and commit the lockfile if it changes.
+- **Done when:** CI passes on Node 22, `npm install` works without workarounds, and the Docker image builds and passes `/api/health` locally.
+- **Files:** ~5
+
 ---
 
 ## Phase 1 — Security fixes (current app)
@@ -169,7 +181,7 @@ Cover: forged cookie → 401, guest calling an admin route → 401/403, guest `P
 - Middleware only does an **optimistic** check (`getSessionCookie()` from `better-auth/cookies`, with no DB call). Real checks happen on the server with `auth.api.getSession({ headers })` in pages, route handlers, and guards.
 - Passwords live on the `Account` table (`providerId: "credential"`), not on `User`. Create users through `auth.api.signUpEmail`, never by writing to Prisma directly.
 
-### T-201 · Install Better Auth + schema · M
+### ✅ T-201 · Install Better Auth + schema · M
 
 - Add `better-auth`.
 - Create `src/server/auth/auth.ts` with `betterAuth({ database: prismaAdapter(prisma, { provider: "postgresql" }), emailAndPassword: { enabled: true }, plugins: [nextCookies()] })`, using the temporary `basePath` from the design notes.
@@ -179,6 +191,7 @@ Cover: forged cookie → 401, guest calling an admin route → 401/403, guest `P
 - Add `BETTER_AUTH_SECRET` and `BETTER_AUTH_URL` to `env.ts` (T-105).
 - **Done when:** the app builds and `GET /api/better-auth/get-session` returns `null`. No UI changes yet.
 - **Files:** ~7
+- **As built:** `auth.ts` exports `getAuth()`, not `auth`. The instance is built on first use because `next build` loads route modules without the runtime env vars, so later tickets call `getAuth().api.getSession(...)`. The CLI now ships as the `auth` package (`npx auth@<better-auth version> generate`) and needs Node 22; it can't load a config that imports `server-only`, so point it at a temporary copy of the options. Tables are mapped to `users`, `sessions`, `accounts`, `verifications`.
 
 ### T-202 · Session helpers + seed admin user · S
 
