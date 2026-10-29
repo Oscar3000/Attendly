@@ -31,7 +31,8 @@ npm run test:db:up       # Start throwaway test Postgres on :5433
 npm run test:db:down     # Stop test Postgres
 npm run db:migrate       # Prisma migrate dev
 npm run db:studio        # Prisma Studio
-npm run db:reset         # Reset database
+npm run db:reset         # Reset database (then runs the seed)
+npm run db:seed          # Create the admin user (needs ADMIN_EMAIL + app env); idempotent
 npm run docker:up        # Docker Compose up
 npm run docker:down      # Docker Compose down
 npm run docker:logs      # View container logs
@@ -94,6 +95,7 @@ All required variables are validated at startup (`src/instrumentation.ts` -> `sr
 - `BETTER_AUTH_SECRET` - Better Auth secret; at least 32 characters, different from `AUTH_SECRET` (required)
 - `BETTER_AUTH_URL` - Public app URL for Better Auth, e.g. `http://localhost:3000` (required)
 - `NEXT_PUBLIC_BASE_URL` - App URL for QR codes (default: http://localhost:3000)
+- `ADMIN_EMAIL`, `ADMIN_NAME` - Only read by `npm run db:seed` (`prisma/seed.ts`), not at startup; the seed uses `ADMIN_PASSWORD` as the account password
 
 ## Key Patterns
 

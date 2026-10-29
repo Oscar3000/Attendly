@@ -135,6 +135,17 @@ If you need to run migrations manually:
 railway run npx prisma migrate deploy
 ```
 
+### Create the admin account
+
+Once the Better Auth migration has run, create the admin's account from your machine. Do this once; running it again leaves the existing account alone.
+
+```bash
+# ADMIN_PASSWORD (at least 8 characters) becomes the account password
+ADMIN_EMAIL=you@example.com railway run npm run db:seed
+```
+
+`railway run` injects the service's variables. If the database's internal hostname doesn't resolve from your machine, prefix the command with `DATABASE_URL=<the database's public URL>`.
+
 ---
 
 ## Step 8: Verify the Deployment
@@ -153,7 +164,7 @@ railway run npx prisma migrate deploy
 3. Enter your domain (e.g., `attendly.yourdomain.com`)
 4. Add the **CNAME record** Railway provides to your DNS settings
 5. Wait for DNS propagation (usually a few minutes)
-6. Update `NEXT_PUBLIC_BASE_URL` to your custom domain
+6. Update `NEXT_PUBLIC_BASE_URL` and `BETTER_AUTH_URL` to your custom domain
 
 ---
 

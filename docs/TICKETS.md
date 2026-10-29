@@ -193,12 +193,13 @@ Cover: forged cookie → 401, guest calling an admin route → 401/403, guest `P
 - **Files:** ~7
 - **As built:** `auth.ts` exports `getAuth()`, not `auth`. The instance is built on first use because `next build` loads route modules without the runtime env vars, so later tickets call `getAuth().api.getSession(...)`. The CLI now ships as the `auth` package (`npx auth@<better-auth version> generate`) and needs Node 22; it can't load a config that imports `server-only`, so point it at a temporary copy of the options. Tables are mapped to `users`, `sessions`, `accounts`, `verifications`.
 
-### T-202 · Session helpers + seed admin user · S
+### ✅ T-202 · Session helpers + seed admin user · S
 
 - Add `src/server/auth/session.ts` with `getCurrentUser()` (returns `null` when signed out) and `requireUser()` (throws 401), both wrapping `auth.api.getSession({ headers: await headers() })`.
 - Add a seed script that calls `auth.api.signUpEmail` to create your existing admin user (email + password from env), so you aren't locked out.
 - **Depends on:** T-201
 - **Files:** ~4
+- **As built:** the helpers live in `src/server/auth/current-user.ts`, because `session.ts` still holds the T-101 token code until T-204. The seed is `prisma/seed.ts` (run with `npm run db:seed`; Prisma also runs it after `db:reset`). It reads `ADMIN_EMAIL`, `ADMIN_PASSWORD` and an optional `ADMIN_NAME`, leaves an existing user unchanged, and runs through `tsx --conditions=react-server` so `server-only` imports resolve.
 
 ### T-203 · Sign-up + login pages · M
 
