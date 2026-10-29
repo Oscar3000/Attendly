@@ -161,6 +161,8 @@ railway run sh -c 'DATABASE_URL="<DATABASE_PUBLIC_URL>" npm run db:backfill-wedd
 
 It prints how many invitations it linked. If it says there's no account for your email, run the seed above first.
 
+If you deploy the T-304 release without running it, that release's migration stops with "N invitation(s) have no event…". The container then refuses to start (`entrypoint.sh` stops on failed migrations) and Railway keeps the previous deployment running. Run the backfill, then redeploy.
+
 ---
 
 ## Step 8: Verify the Deployment

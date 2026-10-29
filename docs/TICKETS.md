@@ -297,13 +297,14 @@ Add a migration script that creates the event for your user from the current har
 - **Files:** ~2
 - **As built:** `npm run db:backfill-wedding` (`prisma/backfill-wedding-event.ts`, logic in `src/server/backfill/wedding-event.ts`) creates "Pamela & Oscar" (`pamela-and-oscar`, WEDDING, May 23 2026 3:00 PM `Africa/Lagos`, Canary World) for the `ADMIN_EMAIL` account and links every invitation with no event, in one transaction. It's a script rather than a SQL migration because it needs the admin's account; it's safe to re-run. The church service (10:00 AM, Archangels Catholic Church) belongs in the event's notes once T-401 adds them.
 
-### T-304 · Make `eventId` required; move `eventDate`/`venue` off `Invitation` · M
+### ✅ T-304 · Make `eventId` required; move `eventDate`/`venue` off `Invitation` · M
 
 - Make `eventId` NOT NULL. Run `npm run db:backfill-wedding` in production first; the migration should fail with a clear message if any invitation still has no event.
 - Stop reading `invitation.eventDate` and `invitation.venue` and read them from `event` instead. Drop those columns in T-312.
 - Update types in `src/lib/types.ts`.
 - **Depends on:** T-303
 - **Files:** ~12
+- **As built:** the migration refuses (with instructions) if any invitation has no event, and `entrypoint.sh` now stops on a failed migration instead of starting anyway. The repository joins the event on every read; API responses keep `eventDate`/`venue` (filled from the event, venue = `venueName ?? venueAddress`) so display pages didn't change. Create/edit/bulk forms dropped their date and venue inputs; the API ignores them if sent. New invitations go to the admin's only event via `requireCurrentEvent()` (409 otherwise) until T-307. The legacy columns are still written (copied from the event) so a rollback works. The T-303 backfill now uses raw SQL so it still runs against a database the migration refused.
 
 ### T-305 · Ownership guard: `requireEventOwner(eventId)` · S
 
@@ -321,6 +322,8 @@ Every repository function takes `eventId`, and there are no unscoped queries lef
 ### T-307 · Event-scoped API routes · M
 
 Move routes to `/api/events/[eventId]/invitations`, `/bulk`, `/metrics`, and `/status`. Each one calls `requireEventOwner`. Keep the old routes as thin redirects or remove them.
+
+- Replace the temporary `requireCurrentEvent()` bridge (T-304) with the `eventId` from the route.
 
 - **Depends on:** T-305, T-306
 - **Files:** ~12
@@ -379,6 +382,8 @@ Add to `Event`: `hostNames`, `headline`, `tagline`, `familyLines` (JSON), `dress
 ### T-403 · Public event page reads from DB · M
 
 Replace the hard-coded `src/app/page.tsx` with `/e/[slug]`. The hero, details, countdown, and footer receive the `event` as props. Remove the names, date, and colors from `src/components/home/*`.
+
+- Show dates and times in the event's `timezone`, not the viewer's (today the invite, success and edit pages format in the browser's zone).
 
 - **Depends on:** T-401
 - **Files:** ~10

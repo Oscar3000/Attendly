@@ -87,16 +87,17 @@ describe("eventRepo", () => {
     expect(await eventRepo.findById(created.id)).toBeUndefined();
   });
 
-  it("deletes an event's invitations with it, leaving invitations without an event", async () => {
+  it("deletes an event's invitations with it, leaving other events' invitations", async () => {
     const event = await eventRepo.create(ownerId, wedding);
+    const other = await eventRepo.create(ownerId, { ...wedding, slug: "other-event" });
     const guest = { qrCode: "qr", eventDate: wedding.date, venue: "Hall" };
     await prisma.invitation.create({ data: { ...guest, name: "Ada", eventId: event.id } });
-    await prisma.invitation.create({ data: { ...guest, name: "Not linked yet" } });
+    await prisma.invitation.create({ data: { ...guest, name: "Other guest", eventId: other.id } });
 
     await eventRepo.delete(event.id);
 
     const remaining = await prisma.invitation.findMany();
-    expect(remaining.map((invitation) => invitation.name)).toEqual(["Not linked yet"]);
+    expect(remaining.map((invitation) => invitation.name)).toEqual(["Other guest"]);
   });
 
   it("deletes a user's events with the user", async () => {

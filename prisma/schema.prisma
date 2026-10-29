@@ -11,14 +11,15 @@ model Invitation {
   id        String     @id @default(cuid())
   name      String
   qrCode    String
+  // Legacy: read the date and venue from the event. Still written (copied from the event)
+  // so a rollback keeps working; dropped in T-312
   eventDate DateTime
   venue     String
   status    RsvpStatus @default(PENDING)
   plusOne   Int        @default(0)
-  // Nullable until existing invitations are backfilled (T-303); required from T-304.
   // Deleting an event deletes its invitations
-  eventId   String?
-  event     Event?     @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  eventId   String
+  event     Event      @relation(fields: [eventId], references: [id], onDelete: Cascade)
   createdAt DateTime   @default(now())
   updatedAt DateTime   @updatedAt
 

@@ -33,9 +33,13 @@ for i in $(seq 1 30); do
     sleep 1
 done
 
-# Run migrations
+# Run migrations. A failure stops the container rather than starting new code on an old
+# schema; the hosting platform then keeps the previous deployment running
 echo "🔄 Running migrations..."
-npx prisma migrate deploy 2>&1 || echo "⚠️ Migrations already applied"
+if ! npx prisma migrate deploy 2>&1; then
+    echo "❌ Migrations failed; not starting. Fix the error above and redeploy."
+    exit 1
+fi
 
 echo "✅ Setup complete, starting Next.js..."
 exec node server.js

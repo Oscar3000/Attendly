@@ -20,6 +20,8 @@ export interface WeddingInvitation {
   readonly id: string;
   name: string;
   qrCode: string;
+  eventId: string;
+  // From the invitation's event (T-304), not stored per invitation
   eventDate: Date;
   venue: string;
   status: RsvpStatus;
@@ -88,6 +90,7 @@ export interface StatusUpdate {
 export interface InvitationTableEntry {
   id: string;
   name: string;
+  // From the invitation's event
   eventDate: Date;
   venue: string;
   status: RsvpStatus;
@@ -98,11 +101,9 @@ export interface InvitationTableEntry {
   updatedAt: Date;
 }
 
-// Invitation form types
+// Invitation form types (date and venue belong to the event)
 export interface CreateInviteForm {
   name: string;
-  eventDate: string;
-  venue: string;
   status: RsvpStatus;
   plusOne: number;
 }
@@ -124,28 +125,22 @@ export interface AdminMetrics {
 // Prisma enum types
 export type PrismaRsvpStatus = "PENDING" | "CONFIRMED" | "DECLINED" | "RESCINDED";
 
-// Prisma model types
+// The event fields an invitation displays
+export interface InvitationEvent {
+  date: Date;
+  venueName: string | null;
+  venueAddress: string | null;
+}
+
+// An invitation row as the repository reads it: with its event, not the legacy date/venue columns
 export interface Invitation {
   id: string;
   name: string;
-  eventDate: Date;
-  venue: string;
   status: PrismaRsvpStatus;
   qrCode: string | null;
   plusOne: number;
-  createdAt: Date;
-  updatedAt: Date;
-}
-
-// Prisma query result types (can be reused for different select operations)
-export interface InvitationSelect {
-  id: string;
-  name: string;
-  eventDate: Date;
-  venue: string;
-  status: string;
-  qrCode: string | null;
-  plusOne: number;
+  eventId: string;
+  event: InvitationEvent;
   createdAt: Date;
   updatedAt: Date;
 }

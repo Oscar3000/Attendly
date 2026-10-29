@@ -96,8 +96,6 @@ function parseCsvLine(line: string): string[] {
 
 export default function BulkUploadPage() {
   const router = useRouter();
-  const [eventDate, setEventDate] = useState("2026-05-23T14:00");
-  const [venue, setVenue] = useState("Canary World, Lagos, Nigeria");
   const [status, setStatus] = useState<RsvpStatus>("pending");
   const [rows, setRows] = useState<ParsedRow[]>([]);
   const [parseErrors, setParseErrors] = useState<string[]>([]);
@@ -122,7 +120,7 @@ export default function BulkUploadPage() {
       return;
     }
     try {
-      const res = await bulkCreate({ eventDate, venue, status, rows }).unwrap();
+      const res = await bulkCreate({ status, rows }).unwrap();
       setResult(res);
     } catch (err) {
       console.error("Bulk upload error:", err);
@@ -150,35 +148,12 @@ export default function BulkUploadPage() {
             (required), <code className="px-1 bg-white rounded">plusOne</code> (optional, number).
           </p>
           <p className="mt-2 text-xs text-gray-500">
-            Header row is optional. Wrap names containing commas in double quotes.
+            Header row is optional. Wrap names containing commas in double quotes. Guests get your
+            event&apos;s date and venue.
           </p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-5">
-          <div>
-            <label className="block text-base font-medium text-gray-900 mb-2">
-              Event Date &amp; Time
-            </label>
-            <input
-              type="datetime-local"
-              value={eventDate}
-              onChange={(e) => setEventDate(e.target.value)}
-              required
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[rgb(192,122,84)]"
-            />
-          </div>
-
-          <div>
-            <label className="block text-base font-medium text-gray-900 mb-2">Venue</label>
-            <input
-              type="text"
-              value={venue}
-              onChange={(e) => setVenue(e.target.value)}
-              required
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[rgb(192,122,84)]"
-            />
-          </div>
-
           <div>
             <label className="block text-base font-medium text-gray-900 mb-2">Initial Status</label>
             <select

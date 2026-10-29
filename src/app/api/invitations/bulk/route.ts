@@ -1,18 +1,20 @@
 /**
  * Bulk create invitations
  * POST /api/invitations/bulk
- * Body: { eventDate, venue, status?, rows: { name, plusOne? }[] } (max 1000 rows)
+ * Body: { status?, rows: { name, plusOne? }[] } (max 1000 rows); the date and venue come from the event
  */
 import { NextResponse } from "next/server";
 import { invitationRepo } from "@/server/repositories/invitation.repo";
 import { handleRoute } from "@/server/http/errors";
 import { requireAdminUser } from "@/server/auth/current-user";
+import { requireCurrentEvent } from "@/server/events/current-event";
 import { parseBody } from "@/server/http/validate";
 import { bulkCreateInvitationsSchema } from "@/server/validation/invitation.schemas";
 
 export const POST = handleRoute(async (request) => {
-  await requireAdminUser(request.headers);
-  const { eventDate, venue, status, rows } = await parseBody(request, bulkCreateInvitationsSchema);
+  const user = await requireAdminUser(request.headers);
+  const { status, rows } = await parseBody(request, bulkCreateInvitationsSchema);
+  const event = await requireCurrentEvent(user.id);
 
   const created: { row: number; name: string; id: string }[] = [];
   const failed: { row: number; name: string; error: string }[] = [];
@@ -28,10 +30,8 @@ export const POST = handleRoute(async (request) => {
     }
 
     try {
-      const invite = await invitationRepo.createInvitation({
+      const invite = await invitationRepo.createInvitation(event, {
         name,
-        eventDate,
-        venue,
         status,
         plusOne: row.plusOne,
       });

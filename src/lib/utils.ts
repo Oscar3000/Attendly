@@ -4,7 +4,13 @@
  */
 
 import QRCode from "qrcode";
-import type { RsvpStatus, PrismaRsvpStatus, Invitation, InviteDetails } from "./types";
+import type {
+  RsvpStatus,
+  PrismaRsvpStatus,
+  Invitation,
+  InvitationEvent,
+  InviteDetails,
+} from "./types";
 
 /**
  * Formats a date to a human-readable string
@@ -545,6 +551,13 @@ export function convertToPrismaStatus(status: RsvpStatus): PrismaRsvpStatus {
 }
 
 /**
+ * The one-line venue shown on invitations: the venue's name, else its address
+ */
+export function eventVenueLabel(event: InvitationEvent): string {
+  return event.venueName ?? event.venueAddress ?? "";
+}
+
+/**
  * Convert Prisma model to our app type
  * @param invitation - Prisma invitation object
  * @returns Application invitation details
@@ -554,8 +567,9 @@ export function convertToInviteDetails(invitation: Invitation): InviteDetails {
     id: invitation.id,
     name: invitation.name,
     qrCode: invitation.qrCode || "",
-    eventDate: invitation.eventDate,
-    venue: invitation.venue,
+    eventId: invitation.eventId,
+    eventDate: invitation.event.date,
+    venue: eventVenueLabel(invitation.event),
     status: convertPrismaStatus(invitation.status),
     plusOne: invitation.plusOne,
     createdAt: invitation.createdAt,

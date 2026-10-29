@@ -6,18 +6,13 @@ import { z } from "zod";
 
 export const rsvpStatusSchema = z.enum(["pending", "confirmed", "declined", "rescinded"]);
 
-// Accepts any string Date can parse, e.g. "2026-05-23T14:00" from datetime-local inputs
-const dateSchema = z.string().pipe(z.coerce.date());
-
 const nameSchema = z.string().trim().min(1).max(200);
-const venueSchema = z.string().trim().min(1).max(300);
 const plusOneSchema = z.number().int().min(0).max(50);
 
-// No defaults here, so partial updates never overwrite fields that weren't sent
+// No defaults here, so partial updates never overwrite fields that weren't sent.
+// The date and venue belong to the event (T-304); extra fields are ignored
 const invitationFields = z.object({
   name: nameSchema,
-  eventDate: dateSchema,
-  venue: venueSchema,
   status: rsvpStatusSchema,
   plusOne: plusOneSchema,
 });
@@ -34,8 +29,6 @@ export const updateRsvpStatusSchema = z.object({
 });
 
 export const bulkCreateInvitationsSchema = z.object({
-  eventDate: dateSchema,
-  venue: venueSchema,
   status: rsvpStatusSchema.default("pending"),
   rows: z
     .array(

@@ -42,11 +42,11 @@ export async function backfillWeddingEvent(adminEmail: string): Promise<Backfill
     const eventCreated = !event;
     event ??= await tx.event.create({ data: { ...WEDDING_EVENT, ownerId: owner.id } });
 
-    const { count } = await tx.invitation.updateMany({
-      where: { eventId: null },
-      data: { eventId: event.id },
-    });
+    // Raw SQL: since T-304 the Prisma types say eventId can't be null, but a database the
+    // T-304 migration refused to update (see its guard) still has unlinked rows
+    const invitationsLinked = await tx.$executeRaw`
+      UPDATE "invitations" SET "eventId" = ${event.id} WHERE "eventId" IS NULL`;
 
-    return { eventId: event.id, eventCreated, invitationsLinked: count };
+    return { eventId: event.id, eventCreated, invitationsLinked };
   });
 }

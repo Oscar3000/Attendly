@@ -10,8 +10,6 @@ export default function CreateInvitePage() {
   const router = useRouter();
   const [form, setForm] = useState<CreateInviteForm>({
     name: "",
-    eventDate: "2026-05-23T14:00",
-    venue: "Canary World, Lagos, Nigeria",
     status: "pending",
     plusOne: 0,
   });
@@ -70,51 +68,6 @@ export default function CreateInvitePage() {
               value={form.name}
               onChange={(e) => handleInputChange("name", e.target.value)}
               placeholder="Enter name"
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              style={{
-                fontFamily: "Inter",
-                fontSize: "16px",
-              }}
-              required
-            />
-          </div>
-
-          {/* Event Date Field */}
-          <div>
-            <label
-              htmlFor="eventDate"
-              className="block text-base sm:text-lg font-medium text-gray-900 mb-2 sm:mb-3"
-            >
-              Event Date & Time
-            </label>
-            <input
-              type="datetime-local"
-              id="eventDate"
-              value={form.eventDate}
-              onChange={(e) => handleInputChange("eventDate", e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              style={{
-                fontFamily: "Inter",
-                fontSize: "16px",
-              }}
-              required
-            />
-          </div>
-
-          {/* Venue Field */}
-          <div>
-            <label
-              htmlFor="venue"
-              className="block text-base sm:text-lg font-medium text-gray-900 mb-2 sm:mb-3"
-            >
-              Venue
-            </label>
-            <input
-              type="text"
-              id="venue"
-              value={form.venue}
-              onChange={(e) => handleInputChange("venue", e.target.value)}
-              placeholder="Enter venue"
               className="w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               style={{
                 fontFamily: "Inter",
