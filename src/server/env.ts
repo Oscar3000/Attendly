@@ -10,6 +10,10 @@ const envSchema = z.object({
   AUTH_SECRET: z.string().min(32, "must be at least 32 characters (openssl rand -base64 32)"),
   ADMIN_PASSWORD: z.string().min(1, "is required"),
   INVITE_PIN: z.string().min(4, "must be at least 4 characters"),
+  BETTER_AUTH_SECRET: z
+    .string()
+    .min(32, "must be at least 32 characters (openssl rand -base64 32)"),
+  BETTER_AUTH_URL: z.url("must be a URL, e.g. http://localhost:3000"),
 });
 
 export type Env = z.infer<typeof envSchema>;

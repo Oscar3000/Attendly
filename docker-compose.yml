@@ -47,6 +47,9 @@ services:
       # Signs session cookies; required, no default (openssl rand -base64 32)
       AUTH_SECRET: ${AUTH_SECRET}
       INVITE_PIN: ${INVITE_PIN}
+      # Better Auth (T-201); required, no defaults
+      BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET}
+      BETTER_AUTH_URL: ${BETTER_AUTH_URL:-http://localhost:3000}
       
       # Disable Next.js telemetry
       NEXT_TELEMETRY_DISABLED: 1

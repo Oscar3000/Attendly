@@ -6,6 +6,8 @@ const valid = {
   AUTH_SECRET: "test-secret-that-is-at-least-32-characters-long",
   ADMIN_PASSWORD: "correct-horse",
   INVITE_PIN: "2468",
+  BETTER_AUTH_SECRET: "better-auth-test-secret-at-least-32-characters",
+  BETTER_AUTH_URL: "http://localhost:3000",
 };
 
 beforeEach(() => {
@@ -40,6 +42,11 @@ describe("getEnv", () => {
 
     expect(message).toContain("AUTH_SECRET must be at least 32 characters");
     expect(message).not.toContain("too-short-secret");
+  });
+
+  it("rejects a BETTER_AUTH_URL that is not a URL", () => {
+    vi.stubEnv("BETTER_AUTH_URL", "localhost");
+    expect(() => getEnv()).toThrow("BETTER_AUTH_URL must be a URL");
   });
 
   it("has no default PIN", () => {

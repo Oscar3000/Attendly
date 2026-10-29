@@ -85,12 +85,14 @@ Single model: `Invitation` with fields: id (cuid), name, qrCode, eventDate, venu
 
 ## Environment Variables
 
-All four required variables are validated at startup (`src/instrumentation.ts` -> `src/server/env.ts`); the server exits if any is missing. Read them with `getEnv()`, not `process.env`.
+All required variables are validated at startup (`src/instrumentation.ts` -> `src/server/env.ts`); the server exits if any is missing. Read them with `getEnv()`, not `process.env`.
 
 - `DATABASE_URL` - PostgreSQL connection string (required)
 - `ADMIN_PASSWORD` - Admin login password (required)
 - `AUTH_SECRET` - Signs session cookies; at least 32 characters (required, generate with `openssl rand -base64 32`)
 - `INVITE_PIN` - Guest PIN, at least 4 characters (required, no default)
+- `BETTER_AUTH_SECRET` - Better Auth secret; at least 32 characters, different from `AUTH_SECRET` (required)
+- `BETTER_AUTH_URL` - Public app URL for Better Auth, e.g. `http://localhost:3000` (required)
 - `NEXT_PUBLIC_BASE_URL` - App URL for QR codes (default: http://localhost:3000)
 
 ## Key Patterns
