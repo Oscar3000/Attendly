@@ -65,13 +65,6 @@ describe("invitationRepo", () => {
     expect(row).toMatchObject({ venue: "New Hall", eventDate: newDate });
   });
 
-  it("no longer writes the legacy eventDate/venue columns (dropped in T-312d)", async () => {
-    const created = await createGuest("Ada Lovelace");
-
-    const row = await prisma.invitation.findUniqueOrThrow({ where: { id: created.id } });
-    expect(row).toMatchObject({ eventDate: null, venue: null });
-  });
-
   it("falls back to the venue's address when it has no name", async () => {
     await eventRepo.update(event.id, { venueName: null, venueAddress: "1 Main St" });
     const created = await createGuest("Ada Lovelace");

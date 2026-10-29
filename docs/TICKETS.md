@@ -18,8 +18,8 @@ Goal: turn Attendly from a single hard-coded wedding into a product any host can
 | 0     | Foundations (server layer, validation, tests, CI)    | T-001 – T-010 | ✅ Done     |
 | 1     | Lock down security on the current app                | T-101 – T-108 | ✅ Done     |
 | 2     | Accounts with Better Auth (users, sign-up, sessions) | T-201 – T-209 | ✅ Done     |
-| 3     | Events & multi-tenancy                               | T-301 – T-312 | In progress |
-| 4     | Remove hard-coded content / theming                  | T-401 – T-409 | Not started |
+| 3     | Events & multi-tenancy                               | T-301 – T-312 | ✅ Done     |
+| 4     | Remove hard-coded content / theming                  | T-401 – T-409 | Next        |
 | 5     | Guest experience                                     | T-501 – T-508 | Not started |
 | 6     | Product features                                     | T-601 – T-610 | Not started |
 | 7     | Ops, compliance, launch                              | T-701 – T-710 | Not started |
@@ -385,9 +385,10 @@ Drop `Invitation.eventDate` and `Invitation.venue`. Delete the old `/admin` page
 - Make both columns nullable and stop copying the event's date and venue into them in `invitation.repo.ts`. Deploy this before T-312d: the old container keeps writing them until it's replaced, which nullable columns allow.
 - **As built:** migration `20261030090000_make_legacy_invitation_columns_nullable` only drops the NOT NULL constraints (instant, no rewrite). Checked that the previous release's insert (with both columns) and this release's (without) both succeed on the migrated schema. `createInvitation` now only needs the event's id.
 
-### T-312d · Drop `eventDate` / `venue` · S
+### ✅ T-312d · Drop `eventDate` / `venue` · S
 
 - Drop the two columns, and delete the finished T-303 backfill (`prisma/backfill-wedding-event.ts`, `src/server/backfill/`, `db:backfill-wedding`). Deploy after T-312c is live.
+- **As built:** migration `20261030100000_drop_legacy_invitation_columns` refuses to run if the database has invitations and T-312c's migration finished under 10 minutes ago (i.e. both arrived in one deploy, while the previous release may still be writing the columns); fresh databases pass straight through. The backfill and its `DEPLOYMENT.md` section are deleted.
 
 ---
 

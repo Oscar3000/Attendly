@@ -34,7 +34,6 @@ npm run db:migrate       # Prisma migrate dev
 npm run db:studio        # Prisma Studio
 npm run db:reset         # Reset database (then runs the seed)
 npm run db:seed          # Create an account from ADMIN_EMAIL / ADMIN_PASSWORD (script inputs, + app env); idempotent
-npm run db:backfill-wedding # T-303: create the wedding Event for the ADMIN_EMAIL account, link unlinked invitations; idempotent
 npm run docker:up        # Docker Compose up
 npm run docker:down      # Docker Compose down
 npm run docker:logs      # View container logs
@@ -84,7 +83,7 @@ middleware.ts                  # Auth route protection
 
 ## Database Schema
 
-- `Invitation` (`invitations`): id (cuid), name, qrCode, status (PENDING|CONFIRMED|DECLINED|RESCINDED), plusOne, eventId → Event (required, cascade delete), createdAt, updatedAt. The date and venue come from the event; the legacy `eventDate`/`venue` columns are nullable and no longer written (dropped in T-312d)
+- `Invitation` (`invitations`): id (cuid), name, qrCode, status (PENDING|CONFIRMED|DECLINED|RESCINDED), plusOne, eventId → Event (required, cascade delete), createdAt, updatedAt. The date and venue come from the event
 - `Event` (`events`): id (cuid), ownerId → User (cascade delete), slug (unique), type (WEDDING|BIRTHDAY|CORPORATE|OTHER), title, date (UTC) + timezone (IANA), venueName?, venueAddress?, rsvpDeadline?, createdAt, updatedAt
 - Better Auth tables: `users`, `sessions`, `accounts`, `verifications` (create users through Better Auth, never with Prisma directly)
 
@@ -109,7 +108,7 @@ All required variables are validated at startup (`src/instrumentation.ts` -> `sr
 - `NEXT_PUBLIC_BASE_URL` - App URL for QR codes (default: http://localhost:3000)
 - `RESEND_API_KEY`, `EMAIL_FROM` - Send email through Resend (`EMAIL_FROM` like `Attendly <hello@yourdomain.com>`, on a domain verified in Resend). Optional: without them, development logs emails (with their links) to the console, and production skips them (sign-up still works; verification and password-reset emails aren't sent, and the verify banner is hidden)
 - `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` - Google sign-in (OAuth client from Google Cloud; redirect URI `BETTER_AUTH_URL/api/auth/callback/google`). Optional, both or neither: without them the "Continue with Google" button is hidden
-- `ADMIN_EMAIL`, `ADMIN_PASSWORD`, `ADMIN_NAME` - Only inputs to `npm run db:seed` (and `ADMIN_EMAIL` to the T-303 backfill): the account's email, password (8+ characters) and optional display name (default `Admin`); not app settings
+- `ADMIN_EMAIL`, `ADMIN_PASSWORD`, `ADMIN_NAME` - Only inputs to `npm run db:seed`: the account's email, password (8+ characters) and optional display name (default `Admin`); not app settings
 
 ## Key Patterns
 

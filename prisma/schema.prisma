@@ -11,10 +11,6 @@ model Invitation {
   id        String     @id @default(cuid())
   name      String
   qrCode    String
-  // Legacy, no longer written (T-312c): the date and venue live on the event. Nullable so the
-  // previous release, still writing them during a deploy, keeps working; dropped in T-312d
-  eventDate DateTime?
-  venue     String?
   status    RsvpStatus @default(PENDING)
   plusOne   Int        @default(0)
   // Deleting an event deletes its invitations
