@@ -49,6 +49,22 @@ describe("getEnv", () => {
     expect(() => getEnv()).toThrow("BETTER_AUTH_URL must be a URL");
   });
 
+  it("requires EMAIL_FROM when RESEND_API_KEY is set", () => {
+    expect(getEnv().RESEND_API_KEY).toBeUndefined();
+
+    vi.stubEnv("RESEND_API_KEY", "re_test_key");
+    expect(() => getEnv()).toThrow("EMAIL_FROM is required with RESEND_API_KEY");
+
+    vi.stubEnv("EMAIL_FROM", "Attendly <hello@example.com>");
+    expect(getEnv()).toMatchObject({ EMAIL_FROM: "Attendly <hello@example.com>" });
+  });
+
+  it("treats empty optional variables as unset", () => {
+    vi.stubEnv("RESEND_API_KEY", "");
+    vi.stubEnv("EMAIL_FROM", "");
+    expect(getEnv()).toMatchObject({ RESEND_API_KEY: undefined, EMAIL_FROM: undefined });
+  });
+
   it("has no default PIN", () => {
     vi.stubEnv("INVITE_PIN", undefined);
     expect(() => getEnv()).toThrow("INVITE_PIN is required");
