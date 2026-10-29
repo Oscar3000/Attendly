@@ -32,6 +32,12 @@ const withEvent = {
 const isNotFound = (error: unknown) =>
   error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2025";
 
+export interface BulkCreateResult {
+  created: { row: number; name: string; id: string }[];
+  failed: { row: number; name: string; error: string }[];
+  summary: { total: number; createdCount: number; failedCount: number };
+}
+
 type InvitationUpdates = {
   name?: string | undefined;
   status?: RsvpStatus | undefined;
@@ -107,6 +113,46 @@ export const invitationRepo = {
     });
 
     return convertToInviteDetails(updatedInvitation as Invitation);
+  },
+
+  // Create many invitations in an event. Each row succeeds or fails on its own; rows with an
+  // empty name are reported, not created
+  async createInvitations(
+    event: Pick<Event, "id" | "date" | "venueName" | "venueAddress">,
+    status: RsvpStatus,
+    rows: { name: string; plusOne?: number | undefined }[],
+  ): Promise<BulkCreateResult> {
+    const created: BulkCreateResult["created"] = [];
+    const failed: BulkCreateResult["failed"] = [];
+
+    for (const [index, row] of rows.entries()) {
+      const rowNum = index + 1;
+      const name = row.name.trim();
+      if (!name) {
+        failed.push({ row: rowNum, name: row.name, error: "Name is required" });
+        continue;
+      }
+      try {
+        const invite = await invitationRepo.createInvitation(event, {
+          name,
+          status,
+          plusOne: row.plusOne,
+        });
+        created.push({ row: rowNum, name, id: invite.id });
+      } catch (err) {
+        failed.push({
+          row: rowNum,
+          name,
+          error: err instanceof Error ? err.message : "Unknown error",
+        });
+      }
+    }
+
+    return {
+      created,
+      failed,
+      summary: { total: rows.length, createdCount: created.length, failedCount: failed.length },
+    };
   },
 
   // Update an invitation within an event. Missing or undefined fields are left unchanged

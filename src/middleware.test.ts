@@ -50,6 +50,12 @@ describe("admin routes", () => {
     expect((await middleware(request("/api/admin", { auth_token }))).status).toBe(401);
   });
 
+  it("requires a session cookie for event-scoped API routes", async () => {
+    const path = "/api/events/abc/invitations";
+    expect((await middleware(request(path))).status).toBe(401);
+    expect(passedThrough(await middleware(request(path, sessionCookie)))).toBe(true);
+  });
+
   it("rejects a guest session on admin routes", async () => {
     const invite_token = await signSession("guest");
     expect((await middleware(request("/api/admin", { invite_token }))).status).toBe(401);

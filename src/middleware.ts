@@ -13,7 +13,8 @@ export async function middleware(request: NextRequest) {
     (await verifySession(request.cookies.get("invite_token")?.value, "guest")) !== null;
 
   // Define protected routes
-  const adminRoutes = ["/admin", "/api/admin"];
+  // Need a signed-in account; pages and route handlers then check admin or event ownership
+  const adminRoutes = ["/admin", "/api/admin", "/api/events"];
   const inviteRoutes = ["/invite"];
   const apiInvitationsRoutes = ["/api/invitations"];
 
@@ -61,5 +62,11 @@ export async function middleware(request: NextRequest) {
 
 // Apply middleware to specific routes
 export const config = {
-  matcher: ["/admin/:path*", "/api/admin/:path*", "/api/invitations/:path*", "/invite/:path*"],
+  matcher: [
+    "/admin/:path*",
+    "/api/admin/:path*",
+    "/api/events/:path*",
+    "/api/invitations/:path*",
+    "/invite/:path*",
+  ],
 };
