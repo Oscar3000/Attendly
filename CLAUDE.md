@@ -84,7 +84,7 @@ middleware.ts                  # Auth route protection
 
 ## Database Schema
 
-- `Invitation` (`invitations`): id (cuid), name, qrCode, status (PENDING|CONFIRMED|DECLINED|RESCINDED), plusOne, eventId → Event (required, cascade delete), createdAt, updatedAt. The date and venue come from the event; the legacy `eventDate`/`venue` columns are still written (copied from the event) until T-312 drops them
+- `Invitation` (`invitations`): id (cuid), name, qrCode, status (PENDING|CONFIRMED|DECLINED|RESCINDED), plusOne, eventId → Event (required, cascade delete), createdAt, updatedAt. The date and venue come from the event; the legacy `eventDate`/`venue` columns are nullable and no longer written (dropped in T-312d)
 - `Event` (`events`): id (cuid), ownerId → User (cascade delete), slug (unique), type (WEDDING|BIRTHDAY|CORPORATE|OTHER), title, date (UTC) + timezone (IANA), venueName?, venueAddress?, rsvpDeadline?, createdAt, updatedAt
 - Better Auth tables: `users`, `sessions`, `accounts`, `verifications` (create users through Better Auth, never with Prisma directly)
 
