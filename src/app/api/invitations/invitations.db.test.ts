@@ -3,202 +3,95 @@ import { NextRequest } from "next/server";
 import { prisma } from "@/server/db/client";
 import { signSession } from "@/server/auth/session";
 import { eventRepo } from "@/server/repositories/event.repo";
+import { invitationRepo } from "@/server/repositories/invitation.repo";
 import { sessionCookieFor, stubAuthEnv } from "../../../../tests/helpers/auth";
-import { GET as listInvitations, POST as createInvitation } from "./route";
-import { POST as bulkCreate } from "./bulk/route";
-import {
-  DELETE as deleteInvitation,
-  GET as getInvitation,
-  PATCH as patchStatus,
-  PUT as updateInvitation,
-} from "./[id]/route";
+import * as route from "./[id]/route";
 
-const url = "http://localhost/api/invitations";
-
-type Caller = "admin" | "user" | "guest" | "anonymous";
-const cookies: Record<Caller, string> = { admin: "", user: "", guest: "", anonymous: "" };
+let guestCookie = "";
+let invitationId = "";
 
 beforeAll(async () => {
   stubAuthEnv();
-  cookies.guest = `invite_token=${await signSession("guest")}`;
+  guestCookie = `invite_token=${await signSession("guest")}`;
 });
 
-const eventDate = new Date("2026-05-23T14:00:00Z");
-
-// Accounts are truncated before each test, so sign in again each time.
-// New invitations go to the admin's only event (requireCurrentEvent)
+// Tables are truncated before each test
 beforeEach(async () => {
-  cookies.admin = await sessionCookieFor("admin@example.com");
-  cookies.user = await sessionCookieFor("someone@example.com");
-  const admin = await prisma.user.findUniqueOrThrow({ where: { email: "admin@example.com" } });
-  await eventRepo.create(admin.id, {
+  const host = await prisma.user.create({
+    data: { id: crypto.randomUUID(), name: "Host", email: "host@example.com" },
+  });
+  const event = await eventRepo.create(host.id, {
     slug: "wedding",
     type: "WEDDING",
     title: "Wedding",
-    date: eventDate,
+    date: new Date("2027-05-23T14:00:00Z"),
     timezone: "Africa/Lagos",
     venueName: "Hall",
   });
+  const invitation = await invitationRepo.createInvitation(event, {
+    name: "Ada",
+    status: "pending",
+  });
+  invitationId = invitation.id;
 });
 
-function jsonRequest(method: string, body?: unknown, as: Caller = "admin") {
-  return new NextRequest(url, {
+function req(cookie: string, method = "GET", body?: unknown) {
+  return new NextRequest(`http://localhost/api/invitations/${invitationId}`, {
     method,
-    headers: cookies[as] ? { cookie: cookies[as] } : {},
+    headers: cookie ? { cookie } : {},
     ...(body === undefined ? {} : { body: JSON.stringify(body) }),
   });
 }
-
 const params = (id: string) => ({ params: Promise.resolve({ id }) });
-
 async function call(response: Promise<Response>) {
   const res = await response;
   return { status: res.status, body: await res.json() };
 }
 
-async function createGuest() {
-  const { body } = await call(createInvitation(jsonRequest("POST", { name: "Ada" }), {}));
-  return body.invitation as { id: string; status: string; plusOne: number; eventId: string };
-}
+describe("/api/invitations/[id] (PIN guests)", () => {
+  it("lets a guest read their invitation, with the event's date and venue", async () => {
+    const { status, body } = await call(route.GET(req(guestCookie), params(invitationId)));
 
-describe("POST /api/invitations", () => {
-  it("creates an invitation with defaults, on the admin's event", async () => {
-    const invitation = await createGuest();
-    const event = await prisma.event.findFirstOrThrow();
-    expect(invitation).toMatchObject({
-      status: "pending",
-      plusOne: 0,
-      eventId: event.id,
+    expect(status).toBe(200);
+    expect(body.invitation).toMatchObject({
+      name: "Ada",
       venue: "Hall",
-      eventDate: eventDate.toISOString(),
+      eventDate: "2027-05-23T14:00:00.000Z",
     });
   });
 
-  it("ignores a date or venue sent with the invitation: they belong to the event", async () => {
-    const { body } = await call(
-      createInvitation(
-        jsonRequest("POST", { name: "Ada", eventDate: "2030-01-01T00:00", venue: "Elsewhere" }),
-        {},
-      ),
+  it("lets a guest update their RSVP status, and rejects an unknown status", async () => {
+    const rsvp = await call(
+      route.PATCH(req(guestCookie, "PATCH", { status: "confirmed" }), params(invitationId)),
     );
-    expect(body.invitation).toMatchObject({ venue: "Hall", eventDate: eventDate.toISOString() });
-  });
+    expect(rsvp.status).toBe(200);
+    expect(rsvp.body.invitation.status).toBe("confirmed");
 
-  it("returns 409 when the admin has no event yet", async () => {
-    await prisma.event.deleteMany();
-    const { status, body } = await call(createInvitation(jsonRequest("POST", { name: "Ada" }), {}));
-    expect(status).toBe(409);
-    expect(body.error).toMatch(/no event yet/);
-  });
-
-  it("rejects invalid fields with a 400 and field errors", async () => {
-    const { status, body } = await call(
-      createInvitation(jsonRequest("POST", { name: " ", plusOne: -1 }), {}),
+    const invalid = await call(
+      route.PATCH(req(guestCookie, "PATCH", { status: "maybe" }), params(invitationId)),
     );
-
-    expect(status).toBe(400);
-    expect(body.error).toBe("Invalid request body");
-    expect(Object.keys(body.details.fieldErrors).sort()).toEqual(["name", "plusOne"]);
+    expect(invalid.status).toBe(400);
   });
-});
 
-describe("/api/invitations/[id]", () => {
   it("returns 404 for an unknown invitation", async () => {
-    const { status, body } = await call(getInvitation(jsonRequest("GET"), params("missing")));
+    const { status, body } = await call(route.GET(req(guestCookie), params("missing")));
     expect(status).toBe(404);
     expect(body).toEqual({ error: "Invitation not found" });
   });
 
-  it("PUT only changes the fields that were sent", async () => {
-    const created = await createGuest();
-    await call(patchStatus(jsonRequest("PATCH", { status: "confirmed" }), params(created.id)));
+  it("rejects account sessions and signed-out callers with 401: hosts use /api/events/...", async () => {
+    const hostCookie = await sessionCookieFor("someone@example.com");
 
-    const { status, body } = await call(
-      updateInvitation(jsonRequest("PUT", { plusOne: 2 }), params(created.id)),
-    );
-
-    expect(status).toBe(200);
-    expect(body.invitation).toMatchObject({ plusOne: 2, status: "confirmed", name: "Ada" });
+    for (const cookie of [hostCookie, ""]) {
+      const read = await call(route.GET(req(cookie), params(invitationId)));
+      const rsvp = await call(
+        route.PATCH(req(cookie, "PATCH", { status: "declined" }), params(invitationId)),
+      );
+      expect([read.status, rsvp.status]).toEqual([401, 401]);
+    }
   });
 
-  it("PATCH rejects an unknown status", async () => {
-    const created = await createGuest();
-    const { status } = await call(
-      patchStatus(jsonRequest("PATCH", { status: "maybe" }), params(created.id)),
-    );
-    expect(status).toBe(400);
-  });
-});
-
-describe("POST /api/invitations/bulk", () => {
-  it("creates valid rows and reports empty names per row", async () => {
-    const { status, body } = await call(
-      bulkCreate(jsonRequest("POST", { rows: [{ name: "Ada", plusOne: 1 }, { name: "  " }] }), {}),
-    );
-
-    expect(status).toBe(201);
-    expect(body.summary).toEqual({ total: 2, createdCount: 1, failedCount: 1 });
-    expect(body.failed[0]).toMatchObject({ row: 2, error: "Name is required" });
-  });
-
-  it("rejects an empty rows array", async () => {
-    const { status } = await call(bulkCreate(jsonRequest("POST", { rows: [] }), {}));
-    expect(status).toBe(400);
-  });
-});
-
-describe("access control", () => {
-  it("lets a guest read one invitation and update its RSVP status", async () => {
-    const created = await createGuest();
-
-    const read = await call(
-      getInvitation(jsonRequest("GET", undefined, "guest"), params(created.id)),
-    );
-    expect(read.status).toBe(200);
-
-    const rsvp = await call(
-      patchStatus(jsonRequest("PATCH", { status: "confirmed" }, "guest"), params(created.id)),
-    );
-    expect(rsvp.status).toBe(200);
-    expect(rsvp.body.invitation.status).toBe("confirmed");
-  });
-
-  // A guest has no account session, so admin-only endpoints treat them as signed out
-  it("returns 401 when a guest calls an admin-only endpoint", async () => {
-    const created = await createGuest();
-    const guest = (method: string, body?: unknown) => jsonRequest(method, body, "guest");
-    const valid = { name: "Eve" };
-
-    const responses = await Promise.all([
-      listInvitations(guest("GET"), {}),
-      createInvitation(guest("POST", valid), {}),
-      bulkCreate(guest("POST", { ...valid, rows: [{ name: "Eve" }] }), {}),
-      updateInvitation(guest("PUT", { name: "Hacked" }), params(created.id)),
-      deleteInvitation(guest("DELETE"), params(created.id)),
-    ]);
-
-    expect(responses.map((r) => r.status)).toEqual([401, 401, 401, 401, 401]);
-    const stillThere = await call(getInvitation(jsonRequest("GET"), params(created.id)));
-    expect(stillThere.body.invitation.name).toBe("Ada");
-  });
-
-  it("returns 403 when a signed-in account other than ADMIN_EMAIL calls the API", async () => {
-    const created = await createGuest();
-
-    const responses = await Promise.all([
-      listInvitations(jsonRequest("GET", undefined, "user"), {}),
-      getInvitation(jsonRequest("GET", undefined, "user"), params(created.id)),
-      deleteInvitation(jsonRequest("DELETE", undefined, "user"), params(created.id)),
-    ]);
-
-    expect(responses.map((r) => r.status)).toEqual([403, 403, 403]);
-  });
-
-  it("returns 401 without a session, before validating the body", async () => {
-    const { status } = await call(createInvitation(jsonRequest("POST", {}, "anonymous"), {}));
-    expect(status).toBe(401);
-
-    const read = await call(getInvitation(jsonRequest("GET", undefined, "anonymous"), params("x")));
-    expect(read.status).toBe(401);
+  it("no longer offers the old admin PUT and DELETE", () => {
+    expect(Object.keys(route).sort()).toEqual(["GET", "PATCH"]);
   });
 });
