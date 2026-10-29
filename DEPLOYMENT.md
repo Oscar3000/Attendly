@@ -87,7 +87,6 @@ In the Railway dashboard, click on your **app service** (not the database), go t
 | ------------------------- | ----------------------------------- | ------------------------------------------------------------------------------- |
 | `DATABASE_URL`            | `${{Postgres.DATABASE_URL}}`        | Use Railway's variable reference to auto-link to your DB                        |
 | `NEXT_PUBLIC_BASE_URL`    | `https://your-app.up.railway.app`   | Your Railway public URL (set after first deploy)                                |
-| `ADMIN_EMAIL`             | `you@example.com`                   | **Required.** The only account allowed into the dashboard                       |
 | `INVITE_PIN`              | `your-pin`                          | **Required.** PIN guests use to access invitations (4+ chars)                   |
 | `AUTH_SECRET`             | output of `openssl rand -base64 32` | **Required.** Signs login cookies; changing it logs everyone out                |
 | `BETTER_AUTH_SECRET`      | output of `openssl rand -base64 32` | **Required.** Better Auth secret; use a different value from `AUTH_SECRET`      |
@@ -100,7 +99,7 @@ In the Railway dashboard, click on your **app service** (not the database), go t
 | `NODE_ENV`                | `production`                        |                                                                                 |
 | `NEXT_TELEMETRY_DISABLED` | `1`                                 | Optional                                                                        |
 
-If `DATABASE_URL`, `AUTH_SECRET`, `ADMIN_EMAIL`, `INVITE_PIN`, `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL` is missing or invalid (or only one of `RESEND_API_KEY` / `EMAIL_FROM`, or of the two Google variables, is set), the app logs which one and exits at startup, so the deploy fails instead of serving errors.
+If `DATABASE_URL`, `AUTH_SECRET`, `INVITE_PIN`, `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL` is missing or invalid (or only one of `RESEND_API_KEY` / `EMAIL_FROM`, or of the two Google variables, is set), the app logs which one and exits at startup, so the deploy fails instead of serving errors.
 
 ### Linking the Database URL
 
@@ -141,22 +140,23 @@ railway run npx prisma migrate deploy
 
 ### Create the admin account
 
-Once the Better Auth migration has run, create the admin's account from your machine (not the Railway console: the production image has no `tsx`). Do this once; running it again leaves the existing account alone.
+Optional: anyone can sign up at `/signup`. The seed creates an account from the command line instead, e.g. the first host's (not from the Railway console: the production image has no `tsx`). Running it again leaves an existing account alone.
 
 ```bash
-railway run sh -c 'DATABASE_URL="<DATABASE_PUBLIC_URL>" ADMIN_PASSWORD="<password>" npm run db:seed'
+railway run sh -c 'DATABASE_URL="<DATABASE_PUBLIC_URL>" ADMIN_EMAIL="<email>" ADMIN_PASSWORD="<password>" npm run db:seed'
 ```
 
-- `railway run` injects the app's variables, including `ADMIN_EMAIL`. Setting the others inside `sh -c` makes them win over Railway's values.
+- `railway run` injects the app's variables. Setting the others inside `sh -c` makes them win over Railway's values.
+- `ADMIN_EMAIL` and `ADMIN_PASSWORD` are only inputs to this command (the account's email and password), not app settings.
 - `DATABASE_URL` must be the database's **public** URL: the Postgres service's `DATABASE_PUBLIC_URL` (`…proxy.rlwy.net:<port>`). The app's own `DATABASE_URL` points at `postgres.railway.internal`, which only resolves inside Railway.
-- `ADMIN_PASSWORD` (8+ characters) becomes the account password. Only this command reads it, so there's no need to keep it as a Railway variable.
+- `ADMIN_PASSWORD` needs 8+ characters.
 
 ### Link existing invitations to the wedding event
 
-Run once after the `events` migration has deployed and the admin account exists, and before the release that makes events required (T-304). It creates the "Pamela & Oscar" event for `ADMIN_EMAIL` and attaches every invitation that has no event. Running it again only links invitations created since.
+Run once after the `events` migration has deployed and the admin account exists, and before the release that makes events required (T-304). It creates the "Pamela & Oscar" event for the account whose email you pass as `ADMIN_EMAIL` and attaches every invitation that has no event. Running it again only links invitations created since.
 
 ```bash
-railway run sh -c 'DATABASE_URL="<DATABASE_PUBLIC_URL>" npm run db:backfill-wedding'
+railway run sh -c 'DATABASE_URL="<DATABASE_PUBLIC_URL>" ADMIN_EMAIL="<your email>" npm run db:backfill-wedding'
 ```
 
 It prints how many invitations it linked. If it says there's no account for your email, run the seed above first.
@@ -169,7 +169,7 @@ If you deploy the T-304 release without running it, that release's migration sto
 
 1. Visit your Railway URL (e.g., `https://attendly-production.up.railway.app`)
 2. Test the guest PIN entry at the root URL
-3. Test admin login at `/login` with your `ADMIN_EMAIL` and the password the seed set
+3. Test logging in at `/login`: you should land on `/dashboard` with your events
 4. Test the health endpoint at `/api/health`
 
 ---

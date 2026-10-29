@@ -161,12 +161,10 @@ describe("route coverage", () => {
   });
 });
 
-// The ADMIN_EMAIL account (admin@example.com, vitest.config.mts) had extra access through the
-// old admin routes, removed in T-312a; it stays here until ADMIN_EMAIL itself goes (T-312b)
-describe.each([
-  { attacker: "the ADMIN_EMAIL account", email: "admin@example.com" },
-  { attacker: "an ordinary account", email: "someone@example.com" },
-])("$attacker attacking another account", ({ email }) => {
+// Every account has the same powers; the attacker also owns an event of their own
+const email = "attacker@example.com";
+
+describe("another account attacking", () => {
   it("can't read, list, change or delete the victim's data through any route", async () => {
     const { cookie } = await signInAttacker(email);
     const before = await victimSnapshot();

@@ -22,7 +22,7 @@ beforeAll(async () => {
   guestCookie = `invite_token=${await signSession("guest")}`;
 });
 
-// Accounts and events are truncated before each test. The host isn't ADMIN_EMAIL:
+// Accounts and events are truncated before each test. Any account can host:
 // owning the event is what grants access
 beforeEach(async () => {
   hostCookie = await sessionCookieFor("host@example.com");

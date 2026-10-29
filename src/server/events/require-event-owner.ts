@@ -1,6 +1,6 @@
 /**
  * Ownership guard for event-scoped pages and routes (T-307, T-309)
- * Owning the event is the permission: no ADMIN_EMAIL check, which this replaces in Phase 3
+ * Owning the event is the permission
  */
 import "server-only";
 import { requireUser, type CurrentUser } from "@/server/auth/current-user";

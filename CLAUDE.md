@@ -33,8 +33,8 @@ npm run test:db:down     # Stop test Postgres
 npm run db:migrate       # Prisma migrate dev
 npm run db:studio        # Prisma Studio
 npm run db:reset         # Reset database (then runs the seed)
-npm run db:seed          # Create the admin user (needs ADMIN_EMAIL + app env); idempotent
-npm run db:backfill-wedding # T-303: create the wedding Event for ADMIN_EMAIL, link unlinked invitations; idempotent
+npm run db:seed          # Create an account from ADMIN_EMAIL / ADMIN_PASSWORD (script inputs, + app env); idempotent
+npm run db:backfill-wedding # T-303: create the wedding Event for the ADMIN_EMAIL account, link unlinked invitations; idempotent
 npm run docker:up        # Docker Compose up
 npm run docker:down      # Docker Compose down
 npm run docker:logs      # View container logs
@@ -93,7 +93,7 @@ middleware.ts                  # Auth route protection
 - **Accounts**: Better Auth email + password (`/signup`, `/login`), endpoints at `/api/auth/*`, server instance from `getAuth()` in `src/server/auth/auth.ts`, client in `src/lib/auth-client.ts`
 - **Dashboard pages** (`/dashboard/events/[eventId]/*`) and the event API (`/api/events/...`): owning the event is the permission; other accounts get 404, signed-out users go to `/login` (pages) or get 401 (API)
 - **Guest**: PIN verification -> signed `invite_token` cookie (role `guest`, `src/server/auth/session.ts`) -> access to `/invite/*` (replaced by per-invitation links in Phase 5)
-- Session helpers live in `src/server/auth/current-user.ts`: `getCurrentUser()`, `requireUser()` (401) and `requireAdminUser()` (adds the `ADMIN_EMAIL` 403). Route handlers pass `request.headers`; pages and server actions call them without arguments
+- Session helpers live in `src/server/auth/current-user.ts`: `getCurrentUser()` and `requireUser()` (401). Route handlers pass `request.headers`; pages and server actions call them without arguments
 - PIN guests use `GET`/`PATCH /api/invitations/[id]`, guarded by `requireGuest()` from `src/server/auth/guards.ts`; account sessions get 401 there
 - **Middleware** is optimistic for accounts: it only checks a Better Auth session cookie is present (`getSessionCookie()`), redirecting to `/login` (pages) or returning 401 (API). Guest tokens are verified there
 
@@ -102,7 +102,6 @@ middleware.ts                  # Auth route protection
 All required variables are validated at startup (`src/instrumentation.ts` -> `src/server/env.ts`); the server exits if any is missing. Read them with `getEnv()`, not `process.env`.
 
 - `DATABASE_URL` - PostgreSQL connection string (required)
-- `ADMIN_EMAIL` - The one account allowed into the dashboard; also the email `npm run db:seed` creates (required)
 - `AUTH_SECRET` - Signs session cookies; at least 32 characters (required, generate with `openssl rand -base64 32`)
 - `INVITE_PIN` - Guest PIN, at least 4 characters (required, no default)
 - `BETTER_AUTH_SECRET` - Better Auth secret; at least 32 characters, different from `AUTH_SECRET` (required)
@@ -110,13 +109,13 @@ All required variables are validated at startup (`src/instrumentation.ts` -> `sr
 - `NEXT_PUBLIC_BASE_URL` - App URL for QR codes (default: http://localhost:3000)
 - `RESEND_API_KEY`, `EMAIL_FROM` - Send email through Resend (`EMAIL_FROM` like `Attendly <hello@yourdomain.com>`, on a domain verified in Resend). Optional: without them, development logs emails (with their links) to the console, and production skips them (sign-up still works; verification and password-reset emails aren't sent, and the verify banner is hidden)
 - `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` - Google sign-in (OAuth client from Google Cloud; redirect URI `BETTER_AUTH_URL/api/auth/callback/google`). Optional, both or neither: without them the "Continue with Google" button is hidden
-- `ADMIN_PASSWORD`, `ADMIN_NAME` - Only read by `npm run db:seed`: the admin account's password (8+ characters) and optional display name (default `Admin`); not needed at runtime
+- `ADMIN_EMAIL`, `ADMIN_PASSWORD`, `ADMIN_NAME` - Only inputs to `npm run db:seed` (and `ADMIN_EMAIL` to the T-303 backfill): the account's email, password (8+ characters) and optional display name (default `Admin`); not app settings
 
 ## Key Patterns
 
 - Event times are stored in UTC with an IANA `timezone`; hosts enter wall-clock times. Convert with `zonedTimeToUtc()` and display with `formatEventDateTime()` from `src/lib/timezones.ts` (built on `Intl`, no date library)
 
-- Event-scoped code calls `requireEventOwner(eventId, headers?)` (`src/server/events/require-event-owner.ts`): 401 when signed out, the same 404 for a missing event and someone else's event, and returns `{ user, event }`. Ownership is the permission; there's no `ADMIN_EMAIL` check
+- Event-scoped code calls `requireEventOwner(eventId, headers?)` (`src/server/events/require-event-owner.ts`): 401 when signed out, the same 404 for a missing event and someone else's event, and returns `{ user, event }`. Ownership is the only permission; every account has the same powers
 
 - New invitations go to the admin's only event via `requireCurrentEvent()` (`src/server/events/current-event.ts`, 409 if there are none or several) until routes are scoped by event id (T-307)
 

@@ -375,9 +375,10 @@ Drop `Invitation.eventDate` and `Invitation.venue`. Delete the old `/admin` page
 
 - **As built:** deleted `/api/admin`, `/api/admin/status`, `/api/invitations` (GET/POST), `/api/invitations/bulk` and the `requireCurrentEvent()` bridge. `/api/invitations/[id]` keeps only the PIN guest's GET/PATCH, guarded by the new `requireGuest()` (account sessions get 401; hosts use `/api/events/...`). Middleware now covers `/dashboard` and `/api/events` for accounts and `/api/invitations` for guests only; `/admin` is redirected by `next.config.ts` before middleware runs. The tenant isolation policy dropped the deleted routes and accepts 401 for the guest route.
 
-### T-312b · Remove `ADMIN_EMAIL` · S
+### ✅ T-312b · Remove `ADMIN_EMAIL` · S
 
 - Remove the env var (`env.ts`, `vitest.config.mts`, `docker-compose.yml`, `DEPLOYMENT.md`), `isAdminEmail` / `requireAdminUser`, and the account page's email lock and `isAdmin` prop; nothing after T-312a needs it. The seed and the T-303 backfill read `ADMIN_EMAIL` as their own input and keep doing so. Collapse the tenant isolation test's two attackers into one.
+- **As built:** as above. With email configured, every account can now change its email on `/account`. The seed is documented as an optional way to create an account; `ADMIN_EMAIL` stays only as its (and the backfill's) input.
 
 ### T-312c · Stop writing `eventDate` / `venue` · S
 
