@@ -49,8 +49,9 @@ src/
     api/
       auth/login|logout/      # Admin auth endpoints
       invite/verify-pin/      # Guest PIN verification
-      invitations/[id]/       # CRUD for invitations
-      admin/                  # Dashboard metrics & status updates
+      events/[eventId]/       # Event-scoped, owner only (requireEventOwner): invitations (+ [id], bulk), metrics, status
+      invitations/[id]/       # Old CRUD, used by the UI until T-308 and by PIN guests (GET/PATCH); removed in T-312
+      admin/                  # Old dashboard metrics & status updates; removed in T-312
       health/                 # Health check
     invite/[id]/              # Guest invitation view
     invite-pin/               # Guest PIN entry

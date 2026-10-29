@@ -321,7 +321,7 @@ Every repository function takes `eventId`, and there are no unscoped queries lef
 - **Files:** ~5
 - **As built:** `eventId` is part of each query (`where: { id, eventId }`), so another event's invitation is indistinguishable from a missing one; update/delete now treat only Prisma's not-found error as "not found" and rethrow the rest. Shared-PIN guests aren't tied to an event, so they get two explicit exceptions, `getInvitationForGuest(id)` and `updateRsvpStatusForGuest(id, status)` (remove in T-505). Routes pass the admin's event from `requireCurrentEvent()` until T-307.
 
-### T-307 · Event-scoped API routes · M
+### ✅ T-307 · Event-scoped API routes · M
 
 Move routes to `/api/events/[eventId]/invitations`, `/bulk`, `/metrics`, and `/status`. Each one calls `requireEventOwner`. Keep the old routes as thin redirects or remove them.
 
@@ -329,6 +329,7 @@ Move routes to `/api/events/[eventId]/invitations`, `/bulk`, `/metrics`, and `/s
 
 - **Depends on:** T-305, T-306
 - **Files:** ~12
+- **As built:** `/api/events/[eventId]/invitations` (GET paginated `?page&limit&search`, POST), `/invitations/[id]` (GET, PUT, PATCH, DELETE), `/invitations/bulk`, `/metrics` and `/status`, each starting with `requireEventOwner` (owner only: 404 for other accounts and other events' invitations, 401 signed out; no guest access). Metrics and the invitation list are separate endpoints (`/api/admin` returned both). The old routes are unchanged: they can't redirect without knowing the event, the UI still uses them until T-308, and PIN guests use `/api/invitations/[id]` until T-503. Bulk row handling moved to `invitationRepo.createInvitations()`, shared by both bulk routes. Middleware covers `/api/events/*`.
 
 ### T-308 · Update RTK Query slice for event-scoped endpoints · S
 
@@ -360,6 +361,8 @@ User A cannot read, update, delete, or list user B's events or invitations, thro
 ### T-312 · Cleanup: drop old columns and `/admin` routes · S
 
 Drop `Invitation.eventDate` and `Invitation.venue`. Delete the old `/admin` pages and the old API routes. Update the middleware matcher.
+
+- The old API routes are `/api/admin`, `/api/admin/status`, `/api/invitations` and `/api/invitations/bulk`; keep `/api/invitations/[id]`'s guest GET/PATCH until T-505 if the PIN flow is still live. Delete `src/server/events/current-event.ts` (`requireCurrentEvent`) with them.
 
 - **Depends on:** T-309, T-310, T-311
 - **Files:** ~15
