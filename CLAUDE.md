@@ -64,6 +64,7 @@ src/
   server/                     # Server-only code (`import 'server-only'`)
     db/client.ts              # Prisma client singleton
     repositories/             # invitation.repo.ts, metrics.repo.ts (all Prisma queries)
+    email/send-email.ts       # sendEmail(): Resend when RESEND_API_KEY is set, console log in dev
   store/
     store.ts                  # Redux store config
     invitationApi.ts          # RTK Query API slice
@@ -97,6 +98,7 @@ All required variables are validated at startup (`src/instrumentation.ts` -> `sr
 - `BETTER_AUTH_SECRET` - Better Auth secret; at least 32 characters, different from `AUTH_SECRET` (required)
 - `BETTER_AUTH_URL` - Public app URL for Better Auth, e.g. `http://localhost:3000` (required)
 - `NEXT_PUBLIC_BASE_URL` - App URL for QR codes (default: http://localhost:3000)
+- `RESEND_API_KEY`, `EMAIL_FROM` - Optional; set both to send email through Resend (`EMAIL_FROM` like `Attendly <hello@yourdomain.com>`, on a domain verified in Resend). Without them, development logs emails to the console and production `sendEmail()` throws
 - `ADMIN_PASSWORD`, `ADMIN_NAME` - Only read by `npm run db:seed`: the admin account's password (8+ characters) and optional display name (default `Admin`); not needed at runtime
 
 ## Key Patterns

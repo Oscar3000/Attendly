@@ -92,6 +92,8 @@ In the Railway dashboard, click on your **app service** (not the database), go t
 | `AUTH_SECRET`             | output of `openssl rand -base64 32` | **Required.** Signs login cookies; changing it logs everyone out           |
 | `BETTER_AUTH_SECRET`      | output of `openssl rand -base64 32` | **Required.** Better Auth secret; use a different value from `AUTH_SECRET` |
 | `BETTER_AUTH_URL`         | `https://your-app.up.railway.app`   | **Required.** Public URL of the app, used by Better Auth                   |
+| `RESEND_API_KEY`          | `re_...`                            | Optional for now. Resend API key; sending fails in production without it   |
+| `EMAIL_FROM`              | `Attendly <hello@yourdomain.com>`   | Required with `RESEND_API_KEY`; the domain must be verified in Resend      |
 | `PORT`                    | `3000`                              | The port the app listens on                                                |
 | `NODE_ENV`                | `production`                        |                                                                            |
 | `NEXT_TELEMETRY_DISABLED` | `1`                                 | Optional                                                                   |

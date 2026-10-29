@@ -231,11 +231,12 @@ Cover: forged cookie → 401, guest calling an admin route → 401/403, guest `P
 - **Files:** ~10
 - **As built:** admin-only endpoints call `requireAdminUser()` (`requireUser()` plus the `ADMIN_EMAIL` check) from `current-user.ts`, passing `request.headers`; `guards.ts` keeps only `requireAdminOrGuest()`. A guest calling an admin-only endpoint now gets 401 (no account session) instead of 403. `ADMIN_PASSWORD` is now read only by the seed. Narrowing `session.ts` to guest tokens moved to T-505, which deletes that code anyway.
 
-### T-206 · Transactional email provider · S
+### ✅ T-206 · Transactional email provider · S
 
 Add `src/server/email/` with a `sendEmail()` abstraction (Resend recommended) and a dev mode that logs to the console.
 
 - **Files:** ~4
+- **As built:** `sendEmail({ to, subject, text, html? })` in `src/server/email/send-email.ts` calls Resend's REST API with `fetch` (no SDK dependency). `RESEND_API_KEY` and `EMAIL_FROM` are optional env vars (`EMAIL_FROM` is required once the key is set); without them it logs in development and throws in production.
 
 ### T-207 · Email verification + password reset · M
 
@@ -245,6 +246,7 @@ These are built into Better Auth; this ticket wires them up.
 - Add a `/forgot-password` page (`authClient.requestPasswordReset`) and a `/reset-password` page (`authClient.resetPassword`).
 - Add an "unverified email" banner in the dashboard. Leave `requireEmailVerification` off for now so unverified users can still log in.
 - Turn on `revokeSessionsOnPasswordReset`.
+- Make `RESEND_API_KEY` and `EMAIL_FROM` required at startup in production (T-206 left them optional because nothing sent email yet), and set them on Railway with a verified sending domain.
 - **Depends on:** T-204, T-206
 - **Files:** ~7
 
