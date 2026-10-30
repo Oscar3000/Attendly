@@ -46,6 +46,8 @@ const ROUTE_POLICY: Record<string, Partial<Record<Method, Policy>> | "not tenant
   "/api/events/[eventId]/check-in": { POST: "victim" },
   "/api/events/[eventId]/door-links": { GET: "victim", POST: "victim" },
   "/api/events/[eventId]/door-links/[linkId]": { DELETE: "victim" },
+  // A door helper link for the attacker's own event, scanning the victim's guest (T-507)
+  "/api/door/[token]/check-in": { POST: "victim" },
   "/api/events/[eventId]/status": { GET: "victim" },
   // Creating an event makes the caller its owner (T-310)
   "/api/events": { POST: "own" },
@@ -101,6 +103,7 @@ const BODIES: Partial<Record<string, unknown | ((victim: { token: string }) => u
   },
   "PATCH /api/invitations/[id]": { status: "declined" },
   "POST /api/events/[eventId]/door-links": { name: "Intruder at the gate" },
+  "POST /api/door/[token]/check-in": ({ token }: { token: string }) => ({ code: token }),
   "POST /api/events/[eventId]/check-in": ({ token }: { token: string }) => ({ code: token }),
 };
 
@@ -168,7 +171,9 @@ async function signInAttacker(email: string) {
     date: new Date("2027-06-01T14:00:00Z"),
     timezone: "Europe/London",
   });
-  return { cookie, ownEvent };
+  // A door helper link of their own (T-507)
+  const { token: doorToken } = await doorLinkRepo.create(ownEvent, "Attacker's helper");
+  return { cookie, ownEvent, doorToken };
 }
 
 describe("route coverage", () => {
@@ -192,7 +197,7 @@ const email = "attacker@example.com";
 
 describe("another account attacking", () => {
   it("can't read, list, change or delete the victim's data through any route", async () => {
-    const { cookie } = await signInAttacker(email);
+    const { cookie, doorToken } = await signInAttacker(email);
     const before = await victimSnapshot();
     const failures: string[] = [];
 
@@ -208,6 +213,7 @@ describe("another account attacking", () => {
         eventId: victimEvent.id,
         id: victimInvitationId,
         linkId: victimDoorLinkId,
+        token: doorToken,
       });
       const response = await handler(request, { params });
       const text = await response.text();

@@ -21,7 +21,9 @@ export type CheckInResponse =
   // Fewer places left than people asked to come in
   | { result: "too_many"; guest: CheckInGuest; requested: number }
   | { result: "not_valid"; guest: { name: string }; status: "declined" | "rescinded" }
-  | { result: "not_found" };
+  | { result: "not_found" }
+  // A door helper's link was revoked or has expired (T-507)
+  | { result: "link_inactive" };
 
 export interface CheckInMessage {
   // Green lets people in; red stops them
@@ -73,6 +75,12 @@ export function checkInMessage(
         tone: "stop",
         title: response.status === "rescinded" ? "Invitation cancelled" : "Invitation declined",
         detail: `${response.guest.name} can't be checked in with this invitation`,
+      };
+    case "link_inactive":
+      return {
+        tone: "stop",
+        title: "This check-in link no longer works",
+        detail: "Ask the host for a new one",
       };
     case "not_found":
       return {

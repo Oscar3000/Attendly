@@ -52,9 +52,11 @@ src/
       invite/verify-pin/      # Guest PIN verification
       events/                 # POST: create an event (any signed-in user becomes its owner)
       events/[eventId]/       # Event-scoped, owner only (requireEventOwner): PUT settings, invitations (+ [id], bulk), metrics, status, check-in, door-links (+ [linkId])
+      door/[token]/check-in/  # A door helper's check-in (link token, no sign-in); same scan() as the host's
       invitations/[id]/       # PIN guests only: GET their invitation, PATCH its RSVP (requireGuest); removed in T-508
       health/                 # Health check
     e/[slug]/                 # Public event page (no sign-in, noindex) + generated link preview image (opengraph-image.tsx)
+    door/[token]/             # A door helper's scanner (T-507): no sign-in, the link is the credential; check-in only
     e/[slug]/i/[token]/       # A guest's ticket (T-502): the token is the credential; read-only, QR code to show at the entrance
     invite/[id]/              # Guest invitation view
     invite-pin/               # Guest PIN entry

@@ -530,13 +530,14 @@ A `DoorLink` table: event, name ("Ben, front gate"), the SHA-256 hash of a rando
 - **Files:** ~7
 - **As built:** `door_links` (`DoorLink`) stores the SHA-256 of a random 32-byte token; `POST /api/events/[eventId]/door-links` returns the link's URL (`/door/<token>`, the T-507 page) once, and the list and revoke responses never include it. `doorLinkRepo` (`src/server/repositories/door-link.repo.ts`) is scoped by event like the other repositories: revoking another event's link is a 404 even for the same host. Revoking (`DELETE …/door-links/[linkId]`) sets `revokedAt` and keeps the row, so past check-ins still name who admitted whom; `CheckIn.doorLinkId` (set null on delete) records it. Links expire a day after the event starts, or a day from now for an event already under way or past (`defaultDoorLinkExpiry()`); there's no custom expiry yet. The host manages them at `/dashboard/events/[eventId]/door-helpers`, linked from the check-in page, with each link's count of people checked in. RTK Query hooks and a `DoorLinks` tag are in `eventInvitationApi.ts`. Both routes are in the tenant isolation test, which now gives the victim a door link too.
 
-### T-507 · Door helper scanner `/door/[token]` · M
+### ✅ T-507 · Door helper scanner `/door/[token]` · M
 
 No sign-in: the link is the credential, and it can only check people in for its event. The page shows the event's name and the T-505 scanner; `POST /api/door/[token]/check-in` runs the same check-in as T-504, recording the link as who admitted the guest. A revoked or expired link shows "This check-in link no longer works; ask the host for a new one". No guest list, search or other data, `noindex`.
 
 - Add the new routes to `ROUTE_POLICY` in the tenant isolation test (a link must not check in another event's guests).
 - **Depends on:** T-505, T-506
 - **Files:** ~6
+- **As built:** `doorLinkRepo.findByToken()` hashes the token and answers active, inactive (revoked or expired) or unknown. `/door/[token]` shows the event's names, "Checking in as <link name>" and the T-505 `CheckInFlow`; an inactive link shows "This check-in link no longer works", an unknown one is a 404. Both check-in routes now call `scan()` (`src/server/check-in/scan.ts`), which parses the body and previews or admits within one event; `checkInRepo` takes `{ userId }` or `{ doorLinkId }`, and "already checked in … by" names the link for helper check-ins. A revoked, expired or unknown link gets `{ result: "link_inactive" }` (403), which the scanner shows as a red screen, so a helper whose link is revoked mid-shift finds out on their next scan. The page sends `Referrer-Policy: no-referrer` (`next.config.ts`) and is `noindex`. The tenant isolation harness gives the attacker a door link for their own event and scans the victim's ticket with it.
 
 ### T-508 · Remove shared PIN flow · M
 

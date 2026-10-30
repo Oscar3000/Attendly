@@ -16,10 +16,8 @@ export type CheckInResult =
       lastCheckIn: { at: Date; by: string | null } | null;
     };
 
-// Who is admitting: the event owner's account (door helper links come in T-506)
-export interface CheckInBy {
-  userId: string;
-}
+// Who is admitting: the event owner's account, or a door helper's link (T-507)
+export type CheckInBy = { userId: string } | { doorLinkId: string };
 
 // What a scan finds before admitting anyone: a final answer (unknown, not valid, everyone in),
 // or the invitation with places left
@@ -49,9 +47,16 @@ async function lookUp(
   const last = await client.checkIn.findFirst({
     where: { invitationId: invitation.id },
     orderBy: { createdAt: "desc" },
-    select: { createdAt: true, checkedInBy: { select: { name: true } } },
+    select: {
+      createdAt: true,
+      checkedInBy: { select: { name: true } },
+      doorLink: { select: { name: true } },
+    },
   });
-  const lastCheckIn = last && { at: last.createdAt, by: last.checkedInBy?.name ?? null };
+  const lastCheckIn = last && {
+    at: last.createdAt,
+    by: last.checkedInBy?.name ?? last.doorLink?.name ?? null,
+  };
   return { answer: { result: "full", guest, lastCheckIn } };
 }
 
@@ -85,7 +90,12 @@ async function attempt(
   if (updated.length === 0) return RACED;
 
   await tx.checkIn.create({
-    data: { invitationId: found.id, eventId, count: requested, checkedInByUserId: by.userId },
+    data: {
+      invitationId: found.id,
+      eventId,
+      count: requested,
+      ...("userId" in by ? { checkedInByUserId: by.userId } : { doorLinkId: by.doorLinkId }),
+    },
   });
   return {
     result: "admitted",

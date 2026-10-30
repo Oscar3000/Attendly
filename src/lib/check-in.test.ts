@@ -59,6 +59,10 @@ describe("checkInMessage", () => {
       checkInMessage({ result: "not_valid", guest: { name: "Zelda" }, status: "declined" }, "UTC")
         .title,
     ).toBe("Invitation declined");
+    expect(checkInMessage({ result: "link_inactive" }, "UTC")).toMatchObject({
+      tone: "stop",
+      title: "This check-in link no longer works",
+    });
     expect(checkInMessage({ result: "not_found" }, "UTC")).toMatchObject({
       tone: "stop",
       title: "Not a ticket for this event",
