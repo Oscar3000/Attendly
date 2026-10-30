@@ -7,6 +7,7 @@ import { QrCode } from "@/components/qr-code";
 import { useGetEventInvitationQuery } from "@/store/eventInvitationApi";
 import { downloadQRCode, shareQRCodeAsImage } from "@/lib/utils";
 import { formatEventDateTime } from "@/lib/timezones";
+import { copyFor } from "@/lib/event-copy";
 
 export function SuccessPageContent() {
   const searchParams = useSearchParams();
@@ -45,11 +46,13 @@ export function SuccessPageContent() {
     }
   };
 
+  // The event type's wording (src/lib/event-copy.ts) around the invitation link
+  const copy = copyFor(invitation?.eventType ?? "OTHER");
+  const shareText = `${copy.shareMessage}\n\nView your invitation: ${inviteUrl}`;
+
   const handleEmailShare = () => {
-    const subject = encodeURIComponent(`Wedding Invitation - ${invitation?.name}`);
-    const body = encodeURIComponent(
-      `You're invited to our wedding!\n\nView your invitation: ${inviteUrl}\n\nWe can't wait to celebrate with you!`,
-    );
+    const subject = encodeURIComponent(`${copy.shareSubject} - ${invitation?.name}`);
+    const body = encodeURIComponent(shareText);
     window.open(`mailto:?subject=${subject}&body=${body}`, "_blank");
   };
 
@@ -58,9 +61,7 @@ export function SuccessPageContent() {
     try {
       await shareQRCodeAsImage(invitation.qrCode, invitation.name, invitation.plusOne ?? 0);
     } catch {
-      const text = encodeURIComponent(
-        `You're invited to our wedding!\n\nView your invitation: ${inviteUrl}\n\nWe can't wait to celebrate with you!`,
-      );
+      const text = encodeURIComponent(shareText);
       window.open(`https://wa.me/?text=${text}`, "_blank");
     }
   };

@@ -440,11 +440,12 @@ Upload to S3, R2, or UploadThing and store the URL. Validate size and type.
 - **Files:** ~6
 - **As built:** images are stored in Postgres (`event_images`, `bytea`, cascading from the event) rather than S3, R2, UploadThing or a disk volume. That means no new paid service, no volume (a Railway volume would mean root-owned mounts and downtime on every redeploy), images are included in database backups, and deleting an event or account deletes its covers. Storage goes through `imageRepo` (`src/server/repositories/image.repo.ts`), so moving to S3/R2 later changes only that plus a one-off copy. `POST /api/events/[eventId]/cover` (owner only, multipart `file`) refuses bodies over 5 MB, decodes with sharp and accepts only JPEG/PNG/WebP by content (an SVG or GIF labelled as a PNG is refused). It refuses decompression bombs (40 MP limit), applies the photo's orientation, resizes to at most 2000px wide and re-encodes as WebP, which drops EXIF including GPS. The new image, the event's `coverImageUrl` (`/uploads/<uuid>.webp`) and deleting the previous image happen in one transaction. `DELETE .../cover` clears the cover. `GET /uploads/[file]` serves images by id with immutable caching (a new cover gets a new id), so each visitor's browser fetches an image once. The settings page uploads and removes straight away (separate from Save), and `/e/[slug]` shows the cover as a banner above the hero. Because images are same-origin, the CSP is unchanged. Not done: covers in the generated preview image. Move to object storage if images reach tens of thousands or traffic gets heavy.
 
-### T-407 · Copy by event type · S
+### ✅ T-407 · Copy by event type · S
 
 Wedding, birthday, and corporate events get different default wording ("Solemnly request…" vs "You're invited to…").
 
 - **Files:** ~4
+- **As built:** `src/lib/event-copy.ts` holds each type's wording (`copyFor(type)`, unknown types read as OTHER): the event page headline when the host leaves it empty, the countdown label, the subtitle on a guest's invitation (it said "Wedding Celebration" for every event), and the share email/WhatsApp text on the invite success page (it said "our wedding"). Invitations now carry `eventType` alongside `eventTimezone`. The settings page's headline placeholder shows the type's default, which is what guests see while it's empty. The generated invite image's wording is left for T-408.
 
 ### T-408 · Generated invite image uses event data · S
 

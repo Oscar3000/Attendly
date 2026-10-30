@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { FamilyLine, PaletteColor } from "@/lib/event-content";
+import { copyFor } from "@/lib/event-copy";
 import { THEME_IDS, THEMES } from "@/lib/themes";
 import {
   useRemoveEventCoverMutation,
@@ -260,7 +261,8 @@ export default function SettingsForm({
             />
             <TextField
               label="Headline"
-              placeholder="e.g. Solemnly request your presence at their wedding celebration"
+              // What the page shows while it's empty: the event type's wording
+              placeholder={copyFor(form.type).headline}
               {...text("headline")}
             />
             <TextField label="Tagline" {...text("tagline")} />

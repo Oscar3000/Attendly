@@ -570,6 +570,7 @@ export function convertToInviteDetails(invitation: Invitation): InviteDetails {
     eventId: invitation.eventId,
     eventDate: invitation.event.date,
     eventTimezone: invitation.event.timezone,
+    eventType: invitation.event.type,
     venue: eventVenueLabel(invitation.event),
     status: convertPrismaStatus(invitation.status),
     plusOne: invitation.plusOne,

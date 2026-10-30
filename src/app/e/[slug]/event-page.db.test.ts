@@ -95,7 +95,9 @@ describe("/e/[slug]", () => {
     const html = await render("ada-and-charles");
 
     expect(html).toContain("Ada&#x27;s 30th");
-    expect(html).toContain("You&#x27;re invited to celebrate");
+    // A birthday with no headline gets the birthday wording (T-407)
+    expect(html).toContain("You&#x27;re invited to celebrate the birthday of");
+    expect(html).toContain("Counting down to the party");
     for (const absent of ["📍", "Colours of the Day", "Dress Code", "Good to Know", "RSVP by"]) {
       expect(html).not.toContain(absent);
     }
@@ -122,6 +124,18 @@ describe("/e/[slug]", () => {
     const cover = "/uploads/0b8e9d4c-2f7a-4c1e-9d3b-5a6f7e8d9c0b.webp";
     await eventRepo.update(event.id, { coverImageUrl: cover });
     expect(await render("ada-and-charles")).toContain(`<img src="${cover}" alt=""`);
+  });
+
+  it("uses the wedding wording unless the host wrote their own headline (T-407)", async () => {
+    const event = await eventRepo.create(ownerId, base);
+    let html = await render("ada-and-charles");
+    expect(html).toContain("Solemnly request your presence at their wedding celebration");
+    expect(html).toContain("Counting down to the big day");
+
+    await eventRepo.update(event.id, { headline: "Join us under the stars" });
+    html = await render("ada-and-charles");
+    expect(html).toContain("Join us under the stars");
+    expect(html).not.toContain("Solemnly request");
   });
 
   it("is a 404 for an unknown slug", async () => {

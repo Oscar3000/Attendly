@@ -3,6 +3,7 @@ import { Montserrat, Playfair_Display } from "next/font/google";
 import { notFound } from "next/navigation";
 import { getEnv } from "@/server/env";
 import { eventDisplayName, eventWhenAndWhere, getPublicEvent } from "@/server/events/public-event";
+import { copyFor } from "@/lib/event-copy";
 import { themeStyle } from "@/lib/themes";
 import HeroSection from "@/components/home/hero-section";
 import CountdownSection from "@/components/home/countdown-section";
@@ -66,7 +67,7 @@ export default async function EventPage({ params }: EventPageProps) {
         <img src={event.coverImageUrl} alt="" className="block max-h-[60vh] w-full object-cover" />
       )}
       <HeroSection event={event} />
-      <CountdownSection startsAt={event.date.toISOString()} />
+      <CountdownSection startsAt={event.date.toISOString()} label={copyFor(event.type).countdown} />
       <EventDetails event={event} />
       <QrScanner />
       <HomeFooter event={event} />
