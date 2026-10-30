@@ -5,6 +5,7 @@ import { InvitePageProps, RsvpStatus } from "@/lib/types";
 import { Button } from "@/components/button";
 import InviteNotFound from "@/components/invite-not-found";
 import { useGetInvitationQuery, useUpdateRsvpStatusMutation } from "@/store/invitationApi";
+import { formatEventDate, formatEventTime } from "@/lib/timezones";
 
 export default function InvitePage({ params }: InvitePageProps) {
   const resolvedParams = use(params) as { id: string };
@@ -100,25 +101,6 @@ export default function InvitePage({ params }: InvitePageProps) {
     );
   }
 
-  const formatDate = (date: Date | string) => {
-    const dateObj = typeof date === "string" ? new Date(date) : date;
-    return dateObj.toLocaleDateString("en-US", {
-      weekday: "long",
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    });
-  };
-
-  const formatTime = (date: Date | string) => {
-    const dateObj = typeof date === "string" ? new Date(date) : date;
-    return dateObj.toLocaleTimeString("en-US", {
-      hour: "numeric",
-      minute: "2-digit",
-      hour12: true,
-    });
-  };
-
   return (
     <div className="min-h-screen" style={{ backgroundColor: "#FFF9F4" }}>
       <div className="max-w-2xl mx-auto px-4 py-6 sm:p-6">
@@ -148,13 +130,13 @@ export default function InvitePage({ params }: InvitePageProps) {
                 <div className="flex flex-col sm:flex-row sm:justify-between">
                   <span className="text-gray-600 text-sm sm:text-base">Date:</span>
                   <span className="font-medium text-sm sm:text-base">
-                    {formatDate(invite.eventDate)}
+                    {formatEventDate(new Date(invite.eventDate), invite.eventTimezone)}
                   </span>
                 </div>
                 <div className="flex flex-col sm:flex-row sm:justify-between">
                   <span className="text-gray-600 text-sm sm:text-base">Time:</span>
                   <span className="font-medium text-sm sm:text-base">
-                    {formatTime(invite.eventDate)}
+                    {formatEventTime(new Date(invite.eventDate), invite.eventTimezone)}
                   </span>
                 </div>
                 <div className="flex flex-col sm:flex-row sm:justify-between">

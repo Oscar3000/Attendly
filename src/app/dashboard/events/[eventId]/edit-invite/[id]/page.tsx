@@ -4,7 +4,7 @@ import { useState, use, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { EditInviteForm, RsvpStatus } from "@/lib/types";
 import { Button } from "@/components/button";
-import { formatDate, formatTime } from "@/lib/utils";
+import { formatEventDateTime } from "@/lib/timezones";
 import {
   useGetEventInvitationQuery,
   useUpdateEventInvitationMutation,
@@ -160,8 +160,7 @@ export default function EditInvitePage({ params }: EditInvitePageProps) {
           {/* The date and venue belong to the event, shown here for reference */}
           {invitation && (
             <p className="text-sm text-gray-600">
-              Event: {formatDate(new Date(invitation.eventDate))} at{" "}
-              {formatTime(new Date(invitation.eventDate))}
+              Event: {formatEventDateTime(new Date(invitation.eventDate), invitation.eventTimezone)}
               {invitation.venue && ` · ${invitation.venue}`}
             </p>
           )}

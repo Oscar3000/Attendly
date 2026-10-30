@@ -23,6 +23,8 @@ export interface WeddingInvitation {
   eventId: string;
   // From the invitation's event (T-304), not stored per invitation
   eventDate: Date;
+  // The event's IANA zone: show eventDate on this clock, not the viewer's
+  eventTimezone: string;
   venue: string;
   status: RsvpStatus;
   createdAt: Date;
@@ -128,6 +130,7 @@ export type PrismaRsvpStatus = "PENDING" | "CONFIRMED" | "DECLINED" | "RESCINDED
 // The event fields an invitation displays
 export interface InvitationEvent {
   date: Date;
+  timezone: string;
   venueName: string | null;
   venueAddress: string | null;
 }

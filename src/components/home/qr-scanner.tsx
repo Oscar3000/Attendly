@@ -106,7 +106,7 @@ export default function QrScanner() {
             <QrCode
               src="/free-qr.png"
               size={200}
-              alt="Wedding invitation QR code for attendance confirmation"
+              alt="Invitation QR code for attendance confirmation"
               className="rounded-xl shadow-lg"
             />
           ) : (

@@ -1,5 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { formatEventDateTime, isValidTimeZone, utcToZonedLocal, zonedTimeToUtc } from "./timezones";
+import {
+  formatEventDate,
+  formatEventDateTime,
+  formatEventTime,
+  isValidTimeZone,
+  utcToZonedLocal,
+  zonedTimeToUtc,
+} from "./timezones";
 
 describe("zonedTimeToUtc", () => {
   it("converts a wall time in a fixed-offset zone", () => {
@@ -78,5 +85,17 @@ describe("utcToZonedLocal", () => {
         local,
       );
     }
+  });
+});
+
+describe("formatEventDate / formatEventTime", () => {
+  // 23:30 UTC on May 23 is already May 24 in Lagos
+  const lateEvening = new Date("2026-05-23T23:30:00Z");
+
+  it("reads the date and time on the event's clock, not the viewer's", () => {
+    expect(formatEventDate(lateEvening, "Africa/Lagos")).toBe("Sunday, May 24, 2026");
+    expect(formatEventTime(lateEvening, "Africa/Lagos")).toBe("12:30 AM");
+    expect(formatEventDate(lateEvening, "America/New_York")).toBe("Saturday, May 23, 2026");
+    expect(formatEventTime(lateEvening, "America/New_York")).toBe("7:30 PM");
   });
 });

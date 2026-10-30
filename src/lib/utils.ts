@@ -569,6 +569,7 @@ export function convertToInviteDetails(invitation: Invitation): InviteDetails {
     qrCode: invitation.qrCode || "",
     eventId: invitation.eventId,
     eventDate: invitation.event.date,
+    eventTimezone: invitation.event.timezone,
     venue: eventVenueLabel(invitation.event),
     status: convertPrismaStatus(invitation.status),
     plusOne: invitation.plusOne,
