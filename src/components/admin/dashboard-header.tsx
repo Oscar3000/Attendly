@@ -33,7 +33,7 @@ export default function DashboardHeader({ eventId, onCreateInvite }: DashboardHe
         </button>
         <h1 className="text-2xl sm:text-4xl font-bold text-gray-900">Dashboard</h1>
       </div>
-      <div className="flex gap-3 sm:gap-4">
+      <div className="flex flex-wrap gap-3 sm:gap-4">
         <Button
           variant="attendly"
           onClick={onCreateInvite}
@@ -44,6 +44,12 @@ export default function DashboardHeader({ eventId, onCreateInvite }: DashboardHe
         >
           Create Invite
         </Button>
+        <button
+          onClick={() => router.push(`/dashboard/events/${eventId}/check-in`)}
+          className="flex-1 sm:flex-none px-4 py-2 rounded-lg font-medium text-gray-700 border border-gray-300 hover:bg-gray-50 transition-colors text-sm sm:text-base"
+        >
+          Check in
+        </button>
         <button
           onClick={() => router.push(`/dashboard/events/${eventId}/bulk-upload`)}
           className="flex-1 sm:flex-none px-4 py-2 rounded-lg font-medium text-gray-700 border border-gray-300 hover:bg-gray-50 transition-colors text-sm sm:text-base"

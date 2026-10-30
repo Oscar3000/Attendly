@@ -5,26 +5,54 @@
 import "server-only";
 import type { Prisma } from "@prisma/client";
 import { prisma } from "@/server/db/client";
+import type { CheckInGuest, CheckInResponse } from "@/lib/check-in";
 
-export interface CheckInGuest {
-  name: string;
-  // How many people the invitation lets in, and how many it has let in so far
-  admits: number;
-  admitted: number;
-}
-
+// The API's JSON (src/lib/check-in.ts), before dates are serialised
 export type CheckInResult =
-  | { result: "admitted"; guest: CheckInGuest; count: number }
-  // Everyone on the invitation is already in; the last check-in says when and by whom
-  | { result: "full"; guest: CheckInGuest; lastCheckIn: { at: Date; by: string | null } | null }
-  // Fewer places left than people asked to come in
-  | { result: "too_many"; guest: CheckInGuest; requested: number }
-  | { result: "not_valid"; guest: { name: string }; status: "declined" | "rescinded" }
-  | { result: "not_found" };
+  | Exclude<CheckInResponse, { result: "full" }>
+  | {
+      result: "full";
+      guest: CheckInGuest;
+      lastCheckIn: { at: Date; by: string | null } | null;
+    };
 
 // Who is admitting: the event owner's account (door helper links come in T-506)
 export interface CheckInBy {
   userId: string;
+}
+
+// What a scan finds before admitting anyone: a final answer (unknown, not valid, everyone in),
+// or the invitation with places left
+async function lookUp(
+  client: Prisma.TransactionClient,
+  eventId: string,
+  accessToken: string,
+): Promise<{ answer: CheckInResult } | { id: string; guest: CheckInGuest; remaining: number }> {
+  const invitation = await client.invitation.findUnique({
+    where: { accessToken, eventId },
+    select: { id: true, name: true, plusOne: true, admittedCount: true, status: true },
+  });
+  if (!invitation) return { answer: { result: "not_found" } };
+  if (invitation.status === "DECLINED" || invitation.status === "RESCINDED") {
+    const status = invitation.status === "DECLINED" ? "declined" : "rescinded";
+    return { answer: { result: "not_valid", guest: { name: invitation.name }, status } };
+  }
+
+  const guest = {
+    name: invitation.name,
+    admits: invitation.plusOne + 1,
+    admitted: invitation.admittedCount,
+  };
+  const remaining = guest.admits - guest.admitted;
+  if (remaining > 0) return { id: invitation.id, guest, remaining };
+
+  const last = await client.checkIn.findFirst({
+    where: { invitationId: invitation.id },
+    orderBy: { createdAt: "desc" },
+    select: { createdAt: true, checkedInBy: { select: { name: true } } },
+  });
+  const lastCheckIn = last && { at: last.createdAt, by: last.checkedInBy?.name ?? null };
+  return { answer: { result: "full", guest, lastCheckIn } };
 }
 
 // Another scan got in between this one's read and its update; read again
@@ -37,37 +65,10 @@ async function attempt(
   count: number | undefined,
   by: CheckInBy,
 ): Promise<CheckInResult | typeof RACED> {
-  const invitation = await tx.invitation.findUnique({
-    where: { accessToken, eventId },
-    select: { id: true, name: true, plusOne: true, admittedCount: true, status: true },
-  });
-  if (!invitation) return { result: "not_found" };
-  if (invitation.status === "DECLINED" || invitation.status === "RESCINDED") {
-    return {
-      result: "not_valid",
-      guest: { name: invitation.name },
-      status: invitation.status === "DECLINED" ? "declined" : "rescinded",
-    };
-  }
+  const found = await lookUp(tx, eventId, accessToken);
+  if ("answer" in found) return found.answer;
+  const { guest, remaining } = found;
 
-  const guest = {
-    name: invitation.name,
-    admits: invitation.plusOne + 1,
-    admitted: invitation.admittedCount,
-  };
-  const remaining = guest.admits - guest.admitted;
-  if (remaining <= 0) {
-    const last = await tx.checkIn.findFirst({
-      where: { invitationId: invitation.id },
-      orderBy: { createdAt: "desc" },
-      select: { createdAt: true, checkedInBy: { select: { name: true } } },
-    });
-    return {
-      result: "full",
-      guest,
-      lastCheckIn: last && { at: last.createdAt, by: last.checkedInBy?.name ?? null },
-    };
-  }
   // Without a count, everyone still to come in
   const requested = count ?? remaining;
   if (requested > remaining) return { result: "too_many", guest, requested };
@@ -77,19 +78,14 @@ async function attempt(
   const updated = await tx.$queryRaw<{ admittedCount: number }[]>`
     UPDATE "invitations"
     SET "admittedCount" = "admittedCount" + ${requested}, "status" = 'CONFIRMED', "updatedAt" = NOW()
-    WHERE "id" = ${invitation.id}
+    WHERE "id" = ${found.id}
       AND "status" NOT IN ('DECLINED', 'RESCINDED')
       AND "admittedCount" + ${requested} <= "plusOne" + 1
     RETURNING "admittedCount"`;
   if (updated.length === 0) return RACED;
 
   await tx.checkIn.create({
-    data: {
-      invitationId: invitation.id,
-      eventId,
-      count: requested,
-      checkedInByUserId: by.userId,
-    },
+    data: { invitationId: found.id, eventId, count: requested, checkedInByUserId: by.userId },
   });
   return {
     result: "admitted",
@@ -99,6 +95,13 @@ async function attempt(
 }
 
 export const checkInRepo = {
+  // What admitting would find, without admitting anyone: "ready" when there are places left
+  // (T-505: the scanner then asks how many are coming in)
+  async preview(eventId: string, accessToken: string): Promise<CheckInResult> {
+    const found = await lookUp(prisma, eventId, accessToken);
+    return "answer" in found ? found.answer : { result: "ready", guest: found.guest };
+  },
+
   // Admit `count` people (default: everyone left) on the invitation with this ticket token
   async checkIn(
     eventId: string,
