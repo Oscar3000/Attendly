@@ -7,7 +7,12 @@ import { z } from "zod";
 // One family on the invitation, e.g. "Chief & Lolo Livinus Umeh" with a title line under it
 export const familyLineSchema = z.object({
   name: z.string().trim().min(1).max(200),
-  detail: z.string().trim().max(200).optional(),
+  detail: z
+    .string()
+    .trim()
+    .max(200)
+    .transform((value) => value || undefined)
+    .optional(),
 });
 
 // One of the colours of the day, e.g. { name: "Gold", hex: "#D4AF37" }

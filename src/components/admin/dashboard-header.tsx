@@ -51,6 +51,12 @@ export default function DashboardHeader({ eventId, onCreateInvite }: DashboardHe
           Bulk Upload
         </button>
         <button
+          onClick={() => router.push(`/dashboard/events/${eventId}/settings`)}
+          className="flex-1 sm:flex-none px-4 py-2 rounded-lg font-medium text-gray-700 border border-gray-300 hover:bg-gray-50 transition-colors text-sm sm:text-base"
+        >
+          Settings
+        </button>
+        <button
           onClick={() => router.push("/account")}
           className="flex-1 sm:flex-none px-4 py-2 rounded-lg font-medium text-gray-700 border border-gray-300 hover:bg-gray-50 transition-colors text-sm sm:text-base"
         >

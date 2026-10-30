@@ -10,6 +10,7 @@ import * as bulk from "./[eventId]/invitations/bulk/route";
 import * as metrics from "./[eventId]/metrics/route";
 import * as status from "./[eventId]/status/route";
 import * as events from "./route";
+import * as eventSettings from "./[eventId]/route";
 
 let hostCookie = "";
 let otherCookie = "";
@@ -241,5 +242,92 @@ describe("POST /api/events", () => {
   it("requires a signed-in account", async () => {
     const { status: code } = await call(events.POST(req("", "POST", valid), {}));
     expect(code).toBe(401);
+  });
+});
+
+describe("PUT /api/events/[eventId]", () => {
+  const settings = {
+    title: "Main, renamed",
+    type: "WEDDING",
+    date: "2027-05-23T16:00",
+    timezone: "Africa/Lagos",
+    venueName: "Canary World",
+    venueAddress: "",
+    rsvpDeadline: "",
+    hostNames: " Ada & Charles ",
+    headline: "Request your presence",
+    tagline: "",
+    dressCode: "Gold & brown",
+    notes: "Church service at 10:00 AM",
+    familyLines: [
+      { name: "Mr & Mrs Obi", detail: "" },
+      { name: "The Smiths", detail: "of York" },
+    ],
+    colorPalette: [{ name: "Gold", hex: "#D4AF37" }],
+  };
+
+  it("replaces the event's settings, clearing blank fields and keeping the slug", async () => {
+    await eventRepo.update(event.id, {
+      tagline: "Old tagline",
+      rsvpDeadline: new Date("2027-05-01T00:00:00Z"),
+    });
+
+    const { status: code, body } = await call(
+      eventSettings.PUT(req(hostCookie, "PUT", settings), ctx(event.id)),
+    );
+
+    expect(code).toBe(200);
+    expect(body.event).toMatchObject({
+      slug: "main",
+      title: "Main, renamed",
+      // 16:00 in Lagos is 15:00 UTC
+      date: "2027-05-23T15:00:00.000Z",
+      venueName: "Canary World",
+      venueAddress: null,
+      rsvpDeadline: null,
+      hostNames: "Ada & Charles",
+      tagline: null,
+      familyLines: [{ name: "Mr & Mrs Obi" }, { name: "The Smiths", detail: "of York" }],
+      colorPalette: [{ name: "Gold", hex: "#D4AF37" }],
+    });
+    expect(await eventRepo.findById(event.id)).toMatchObject({
+      title: "Main, renamed",
+      tagline: null,
+      notes: "Church service at 10:00 AM",
+    });
+  });
+
+  it("returns field errors for invalid input", async () => {
+    const { status: code, body } = await call(
+      eventSettings.PUT(
+        req(hostCookie, "PUT", {
+          ...settings,
+          title: "",
+          colorPalette: [{ name: "Gold", hex: "gold" }],
+          familyLines: [{ name: " " }],
+        }),
+        ctx(event.id),
+      ),
+    );
+
+    expect(code).toBe(400);
+    expect(Object.keys(body.details.fieldErrors).sort()).toEqual([
+      "colorPalette",
+      "familyLines",
+      "title",
+    ]);
+    expect((await eventRepo.findById(event.id))?.title).toBe("Main");
+  });
+
+  it("answers another account with 404 and signed-out callers with 401, changing nothing", async () => {
+    const responses = await Promise.all([
+      eventSettings.PUT(req(otherCookie, "PUT", settings), ctx(event.id)),
+      eventSettings.PUT(req("", "PUT", settings), ctx(event.id)),
+      eventSettings.PUT(req(guestCookie, "PUT", settings), ctx(event.id)),
+      eventSettings.PUT(req(hostCookie, "PUT", settings), ctx("no-such-event")),
+    ]);
+
+    expect(responses.map((r) => r.status)).toEqual([404, 401, 401, 404]);
+    expect((await eventRepo.findById(event.id))?.title).toBe("Main");
   });
 });

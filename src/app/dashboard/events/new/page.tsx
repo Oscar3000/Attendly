@@ -7,28 +7,9 @@ import { listTimeZones } from "@/lib/timezones";
 import { useCreateEventMutation, type CreateEventForm } from "@/store/eventInvitationApi";
 import { FormError, SubmitButton } from "@/components/auth/auth-card";
 import { TextField } from "@/components/auth/text-field";
+import { EVENT_TYPES, fieldErrorsFrom, selectClass } from "@/components/events/event-form";
 
 type FieldErrors = Partial<Record<keyof CreateEventForm, string>>;
-
-const EVENT_TYPES: { value: CreateEventForm["type"]; label: string }[] = [
-  { value: "WEDDING", label: "Wedding" },
-  { value: "BIRTHDAY", label: "Birthday" },
-  { value: "CORPORATE", label: "Corporate" },
-  { value: "OTHER", label: "Other" },
-];
-
-const selectClass =
-  "font-inter w-full rounded-lg border border-[#E0E0E0] bg-white px-4 py-2 text-sm text-[#333333] focus:ring-2 focus:outline-none";
-
-// 400 responses carry zod's flattened errors: { details: { fieldErrors: { title: [...] } } }
-function fieldErrorsFrom(error: unknown): FieldErrors | undefined {
-  const details = (error as { data?: { details?: { fieldErrors?: Record<string, string[]> } } })
-    ?.data?.details;
-  if (!details?.fieldErrors) return undefined;
-  return Object.fromEntries(
-    Object.entries(details.fieldErrors).map(([field, messages]) => [field, messages[0]]),
-  );
-}
 
 // Nothing to subscribe to: whether we're in the browser never changes after the first render
 const subscribeNever = () => () => {};
@@ -71,7 +52,7 @@ export default function NewEventPage() {
       const { event } = await createEvent({ ...form, timezone }).unwrap();
       router.push(`/dashboard/events/${event.id}`);
     } catch (error) {
-      const fieldErrors = fieldErrorsFrom(error);
+      const fieldErrors = fieldErrorsFrom<keyof CreateEventForm>(error);
       if (fieldErrors) setErrors(fieldErrors);
       else setFormError("Couldn't create the event. Please try again.");
     }

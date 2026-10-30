@@ -15,6 +15,7 @@ import { invitationRepo } from "@/server/repositories/invitation.repo";
 import { sessionCookieFor, stubAuthEnv } from "../../../tests/helpers/auth";
 import DashboardPage from "../dashboard/page";
 import EventDashboardLayout from "../dashboard/events/[eventId]/layout";
+import EventSettingsPage from "../dashboard/events/[eventId]/settings/page";
 
 type Method = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
 type Handler = (request: NextRequest, context: { params: Promise<object> }) => Promise<Response>;
@@ -29,6 +30,7 @@ type Handler = (request: NextRequest, context: { params: Promise<object> }) => P
 type Policy = "victim" | "own" | "not tenant data";
 
 const ROUTE_POLICY: Record<string, Partial<Record<Method, Policy>> | "not tenant data"> = {
+  "/api/events/[eventId]": { PUT: "victim" },
   "/api/events/[eventId]/invitations": { GET: "victim", POST: "victim" },
   "/api/events/[eventId]/invitations/[id]": {
     GET: "victim",
@@ -74,6 +76,12 @@ const attacks = routes
 
 // Bodies valid enough that only authorization can stop them
 const BODIES: Partial<Record<string, unknown>> = {
+  "PUT /api/events/[eventId]": {
+    title: "Hacked",
+    type: "OTHER",
+    date: "2030-01-01T12:00",
+    timezone: "Europe/London",
+  },
   "POST /api/events/[eventId]/invitations": { name: "Intruder" },
   "POST /api/events/[eventId]/invitations/bulk": { rows: [{ name: "Intruder" }] },
   "PUT /api/events/[eventId]/invitations/[id]": { name: "Hacked", plusOne: 9 },
@@ -206,6 +214,15 @@ describe("another account attacking", () => {
     ).rejects.toMatchObject({ digest: expect.stringContaining("404") });
   });
 
+  it("gets a 404 from the victim's settings page, which loads the event itself (T-402)", async () => {
+    const { cookie } = await signInAttacker(email);
+    requestCookie = cookie;
+
+    await expect(
+      EventSettingsPage({ params: Promise.resolve({ eventId: victimEvent.id }) }),
+    ).rejects.toMatchObject({ digest: expect.stringContaining("404") });
+  });
+
   it("sees only their own events on /dashboard (T-310)", async () => {
     const { cookie } = await signInAttacker(email);
     requestCookie = cookie;
@@ -247,6 +264,10 @@ describe("the victim themself", () => {
         params: Promise.resolve({ eventId: victimEvent.id }),
       }),
     ).resolves.toBeTruthy();
+    const settings = await EventSettingsPage({
+      params: Promise.resolve({ eventId: victimEvent.id }),
+    });
+    expect(settings.props.initial.title).toBe(VICTIM.eventTitle);
   });
 });
 

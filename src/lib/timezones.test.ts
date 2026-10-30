@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { formatEventDateTime, isValidTimeZone, zonedTimeToUtc } from "./timezones";
+import { formatEventDateTime, isValidTimeZone, utcToZonedLocal, zonedTimeToUtc } from "./timezones";
 
 describe("zonedTimeToUtc", () => {
   it("converts a wall time in a fixed-offset zone", () => {
@@ -56,5 +56,27 @@ describe("formatEventDateTime", () => {
     const start = new Date("2026-05-23T14:00:00Z");
     expect(formatEventDateTime(start, "Africa/Lagos")).toBe("Saturday, May 23, 2026 at 3:00 PM");
     expect(formatEventDateTime(start, "Asia/Tokyo")).toBe("Saturday, May 23, 2026 at 11:00 PM");
+  });
+});
+
+describe("utcToZonedLocal", () => {
+  it("shows a UTC instant on the zone's wall clock", () => {
+    expect(utcToZonedLocal(new Date("2026-05-23T14:00:00Z"), "Africa/Lagos")).toBe(
+      "2026-05-23T15:00",
+    );
+    expect(utcToZonedLocal(new Date("2026-07-01T23:30:00Z"), "Europe/London")).toBe(
+      "2026-07-02T00:30",
+    );
+    expect(utcToZonedLocal(new Date("2026-12-01T17:05:00Z"), "America/New_York")).toBe(
+      "2026-12-01T12:05",
+    );
+  });
+
+  it("round-trips with zonedTimeToUtc", () => {
+    for (const local of ["2026-03-08T03:30", "2026-11-01T12:30", "2026-06-15T00:00"]) {
+      expect(utcToZonedLocal(zonedTimeToUtc(local, "America/New_York"), "America/New_York")).toBe(
+        local,
+      );
+    }
   });
 });
