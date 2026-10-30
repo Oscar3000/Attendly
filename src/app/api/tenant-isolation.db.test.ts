@@ -31,6 +31,7 @@ type Policy = "victim" | "own" | "not tenant data";
 
 const ROUTE_POLICY: Record<string, Partial<Record<Method, Policy>> | "not tenant data"> = {
   "/api/events/[eventId]": { PUT: "victim" },
+  "/api/events/[eventId]/cover": { POST: "victim", DELETE: "victim" },
   "/api/events/[eventId]/invitations": { GET: "victim", POST: "victim" },
   "/api/events/[eventId]/invitations/[id]": {
     GET: "victim",

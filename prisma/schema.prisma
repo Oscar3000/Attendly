@@ -132,11 +132,27 @@ model Event {
   // Unknown ids read as the default
   theme         String       @default("terracotta")
   invitations   Invitation[]
+  images        EventImage[]
   createdAt     DateTime     @default(now())
   updatedAt     DateTime     @updatedAt
 
   @@index([ownerId])
   @@map("events")
+}
+
+// Uploaded images (T-406), stored in the database so there are no files or volumes to manage.
+// Served at /uploads/<id>.webp; deleting the event deletes its images
+model EventImage {
+  id          String   @id @default(uuid())
+  eventId     String
+  event       Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  // Re-encoded by us (WebP, no metadata), never the bytes as uploaded
+  bytes       Bytes
+  contentType String
+  createdAt   DateTime @default(now())
+
+  @@index([eventId])
+  @@map("event_images")
 }
 
 enum EventType {
