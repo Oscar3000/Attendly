@@ -156,7 +156,9 @@ function DoorLinkRow({
   timezone: string;
 }) {
   const [revoke, { isLoading }] = useRevokeDoorLinkMutation();
-  const expired = new Date(link.expiresAt).getTime() <= Date.now();
+  // Read the clock once, not on every render
+  const [now] = useState(() => Date.now());
+  const expired = new Date(link.expiresAt).getTime() <= now;
   const state = link.revokedAt
     ? `Revoked ${formatEventDateTime(new Date(link.revokedAt), timezone)}`
     : expired
