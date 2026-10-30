@@ -46,11 +46,15 @@ async function guest(name: string, plusOne = 0, inEvent = event) {
 }
 
 async function scan(code: string, count?: number, cookie = hostCookie, eventId = event.id) {
+  return post(count === undefined ? { code } : { code, count }, cookie, eventId);
+}
+
+async function post(body: object, cookie = hostCookie, eventId = event.id) {
   const response = await checkIn.POST(
     new NextRequest("http://localhost/api/events/x/check-in", {
       method: "POST",
       headers: { cookie },
-      body: JSON.stringify(count === undefined ? { code } : { code, count }),
+      body: JSON.stringify(body),
     }),
     { params: Promise.resolve({ eventId }) },
   );
@@ -173,6 +177,39 @@ describe("POST /api/events/[eventId]/check-in", () => {
     const stranger = await sessionCookieFor("stranger@example.com");
     expect((await scan(zelda.url, undefined, stranger)).status).toBe(404);
     expect(await stored(zelda.id)).toMatchObject({ admittedCount: 0 });
+  });
+});
+
+describe("preview (T-505)", () => {
+  it("says who the ticket is for and how many can come in, admitting nobody", async () => {
+    const zelda = await guest("Zelda", 2);
+    await scan(zelda.url, 1);
+
+    expect(await post({ code: zelda.url, preview: true })).toEqual({
+      status: 200,
+      body: { result: "ready", guest: { name: "Zelda", admits: 3, admitted: 1 } },
+    });
+    expect(await stored(zelda.id)).toMatchObject({ admittedCount: 1 });
+    expect(await prisma.checkIn.count()).toBe(1);
+  });
+
+  it("gives the same refusals as admitting would", async () => {
+    const full = await guest("Full");
+    await scan(full.url);
+    const cancelled = await guest("Cancelled");
+    await invitationRepo.updateRsvpStatus(event.id, cancelled.id, "rescinded");
+
+    expect((await post({ code: full.url, preview: true })).body).toMatchObject({
+      result: "full",
+      lastCheckIn: { by: "Ada" },
+    });
+    expect((await post({ code: cancelled.url, preview: true })).body).toMatchObject({
+      result: "not_valid",
+    });
+    expect(await post({ code: "A".repeat(43), preview: true })).toEqual({
+      status: 404,
+      body: { result: "not_found" },
+    });
   });
 });
 

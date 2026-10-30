@@ -53,4 +53,6 @@ export const adminInvitationsQuerySchema = z.object({
 export const checkInSchema = z.object({
   code: z.string().trim().min(1).max(2000),
   count: z.number().int().min(1).max(51).optional(),
+  // Only look the ticket up (T-505): who it is and how many can still come in
+  preview: z.boolean().optional(),
 });

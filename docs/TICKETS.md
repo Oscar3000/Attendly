@@ -513,13 +513,14 @@ Add `admittedCount` (default 0) to `Invitation` and a `CheckIn` table (invitatio
 - **Files:** ~7
 - **As built:** `checkInRepo.checkIn(eventId, token, count, by)` (`src/server/repositories/check-in.repo.ts`) reads the invitation for the result message, then admits with one raw SQL `UPDATE … WHERE "admittedCount" + n <= "plusOne" + 1 AND status NOT IN (DECLINED, RESCINDED)`. If a simultaneous scan got there first, the update matches nothing, nothing is written, and it reads again (up to 3 times), so the result reflects the other scan. The `CheckIn` row is written in the same transaction. Without `count`, everyone left on the invitation is admitted. The route takes `{ code, count? }`, where `code` is whatever the QR code held: `ticketTokenFrom()` in `utils.ts` accepts a ticket URL on any host or the bare token, and anything else is `not_found`. Responses always carry a `result`: `admitted` 200, `full` / `too_many` / `not_valid` 409, `not_found` 404. `CheckIn.checkedInByUserId` is set null if the account is deleted; T-506 adds the door link column. Tests cover concurrent scans (10 at once admit once; they fail if the SQL guard is removed), and the tenant isolation test also scans a victim's ticket through the attacker's own event.
 
-### T-505 · Check-in scanner screen in the dashboard · M
+### ✅ T-505 · Check-in scanner screen in the dashboard · M
 
 `/dashboard/events/[eventId]/check-in`: the camera scanner (`html5-qrcode`, as the current home page scanner uses) calls the T-504 API. A full-screen result in green or red shows the guest's name and "Admits N"; when more than one person can enter, the helper picks how many are entering now (default: everyone left). Then "Scan next". If the camera is unavailable, paste or type the code.
 
 - Shared result and scanner components, reused by the door helper screen (T-507).
 - **Depends on:** T-504
 - **Files:** ~6
+- **As built:** `src/components/check-in/`: `QrCamera` (html5-qrcode, back camera, reports one code and stops when unmounted) and `CheckInFlow` (takes the API `endpoint` and the event's time zone, so T-507 reuses it with the door link's endpoint). To ask how many are coming in before anyone is admitted, the API gained `preview: true` (`checkInRepo.preview()`, result `ready`), sharing its lookup with the admit path. A scan previews; with one place left it admits straight away, otherwise the helper picks a count (default: everyone left). Results are a full-screen green or red screen with a vibration; the wording for each result is `checkInMessage()` in `src/lib/check-in.ts` (unit-tested), along with the response types. Without a camera, the helper pastes or types the ticket link or code. The page is a "Check in" button in the dashboard header; admitting invalidates the event's RTK Query tags. The header's buttons now wrap on phones (they overflowed the screen).
 
 ### T-506 · Door helper links: create, name, revoke · M
 
