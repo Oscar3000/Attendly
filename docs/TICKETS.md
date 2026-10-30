@@ -19,7 +19,7 @@ Goal: turn Attendly from a single hard-coded wedding into a product any host can
 | 1     | Lock down security on the current app                | T-101 – T-108 | ✅ Done     |
 | 2     | Accounts with Better Auth (users, sign-up, sessions) | T-201 – T-209 | ✅ Done     |
 | 3     | Events & multi-tenancy                               | T-301 – T-312 | ✅ Done     |
-| 4     | Remove hard-coded content / theming                  | T-401 – T-410 | In progress |
+| 4     | Remove hard-coded content / theming                  | T-401 – T-410 | ✅ Done     |
 | 5     | Guest experience                                     | T-501 – T-508 | Not started |
 | 6     | Product features                                     | T-601 – T-610 | Not started |
 | 7     | Ops, compliance, launch                              | T-701 – T-710 | Not started |
@@ -454,11 +454,12 @@ Update the image generation in `utils.ts` (names, date, venue, colors) to read f
 - **Files:** ~3
 - **As built:** moved out of `utils.ts` into `src/lib/invitation-image.ts`. `invitationCardContent()` (pure, unit-tested) decides what's on the card: a monogram for a wedding couple, otherwise the names written out; date and time on the event's clock; the type's invitation and closing wording (T-407); venue name and address; colours of the day; and the tagline in place of the hard-coded hashtag, all in the event's theme colours (T-405). Sections the event doesn't have are left out. The canvas now sizes itself to what it draws (drawn on a scratch canvas, then cropped) instead of a hand-kept height sum. The event dashboard layout provides the event's card details through `EventCardProvider` / `useEventCard()`, so the invitations table and invite success page need no extra request, and saving settings refreshes it. Also fixed: a non-wedding title containing "and" was shown as a couple ("Acme Gala and Awards Night" → "A & A") on the event page hero too; couples are now weddings only, with at most three words a side. Checked by rendering cards with a Node canvas.
 
-### T-409 · Product landing page at `/` · M
+### ✅ T-409 · Product landing page at `/` · M
 
 Marketing page: what it is, how it works, sign-up CTA.
 
 - **Files:** ~6
+- **As built:** `/` is a landing page (it redirected to `/dashboard`): a hero with a sample invitation drawn in HTML (a made-up couple and a fake QR pattern, so there's no image to keep up to date), what the product does today, four "how it works" steps, a closing call to action and a footer, in `src/components/landing/`. Visitors get "Create your event" (`/signup`) and "Log in"; signed-in hosts get "Go to your events" (`/dashboard`) instead. Like middleware, it only checks that the session cookie is present, and `/dashboard` sends a stale cookie to `/login`. It makes no pricing claims, since billing is Phase 8.
 
 ### ✅ T-410 · Link to the public event page from the dashboard · S
 
