@@ -2,9 +2,7 @@
 
 import { useState, useEffect } from "react";
 
-const WEDDING_DATE = new Date("2026-05-23T10:00:00+01:00");
-
-function useCountdown(targetDate: Date) {
+function useCountdown(startsAt: string) {
   const [timeLeft, setTimeLeft] = useState({
     days: 0,
     hours: 0,
@@ -13,8 +11,9 @@ function useCountdown(targetDate: Date) {
   });
 
   useEffect(() => {
+    const target = new Date(startsAt).getTime();
     const calculate = () => {
-      const diff = targetDate.getTime() - Date.now();
+      const diff = target - Date.now();
       if (diff <= 0) {
         setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0 });
         return;
@@ -29,13 +28,14 @@ function useCountdown(targetDate: Date) {
     calculate();
     const id = setInterval(calculate, 1000);
     return () => clearInterval(id);
-  }, [targetDate]);
+  }, [startsAt]);
 
   return timeLeft;
 }
 
-export default function CountdownSection() {
-  const countdown = useCountdown(WEDDING_DATE);
+// startsAt is an ISO string: it crosses from the server page to this client component
+export default function CountdownSection({ startsAt }: { startsAt: string }) {
+  const countdown = useCountdown(startsAt);
 
   return (
     <section className="px-4 py-12 text-center" style={{ backgroundColor: "#2C1810" }}>

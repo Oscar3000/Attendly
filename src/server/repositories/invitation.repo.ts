@@ -25,7 +25,7 @@ import {
 
 // Joined on every read so callers get the event's date and venue
 const withEvent = {
-  event: { select: { date: true, venueName: true, venueAddress: true } },
+  event: { select: { date: true, timezone: true, venueName: true, venueAddress: true } },
 } as const;
 
 // Prisma's "record to update/delete does not exist" (including a match on id but not eventId)
@@ -115,7 +115,7 @@ export const invitationRepo = {
   // Create many invitations in an event. Each row succeeds or fails on its own; rows with an
   // empty name are reported, not created
   async createInvitations(
-    event: Pick<Event, "id" | "date" | "venueName" | "venueAddress">,
+    event: Pick<Event, "id" | "date" | "timezone" | "venueName" | "venueAddress">,
     status: RsvpStatus,
     rows: { name: string; plusOne?: number | undefined }[],
   ): Promise<BulkCreateResult> {

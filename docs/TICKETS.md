@@ -409,7 +409,7 @@ Add to `Event`: `hostNames`, `headline`, `tagline`, `familyLines` (JSON), `dress
 - **Files:** ~6
 - **As built:** `PUT /api/events/[eventId]` (owner only, via `requireEventOwner`) replaces the event's settings: the form sends every field, and blank or missing optional ones are cleared (`updateEventSchema`, which shares the title/type/date/zone/deadline rules with `createEventSchema`). The slug can't be edited, since shared links and QR codes point at it. `coverImageUrl` isn't on the form: the CSP only allows images from `'self'`, so it waits for T-406's upload. The page is server-rendered: it checks ownership itself (it loads the event; the layout check isn't enough on its own) and prefills dates on the event's clock with the new `utcToZonedLocal()`. Families and colours are add/remove lists, and fully empty rows are dropped on save. The new event form's type list, select style and error mapping moved to `src/components/events/event-form.ts`. The dashboard header has a Settings button, and the tenant isolation test covers the route and the page.
 
-### T-403 · Public event page reads from DB · M
+### ✅ T-403 · Public event page reads from DB · M
 
 Replace the hard-coded `src/app/page.tsx` with `/e/[slug]`. The hero, details, countdown, and footer receive the `event` as props. Remove the names, date, and colors from `src/components/home/*`.
 
@@ -417,6 +417,7 @@ Replace the hard-coded `src/app/page.tsx` with `/e/[slug]`. The hero, details, c
 
 - **Depends on:** T-401
 - **Files:** ~10
+- **As built:** `/e/[slug]` is public (outside the middleware matcher) and 404s for an unknown slug. The hero splits host names written as "A & B" or "A and B" into the two-name layout with a monogram, and shows anything else as written. The hero uses the title when `hostNames` is empty and "You're invited to celebrate" when `headline` is empty (until T-407). The fixed church and reception cards are now a "when" card (with the RSVP deadline) and a "where" card. Dress code, colours of the day and notes ("Good to Know") only appear when set. The countdown counts to `event.date`. The theme colours are still the fixed brand palette (T-405). `/` redirects to `/dashboard` (signed-out visitors land on `/login`) until T-409. Invitations now carry `eventTimezone`, and the guest invite, success and edit pages format with the new `formatEventDate()` / `formatEventTime()` / `formatEventDateTime()`. Any event is public to anyone who knows or guesses its slug, which comes from the title.
 
 ### T-404 · Dynamic metadata · S
 

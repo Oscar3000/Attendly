@@ -54,6 +54,7 @@ src/
       events/[eventId]/       # Event-scoped, owner only (requireEventOwner): PUT settings, invitations (+ [id], bulk), metrics, status
       invitations/[id]/       # PIN guests only: GET their invitation, PATCH its RSVP (requireGuest); removed in T-505
       health/                 # Health check
+    e/[slug]/                 # Public event page (no sign-in), rendered from the event's fields; / redirects to /dashboard until T-409
     invite/[id]/              # Guest invitation view
     invite-pin/               # Guest PIN entry
     login/                    # Email + password login
@@ -112,7 +113,7 @@ All required variables are validated at startup (`src/instrumentation.ts` -> `sr
 
 ## Key Patterns
 
-- Event times are stored in UTC with an IANA `timezone`; hosts enter wall-clock times. Convert with `zonedTimeToUtc()` (and back to a form value with `utcToZonedLocal()`) and display with `formatEventDateTime()` from `src/lib/timezones.ts` (built on `Intl`, no date library)
+- Event times are stored in UTC with an IANA `timezone`; hosts enter wall-clock times. Convert with `zonedTimeToUtc()` (and back to a form value with `utcToZonedLocal()`) and display with `formatEventDateTime()` / `formatEventDate()` / `formatEventTime()` from `src/lib/timezones.ts`; invitations carry `eventTimezone` for this (built on `Intl`, no date library)
 
 - Event-scoped code calls `requireEventOwner(eventId, headers?)` (`src/server/events/require-event-owner.ts`): 401 when signed out, the same 404 for a missing event and someone else's event, and returns `{ user, event }`. Ownership is the only permission; every account has the same powers
 

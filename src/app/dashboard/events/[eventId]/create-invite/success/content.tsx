@@ -6,6 +6,7 @@ import { Button } from "@/components/button";
 import { QrCode } from "@/components/qr-code";
 import { useGetEventInvitationQuery } from "@/store/eventInvitationApi";
 import { downloadQRCode, shareQRCodeAsImage } from "@/lib/utils";
+import { formatEventDateTime } from "@/lib/timezones";
 
 export function SuccessPageContent() {
   const searchParams = useSearchParams();
@@ -150,14 +151,7 @@ export function SuccessPageContent() {
             <div className="flex flex-col sm:flex-row sm:justify-between">
               <span className="text-gray-600 text-sm sm:text-base">Event Date:</span>
               <span className="font-medium text-sm sm:text-base">
-                {new Date(invitation.eventDate).toLocaleDateString("en-US", {
-                  weekday: "long",
-                  year: "numeric",
-                  month: "long",
-                  day: "numeric",
-                  hour: "numeric",
-                  minute: "2-digit",
-                })}
+                {formatEventDateTime(new Date(invitation.eventDate), invitation.eventTimezone)}
               </span>
             </div>
             <div className="flex flex-col sm:flex-row sm:justify-between">
