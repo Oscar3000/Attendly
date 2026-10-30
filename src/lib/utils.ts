@@ -233,7 +233,7 @@ export function convertToInviteDetails(invitation: Invitation): InviteDetails {
   return {
     id: invitation.id,
     name: invitation.name,
-    // Owner reads add the ticket link and its QR code (invitation.repo.ts); guests get neither
+    // Repository reads add the ticket link and its QR code (invitation.repo.ts)
     qrCode: "",
     eventId: invitation.eventId,
     eventDate: invitation.event.date,

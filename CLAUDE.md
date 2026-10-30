@@ -87,7 +87,7 @@ middleware.ts                  # Account route protection (session cookie presen
 
 ## Database Schema
 
-- `Invitation` (`invitations`): id (cuid), name, status (PENDING|CONFIRMED|DECLINED|RESCINDED), plusOne, accessToken (unique secret in the guest's ticket link `/e/<slug>/i/<token>`), admittedCount (people let in at the door, at most plusOne + 1), eventId → Event (required, cascade delete), createdAt, updatedAt. The date and venue come from the event. `qrCode` is unused (dropped in T-508b): reads return `ticketUrl` and a QR code made from the token
+- `Invitation` (`invitations`): id (cuid), name, status (PENDING|CONFIRMED|DECLINED|RESCINDED), plusOne, accessToken (unique secret in the guest's ticket link `/e/<slug>/i/<token>`), admittedCount (people let in at the door, at most plusOne + 1), eventId → Event (required, cascade delete), createdAt, updatedAt. The date and venue come from the event. Reads return `ticketUrl` and a QR code made from the token (nothing is stored)
 - `Event` (`events`): id (cuid), ownerId → User (cascade delete), slug (unique), type (WEDDING|BIRTHDAY|CORPORATE|OTHER), title, date (UTC) + timezone (IANA), venueName?, venueAddress?, rsvpDeadline?, page content (hostNames?, headline?, tagline?, dressCode?, coverImageUrl?, notes?, and JSON `familyLines` / `colorPalette`, typed in `src/lib/event-content.ts` and `[]` when unset), createdAt, updatedAt
 - `CheckIn` (`check_ins`): id (cuid), invitationId → Invitation, eventId → Event (both cascade delete), count, checkedInByUserId? → User or doorLinkId? → DoorLink (both set null), createdAt. One row per admission at the door (T-504)
 - `DoorLink` (`door_links`): id (cuid), eventId → Event (cascade delete), name, tokenHash (SHA-256 of the token in `/door/<token>`; the token is shown once), createdAt, revokedAt?, expiresAt. A door helper's check-in link (T-506)
@@ -107,9 +107,7 @@ middleware.ts                  # Account route protection (session cookie presen
 All required variables are validated at startup (`src/instrumentation.ts` -> `src/server/env.ts`); the server exits if any is missing. Read them with `getEnv()`, not `process.env`.
 
 - `DATABASE_URL` - PostgreSQL connection string (required)
-- `AUTH_SECRET` - Signs session cookies; at least 32 characters (required, generate with `openssl rand -base64 32`)
-- `INVITE_PIN` - Guest PIN, at least 4 characters (required, no default)
-- `BETTER_AUTH_SECRET` - Better Auth secret; at least 32 characters, different from `AUTH_SECRET` (required)
+- `BETTER_AUTH_SECRET` - Signs session cookies; at least 32 characters (required, generate with `openssl rand -base64 32`)
 - `BETTER_AUTH_URL` - Public app URL for Better Auth, e.g. `http://localhost:3000` (required)
 - `NEXT_PUBLIC_BASE_URL` - App URL for QR codes (default: http://localhost:3000)
 - `RESEND_API_KEY`, `EMAIL_FROM` - Send email through Resend (`EMAIL_FROM` like `Attendly <hello@yourdomain.com>`, on a domain verified in Resend). Optional: without them, development logs emails (with their links) to the console, and production skips them (sign-up still works; verification and password-reset emails aren't sent, and the verify banner is hidden)

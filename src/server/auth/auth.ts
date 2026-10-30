@@ -15,7 +15,8 @@ function createAuth() {
   const env = getEnv();
 
   return betterAuth({
-    // Passed explicitly: Better Auth would otherwise fall back to AUTH_SECRET, the old cookie key
+    // Passed explicitly: Better Auth would otherwise fall back to an AUTH_SECRET env var, which
+    // older deployments still set for the removed PIN flow's cookies
     secret: env.BETTER_AUTH_SECRET,
     baseURL: env.BETTER_AUTH_URL,
     database: prismaAdapter(prisma, { provider: "postgresql" }),

@@ -14,8 +14,6 @@ const optionalString = z.preprocess(
 const envSchema = z
   .object({
     DATABASE_URL: z.string().min(1, "is required"),
-    AUTH_SECRET: z.string().min(32, "must be at least 32 characters (openssl rand -base64 32)"),
-    INVITE_PIN: z.string().min(4, "must be at least 4 characters"),
     BETTER_AUTH_SECRET: z
       .string()
       .min(32, "must be at least 32 characters (openssl rand -base64 32)"),
