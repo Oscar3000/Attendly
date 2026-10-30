@@ -50,6 +50,8 @@ const nextConfig: NextConfig = {
       { source: "/:path*", headers: securityHeaders },
       // A guest ticket's URL is its credential (T-502): don't send it to other sites in Referer
       { source: "/e/:slug/i/:token", headers: [{ key: "Referrer-Policy", value: "no-referrer" }] },
+      // Likewise a door helper's check-in link (T-507)
+      { source: "/door/:token", headers: [{ key: "Referrer-Policy", value: "no-referrer" }] },
     ];
   },
 };

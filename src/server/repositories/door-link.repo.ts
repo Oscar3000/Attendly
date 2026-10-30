@@ -35,7 +35,35 @@ const summaryFields = {
   revokedAt: true,
 } as const;
 
+// What a door helper's page and API need about their link (T-507)
+export interface ActiveDoorLink {
+  id: string;
+  name: string;
+  event: { id: string; title: string; hostNames: string | null; timezone: string };
+}
+
 export const doorLinkRepo = {
+  // The link with this token: "active" while it works, "inactive" once revoked or expired,
+  // undefined for a token that was never issued
+  async findByToken(
+    token: string,
+    now = new Date(),
+  ): Promise<{ status: "active"; link: ActiveDoorLink } | { status: "inactive" } | undefined> {
+    const link = await prisma.doorLink.findUnique({
+      where: { tokenHash: hashDoorToken(token) },
+      select: {
+        id: true,
+        name: true,
+        revokedAt: true,
+        expiresAt: true,
+        event: { select: { id: true, title: true, hostNames: true, timezone: true } },
+      },
+    });
+    if (!link) return undefined;
+    if (link.revokedAt || link.expiresAt <= now) return { status: "inactive" };
+    return { status: "active", link: { id: link.id, name: link.name, event: link.event } };
+  },
+
   // Returns the token for the host to share; it can't be read back later
   async create(
     event: Pick<Event, "id" | "date">,
