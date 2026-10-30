@@ -1,7 +1,7 @@
 /**
  * RTK Query API slice for managing invitation-related API calls
  * The dashboard's event-scoped endpoints are injected from eventInvitationApi.ts (T-308).
- * Only the PIN guest page uses the two endpoints below, until per-invitation links (T-503)
+ * Only the PIN guest page uses the two endpoints below, until the PIN flow is removed (T-508)
  */
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import type { InviteDetails, RsvpStatus } from "@/lib/types";

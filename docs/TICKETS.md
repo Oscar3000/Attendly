@@ -20,7 +20,7 @@ Goal: turn Attendly from a single hard-coded wedding into a product any host can
 | 2     | Accounts with Better Auth (users, sign-up, sessions) | T-201 – T-209 | ✅ Done     |
 | 3     | Events & multi-tenancy                               | T-301 – T-312 | ✅ Done     |
 | 4     | Remove hard-coded content / theming                  | T-401 – T-410 | ✅ Done     |
-| 5     | Guest experience                                     | T-501 – T-508 | Not started |
+| 5     | Guest tickets & door check-in                        | T-501 – T-510 | Not started |
 | 6     | Product features                                     | T-601 – T-610 | Not started |
 | 7     | Ops, compliance, launch                              | T-701 – T-710 | Not started |
 | 8     | Billing                                              | T-801 – T-805 | Not started |
@@ -230,7 +230,7 @@ Cover: forged cookie → 401, guest calling an admin route → 401/403, guest `P
 - Remove the `ADMIN_PASSWORD` env var.
 - **Depends on:** T-204
 - **Files:** ~10
-- **As built:** admin-only endpoints call `requireAdminUser()` (`requireUser()` plus the `ADMIN_EMAIL` check) from `current-user.ts`, passing `request.headers`; `guards.ts` keeps only `requireAdminOrGuest()`. A guest calling an admin-only endpoint now gets 401 (no account session) instead of 403. `ADMIN_PASSWORD` is now read only by the seed. Narrowing `session.ts` to guest tokens moved to T-505, which deletes that code anyway.
+- **As built:** admin-only endpoints call `requireAdminUser()` (`requireUser()` plus the `ADMIN_EMAIL` check) from `current-user.ts`, passing `request.headers`; `guards.ts` keeps only `requireAdminOrGuest()`. A guest calling an admin-only endpoint now gets 401 (no account session) instead of 403. `ADMIN_PASSWORD` is now read only by the seed. Narrowing `session.ts` to guest tokens moved to T-508, which deletes that code anyway.
 
 ### ✅ T-206 · Transactional email provider · S
 
@@ -319,7 +319,7 @@ Every repository function takes `eventId`, and there are no unscoped queries lef
 
 - **Depends on:** T-304
 - **Files:** ~5
-- **As built:** `eventId` is part of each query (`where: { id, eventId }`), so another event's invitation is indistinguishable from a missing one; update/delete now treat only Prisma's not-found error as "not found" and rethrow the rest. Shared-PIN guests aren't tied to an event, so they get two explicit exceptions, `getInvitationForGuest(id)` and `updateRsvpStatusForGuest(id, status)` (remove in T-505). Routes pass the admin's event from `requireCurrentEvent()` until T-307.
+- **As built:** `eventId` is part of each query (`where: { id, eventId }`), so another event's invitation is indistinguishable from a missing one; update/delete now treat only Prisma's not-found error as "not found" and rethrow the rest. Shared-PIN guests aren't tied to an event, so they get two explicit exceptions, `getInvitationForGuest(id)` and `updateRsvpStatusForGuest(id, status)` (remove in T-508). Routes pass the admin's event from `requireCurrentEvent()` until T-307.
 
 ### ✅ T-307 · Event-scoped API routes · M
 
@@ -329,7 +329,7 @@ Move routes to `/api/events/[eventId]/invitations`, `/bulk`, `/metrics`, and `/s
 
 - **Depends on:** T-305, T-306
 - **Files:** ~12
-- **As built:** `/api/events/[eventId]/invitations` (GET paginated `?page&limit&search`, POST), `/invitations/[id]` (GET, PUT, PATCH, DELETE), `/invitations/bulk`, `/metrics` and `/status`, each starting with `requireEventOwner` (owner only: 404 for other accounts and other events' invitations, 401 signed out; no guest access). Metrics and the invitation list are separate endpoints (`/api/admin` returned both). The old routes are unchanged: they can't redirect without knowing the event, the UI still uses them until T-308, and PIN guests use `/api/invitations/[id]` until T-503. Bulk row handling moved to `invitationRepo.createInvitations()`, shared by both bulk routes. Middleware covers `/api/events/*`.
+- **As built:** `/api/events/[eventId]/invitations` (GET paginated `?page&limit&search`, POST), `/invitations/[id]` (GET, PUT, PATCH, DELETE), `/invitations/bulk`, `/metrics` and `/status`, each starting with `requireEventOwner` (owner only: 404 for other accounts and other events' invitations, 401 signed out; no guest access). Metrics and the invitation list are separate endpoints (`/api/admin` returned both). The old routes are unchanged: they can't redirect without knowing the event, the UI still uses them until T-308, and PIN guests use `/api/invitations/[id]` until T-508. Bulk row handling moved to `invitationRepo.createInvitations()`, shared by both bulk routes. Middleware covers `/api/events/*`.
 
 ### ✅ T-308 · Update RTK Query slice for event-scoped endpoints · S
 
@@ -343,7 +343,7 @@ Every endpoint takes `eventId`. Scope cache tags by event.
 
 Move the `admin/*` pages (dashboard, create, edit, bulk upload, success) under the new path and pass `eventId` through.
 
-- Switch the pages to the `eventInvitationApi.ts` hooks (T-308), then delete the old admin endpoints from `invitationApi.ts` (`getAllInvitations`, `getAdminData`, `getStatusUpdates`, `createInvitation`, `bulkCreateInvitations`, `updateInvitation`, `deleteInvitation`) and their `AdminData` / `StatusUpdates` tags. Keep `getInvitation` and `updateRsvpStatus` for the PIN guest page until T-503.
+- Switch the pages to the `eventInvitationApi.ts` hooks (T-308), then delete the old admin endpoints from `invitationApi.ts` (`getAllInvitations`, `getAdminData`, `getStatusUpdates`, `createInvitation`, `bulkCreateInvitations`, `updateInvitation`, `deleteInvitation`) and their `AdminData` / `StatusUpdates` tags. Keep `getInvitation` and `updateRsvpStatus` for the PIN guest page until T-508.
 
 - **Depends on:** T-308
 - **Files:** ~15
@@ -470,58 +470,87 @@ Hosts had no way to find or share their event page (`/e/[slug]`, T-403): nothing
 
 ---
 
-## Phase 5 — Guest experience
+## Phase 5 — Guest tickets & door check-in
+
+An invitation is a ticket. The guest's link and QR code only show their invitation; they can't confirm or check themselves in. At the venue, the host or a door helper scans the QR code and admits the guest, and each invitation admits at most its number of people (the guest plus their plus-ones). If a guest sends their QR code to a friend outside after going in, the scan shows "Already checked in" with the time and who admitted them. Door helpers get a check-in link that does nothing else, so the host never shares their password or the dashboard.
+
+Online RSVP (guests confirming or declining before the event) is out of scope for now; see T-611.
+
+The original wedding has passed, so no live event depends on the shared PIN flow while these tickets land. Until T-508 removes it, the PIN flow keeps working for QR codes made before T-503.
 
 ### T-501 · Per-invitation `accessToken` · S
 
-Add `accessToken` (unique, random 32 bytes, base64url) to `Invitation`. Backfill existing rows.
+Add `accessToken` (unique, random 32 bytes, base64url) to `Invitation`. Backfill existing rows. Generated on create (single and bulk).
 
 - **Files:** ~3
 
-### T-502 · Guest link route `/e/[slug]/i/[token]` · M
+### T-502 · Read-only guest ticket page `/e/[slug]/i/[token]` · M
 
-Look up the invitation by token. The token itself is the credential, so no PIN is needed. Render the existing invite view.
+Look up the invitation by token and the event by slug (a token from another event is a 404). The token is the credential, so there's no PIN. The page shows the guest's name, how many people it admits, the date and time (event time zone), the venue, the QR code and "Show this QR code at the entrance", in the event's theme. It has no confirm, decline or check-in buttons. A cancelled invitation (`RESCINDED`) says so instead of showing the QR code.
 
+- `noindex` and `Referrer-Policy: no-referrer`, so the token doesn't leak to search engines or other sites.
 - **Depends on:** T-501, T-403
 - **Files:** ~6
 
-### T-503 · Guest RSVP API by token · S
+### T-503 · QR codes encode the ticket link · S
 
-`PATCH /api/rsvp/[token]` updates only that invitation's status.
+New QR codes, the downloaded/shared invitation image and the success page point to `/e/[slug]/i/[token]`. Regenerate codes for existing invitations.
 
-- **Files:** ~3
+- **Depends on:** T-502
+- **Files:** ~4
 
-### T-504 · QR codes encode the new guest link · S
+### T-504 · Check-in model and API · M
 
-Update QR generation and regenerate codes for existing invitations.
+Add `admittedCount` (default 0) to `Invitation` and a `CheckIn` table (invitation, event, count, time, who: the host's user id or a door link from T-506) as the audit trail. `POST /api/events/[eventId]/check-in` (owner only) takes the scanned token and how many people are entering.
 
-- **Files:** ~3
+- One conditional update, so two helpers scanning the same code at the same moment can't admit more than allowed: admit only if the invitation is in this event, isn't `DECLINED`/`RESCINDED`, and `admittedCount + count <= plusOne + 1`.
+- Results: admitted (name, now X of N), already full (when and by whom, from the last `CheckIn`), not valid (cancelled or declined), not found (unknown token or another event's).
+- Checking in sets the status to `CONFIRMED`, so the dashboard's "confirmed" keeps meaning "arrived", as it did with the PIN flow. Revisit when online RSVP lands (T-611).
+- **Depends on:** T-501
+- **Files:** ~7
 
-### T-505 · Remove shared PIN flow · S
+### T-505 · Check-in scanner screen in the dashboard · M
 
-Delete `invite-pin/`, `api/invite/verify-pin`, the `INVITE_PIN` env var, and the guest cookie logic in middleware.
+`/dashboard/events/[eventId]/check-in`: the camera scanner (`html5-qrcode`, as the current home page scanner uses) calls the T-504 API. A full-screen result in green or red shows the guest's name and "Admits N"; when more than one person can enter, the helper picks how many are entering now (default: everyone left). Then "Scan next". If the camera is unavailable, paste or type the code.
 
-- Delete `invitationRepo.getInvitationForGuest` / `updateRsvpStatusForGuest` (T-306), the last unscoped invitation queries.
-
-- Delete `src/server/auth/session.ts` (the T-101 token code, now only used for guest tokens) and `requireAdminOrGuest()`; the remaining tests that sign an `admin` token go with it.
-
-- **Depends on:** T-502, T-503, T-504
+- Shared result and scanner components, reused by the door helper screen (T-507).
+- **Depends on:** T-504
 - **Files:** ~6
 
-### T-506 · Richer RSVP: attending count, meal, dietary notes · M
+### T-506 · Door helper links: create, name, revoke · M
 
-New fields on `Invitation`, a guest form, and display in the dashboard table.
+A `DoorLink` table: event, name ("Ben, front gate"), the SHA-256 hash of a random token (the token itself is shown once), created, revoked, expires (default: the day after the event). On the event dashboard the host creates a link, copies it, sees each link's check-in count, and revokes it. Owner-only API under `/api/events/[eventId]/door-links`.
 
-- **Files:** ~8
+- **Depends on:** T-504
+- **Files:** ~7
 
-### T-507 · RSVP deadline enforcement · S
+### T-507 · Door helper scanner `/door/[token]` · M
 
-After `rsvpDeadline`, the guest form is read-only and shows a message.
+No sign-in: the link is the credential, and it can only check people in for its event. The page shows the event's name and the T-505 scanner; `POST /api/door/[token]/check-in` runs the same check-in as T-504, recording the link as who admitted the guest. A revoked or expired link shows "This check-in link no longer works; ask the host for a new one". No guest list, search or other data, `noindex`.
 
-- **Files:** ~3
+- Add the new routes to `ROUTE_POLICY` in the tenant isolation test (a link must not check in another event's guests).
+- **Depends on:** T-505, T-506
+- **Files:** ~6
 
-### T-508 · "Add to calendar" (ICS) on guest page · S
+### T-508 · Remove shared PIN flow · M
 
+Delete `invite-pin/`, `api/invite/verify-pin`, the `INVITE_PIN` env var, the guest cookie logic in middleware, `invite/[id]/`, `api/invitations/[id]/`, the PIN guest endpoints in `invitationApi.ts`, and the scanner on the public event page (door check-in replaced it).
+
+- Delete `invitationRepo.getInvitationForGuest` / `updateRsvpStatusForGuest` (T-306), the last unscoped invitation queries.
+- Delete `src/server/auth/session.ts` (the T-101 token code, now only used for guest tokens) and `requireGuest()` / `requireAdminOrGuest()`; the remaining tests that sign an `admin` token go with it.
+- **Depends on:** T-503, T-507
+- **Files:** ~15
+
+### T-509 · Check-in dashboard: arrived vs expected · S
+
+On the event dashboard: people admitted vs expected, invitations checked in, the latest check-ins (who, when, by whom), and an undo for a check-in made by mistake (host only).
+
+- **Depends on:** T-504
+- **Files:** ~5
+
+### T-510 · "Add to calendar" (ICS) on the ticket page · S
+
+- **Depends on:** T-502
 - **Files:** ~3
 
 ---
@@ -532,21 +561,27 @@ After `rsvpDeadline`, the guest form is read-only and shows a message.
 
 ### T-602 · Email invitations to guests (single + bulk) · M — needs `email` on `Invitation`, uses T-206
 
-### T-603 · RSVP reminder emails (manual trigger) · S
+### T-603 · RSVP reminder emails (manual trigger) · S — needs T-611
 
 ### T-604 · Scheduled reminders (cron / job queue) · M
 
-### T-605 · Notify host on new RSVP (email) · S
+### T-605 · Notify host on new RSVP (email) · S — needs T-611
 
-### T-606 · Check-in mode: scan QR at door, mark `checkedInAt` · M
+### T-606 · ~~Check-in mode~~ · moved to Phase 5 (T-504, T-505)
 
-### T-607 · Check-in dashboard (arrived vs expected) · S
+### T-607 · ~~Check-in dashboard~~ · moved to Phase 5 (T-509)
 
 ### T-608 · Co-hosts: invite another user to manage an event (consider Better Auth `organization` plugin vs own `EventMember` + roles) · L → split into model/API and UI tickets when started
+
+Door helpers who only check guests in use T-506 links, not co-host accounts.
 
 ### T-609 · WhatsApp share link per guest · S
 
 ### T-610 · Duplicate event / archive event · S
+
+### T-611 · Online RSVP from the ticket page · L → split when started
+
+Guests confirm or decline before the event from their ticket page (`PATCH /api/rsvp/[token]`), optionally with how many are coming, meal choice and dietary notes, and the form turns read-only after `rsvpDeadline`. Check-in (T-504) currently sets `CONFIRMED` to mean "arrived"; with online RSVP, "confirmed" (intends to come) and "checked in" (arrived) become separate counts in the dashboard and metrics.
 
 ---
 

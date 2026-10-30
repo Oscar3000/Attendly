@@ -52,7 +52,7 @@ src/
       invite/verify-pin/      # Guest PIN verification
       events/                 # POST: create an event (any signed-in user becomes its owner)
       events/[eventId]/       # Event-scoped, owner only (requireEventOwner): PUT settings, invitations (+ [id], bulk), metrics, status
-      invitations/[id]/       # PIN guests only: GET their invitation, PATCH its RSVP (requireGuest); removed in T-505
+      invitations/[id]/       # PIN guests only: GET their invitation, PATCH its RSVP (requireGuest); removed in T-508
       health/                 # Health check
     e/[slug]/                 # Public event page (no sign-in, noindex) + generated link preview image (opengraph-image.tsx)
     invite/[id]/              # Guest invitation view
@@ -126,7 +126,7 @@ All required variables are validated at startup (`src/instrumentation.ts` -> `sr
 - Server Components by default; `'use client'` for interactive UI
 - RTK Query for data fetching with tag-based cache invalidation. Event-scoped hooks (`useGetEventInvitationsQuery`, `useCreateEventInvitationMutation`, ...) live in `src/store/eventInvitationApi.ts`; their tags carry the event id, so a write only refetches that event's data
 - Repositories in `src/server/repositories/` hold all Prisma operations; route handlers stay thin
-- Invitation and metrics repository functions take `eventId` and only touch that event's invitations; another event's invitation behaves like a missing one. The only exceptions are `getInvitationForGuest` / `updateRsvpStatusForGuest` (shared-PIN guests, removed in T-505)
+- Invitation and metrics repository functions take `eventId` and only touch that event's invitations; another event's invitation behaves like a missing one. The only exceptions are `getInvitationForGuest` / `updateRsvpStatusForGuest` (shared-PIN guests, removed in T-508)
 - `utils.ts` has status converters between Prisma enums and app types
 - Path alias: `@/*` maps to `./src/*`
 - Security headers and the Content Security Policy live in `next.config.ts`. Everything loads from `'self'`; adding an external script, font, image or API means updating the CSP, or the browser blocks it

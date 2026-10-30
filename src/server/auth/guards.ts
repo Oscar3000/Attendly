@@ -1,7 +1,7 @@
 /**
  * Guard for the shared-PIN guest endpoints (GET/PATCH /api/invitations/[id])
  * Hosts use the event-scoped routes, which call requireEventOwner instead.
- * Removed with the PIN flow in T-505
+ * Removed with the PIN flow in T-508
  */
 import "server-only";
 import type { NextRequest } from "next/server";
