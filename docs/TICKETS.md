@@ -485,13 +485,14 @@ Add `accessToken` (unique, random 32 bytes, base64url) to `Invitation`. Backfill
 - **Files:** ~3
 - **As built:** `newAccessToken()` in `invitation.repo.ts` (`randomBytes(32)`, base64url, 43 characters) is set by `createInvitation`, which bulk creation also goes through. The migration backfills existing rows in SQL with the same format, from two `gen_random_uuid()` values (cryptographically random, no `pgcrypto` needed), then makes the column `NOT NULL` and unique. API responses are built field by field (`convertToInviteDetails`, `getAdminInvitations`), so the token stays out of them; a test checks every read and write function. Nothing uses the token yet (T-502).
 
-### T-502 · Read-only guest ticket page `/e/[slug]/i/[token]` · M
+### ✅ T-502 · Read-only guest ticket page `/e/[slug]/i/[token]` · M
 
 Look up the invitation by token and the event by slug (a token from another event is a 404). The token is the credential, so there's no PIN. The page shows the guest's name, how many people it admits, the date and time (event time zone), the venue, the QR code and "Show this QR code at the entrance", in the event's theme. It has no confirm, decline or check-in buttons. A cancelled invitation (`RESCINDED`) says so instead of showing the QR code.
 
 - `noindex` and `Referrer-Policy: no-referrer`, so the token doesn't leak to search engines or other sites.
 - **Depends on:** T-501, T-403
 - **Files:** ~6
+- **As built:** `src/app/e/[slug]/i/[token]/page.tsx` looks the event up by slug, then the invitation by `invitationRepo.getTicket(eventId, token)` (name, plus-ones and status only); a token that isn't 43 base64url characters is a 404 without a query. The QR code is generated on the page from the ticket's own URL (`absoluteUrl()`, now shared with `generateQRCode`); stored codes and invitation images still point at `/invite/[id]` until T-503. Declined and cancelled invitations get a message instead of the QR code; until check-in (T-504), a `CONFIRMED` invitation shows its ticket like a pending one. The page title has the event, not the guest's name, so a shared link preview doesn't show it. `Referrer-Policy: no-referrer` comes from `next.config.ts` for these URLs and a `<meta name="referrer">` tag. The theme fonts moved to `src/app/e/[slug]/fonts.ts`, shared with the event page.
 
 ### T-503 · QR codes encode the ticket link · S
 

@@ -44,6 +44,13 @@ export interface BulkCreateResult {
   summary: { total: number; createdCount: number; failedCount: number };
 }
 
+// What a guest's ticket page shows about their invitation (T-502)
+export interface GuestTicket {
+  name: string;
+  plusOne: number;
+  status: RsvpStatus;
+}
+
 type InvitationUpdates = {
   name?: string | undefined;
   status?: RsvpStatus | undefined;
@@ -186,6 +193,18 @@ export const invitationRepo = {
     status: RsvpStatus,
   ): Promise<InviteDetails | undefined> {
     return update({ id, eventId }, { status });
+  },
+
+  // A guest's ticket by its secret, within the event their link names; another event's token
+  // is treated as unknown
+  async getTicket(eventId: string, accessToken: string): Promise<GuestTicket | undefined> {
+    const invitation = await prisma.invitation.findUnique({
+      where: { accessToken, eventId },
+      select: { name: true, plusOne: true, status: true },
+    });
+    return invitation
+      ? { ...invitation, status: convertPrismaStatus(invitation.status as PrismaRsvpStatus) }
+      : undefined;
   },
 
   // Get an event's invitation list with pagination

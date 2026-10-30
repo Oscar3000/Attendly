@@ -24,7 +24,7 @@ export interface Theme {
     border: string;
     card: string;
   };
-  // CSS font-family values; web fonts come from the variables set in src/app/e/[slug]/page.tsx
+  // CSS font-family values; web fonts come from the variables in src/app/e/[slug]/fonts.ts
   fonts: { heading: string; body: string };
 }
 

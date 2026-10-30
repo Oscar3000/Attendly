@@ -46,7 +46,11 @@ const nextConfig: NextConfig = {
     return [{ source: "/admin/:path*", destination: "/dashboard", permanent: false }];
   },
   async headers() {
-    return [{ source: "/:path*", headers: securityHeaders }];
+    return [
+      { source: "/:path*", headers: securityHeaders },
+      // A guest ticket's URL is its credential (T-502): don't send it to other sites in Referer
+      { source: "/e/:slug/i/:token", headers: [{ key: "Referrer-Policy", value: "no-referrer" }] },
+    ];
   },
 };
 
