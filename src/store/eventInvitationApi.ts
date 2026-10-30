@@ -3,7 +3,8 @@
  * Every endpoint takes eventId and calls /api/events/[eventId]/...; cache tags carry the event,
  * so a change in one event never refetches another event's data
  * Used by the event dashboard under /dashboard/events/[eventId] (T-309), plus createEvent
- * for /dashboard/events/new (T-310) and updateEvent for the settings page (T-402)
+ * for /dashboard/events/new (T-310), updateEvent for the settings page (T-402) and the door
+ * helper links (T-506)
  */
 import type {
   AdminMetrics,
@@ -62,7 +63,19 @@ export const eventTags = {
   metrics: (eventId: string) => ({ type: "EventMetrics" as const, id: eventId }),
   status: (eventId: string) => ({ type: "EventStatus" as const, id: eventId }),
   invitation: (id: string) => ({ type: "Invitation" as const, id }),
+  doorLinks: (eventId: string) => ({ type: "DoorLinks" as const, id: eventId }),
 };
+
+// A door helper's check-in link (T-506), as the API returns it
+export interface DoorLink {
+  id: string;
+  name: string;
+  createdAt: string;
+  expiresAt: string;
+  revokedAt: string | null;
+  // People it has checked in
+  admitted: number;
+}
 
 // What a write in an event makes stale: that event's list, metrics and status updates,
 // and the invitation itself when there is one
@@ -188,6 +201,32 @@ export const eventInvitationApi = invitationApi.injectEndpoints({
       invalidatesTags: (_result, _error, { eventId, id }) => staleAfterWrite(eventId, id),
     }),
 
+    // Door helper links (T-506). Creating one returns its URL, which can't be fetched again
+    getDoorLinks: builder.query<{ doorLinks: DoorLink[] }, string>({
+      query: (eventId) => `${base(eventId)}/door-links`,
+      providesTags: (_result, _error, eventId) => [eventTags.doorLinks(eventId)],
+    }),
+
+    createDoorLink: builder.mutation<
+      { doorLink: DoorLink; url: string },
+      EventArg & { name: string }
+    >({
+      query: ({ eventId, name }) => ({
+        url: `${base(eventId)}/door-links`,
+        method: "POST",
+        body: { name },
+      }),
+      invalidatesTags: (_result, _error, { eventId }) => [eventTags.doorLinks(eventId)],
+    }),
+
+    revokeDoorLink: builder.mutation<{ doorLink: DoorLink }, EventArg & { id: string }>({
+      query: ({ eventId, id }) => ({
+        url: `${base(eventId)}/door-links/${encodeURIComponent(id)}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: (_result, _error, { eventId }) => [eventTags.doorLinks(eventId)],
+    }),
+
     deleteEventInvitation: builder.mutation<{ message: string }, InvitationArg>({
       query: ({ eventId, id }) => ({
         url: `${base(eventId)}/invitations/${encodeURIComponent(id)}`,
@@ -212,4 +251,7 @@ export const {
   useUpdateEventInvitationMutation,
   useUpdateEventRsvpStatusMutation,
   useDeleteEventInvitationMutation,
+  useGetDoorLinksQuery,
+  useCreateDoorLinkMutation,
+  useRevokeDoorLinkMutation,
 } = eventInvitationApi;

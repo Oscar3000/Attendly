@@ -38,6 +38,16 @@ export default function CheckInPage() {
             dispatch(eventInvitationApi.util.invalidateTags(staleAfterWrite(eventId)))
           }
         />
+
+        <p className="mt-8 text-center text-sm text-gray-600">
+          Someone else scanning?{" "}
+          <Link
+            href={`/dashboard/events/${eventId}/door-helpers`}
+            className="font-medium text-[#C07A54] hover:underline"
+          >
+            Give them a door helper link
+          </Link>
+        </p>
       </div>
     </main>
   );
