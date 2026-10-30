@@ -54,7 +54,7 @@ src/
       events/[eventId]/       # Event-scoped, owner only (requireEventOwner): PUT settings, invitations (+ [id], bulk), metrics, status
       invitations/[id]/       # PIN guests only: GET their invitation, PATCH its RSVP (requireGuest); removed in T-505
       health/                 # Health check
-    e/[slug]/                 # Public event page (no sign-in, noindex) + generated link preview image (opengraph-image.tsx); / redirects to /dashboard until T-409
+    e/[slug]/                 # Public event page (no sign-in, noindex) + generated link preview image (opengraph-image.tsx)
     invite/[id]/              # Guest invitation view
     invite-pin/               # Guest PIN entry
     login/                    # Email + password login
@@ -64,6 +64,7 @@ src/
     account/                  # Account settings: name, email (confirmed by email), password
   components/
     admin/                    # Dashboard components (header, table, metrics, status)
+    landing/                  # The product landing page at / (sign-up CTA, or "Your events" when signed in)
     button.tsx                # Reusable button (variants: primary, secondary, danger, attendly)
     qr-code.tsx               # QR code display
   lib/
