@@ -51,11 +51,8 @@ const ROUTE_POLICY: Record<string, Partial<Record<Method, Policy>> | "not tenant
   "/api/events/[eventId]/status": { GET: "victim" },
   // Creating an event makes the caller its owner (T-310)
   "/api/events": { POST: "own" },
-  // PIN guests only (T-312a): account sessions are refused outright
-  "/api/invitations/[id]": { GET: "victim", PATCH: "victim" },
   "/api/auth/[...all]": "not tenant data",
   "/api/health": "not tenant data",
-  "/api/invite/verify-pin": "not tenant data",
 };
 
 // Every route module, keyed by its URL path ("./events/[eventId]/route.ts" -> "/api/events/[eventId]")
@@ -101,7 +98,6 @@ const BODIES: Partial<Record<string, unknown | ((victim: { token: string }) => u
     date: "2030-01-01T12:00",
     timezone: "Europe/London",
   },
-  "PATCH /api/invitations/[id]": { status: "declined" },
   "POST /api/events/[eventId]/door-links": { name: "Intruder at the gate" },
   "POST /api/door/[token]/check-in": ({ token }: { token: string }) => ({ code: token }),
   "POST /api/events/[eventId]/check-in": ({ token }: { token: string }) => ({ code: token }),

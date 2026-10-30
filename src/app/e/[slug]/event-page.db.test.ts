@@ -6,8 +6,6 @@ import { stubAuthEnv } from "../../../../tests/helpers/auth";
 import EventPage, { generateMetadata } from "./page";
 import OpengraphImage from "./opengraph-image";
 
-// The camera scanner needs a browser
-vi.mock("@/components/home/qr-scanner", () => ({ default: () => null }));
 // next/font only works under Next's compiler
 vi.mock("next/font/google", () => ({
   Playfair_Display: () => ({ variable: "font-playfair" }),

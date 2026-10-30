@@ -7,7 +7,6 @@ import { themeStyle } from "@/lib/themes";
 import HeroSection from "@/components/home/hero-section";
 import CountdownSection from "@/components/home/countdown-section";
 import EventDetails from "@/components/home/event-details";
-import QrScanner from "@/components/home/qr-scanner";
 import HomeFooter from "@/components/home/home-footer";
 import { eventFontVariables } from "./fonts";
 
@@ -53,7 +52,6 @@ export default async function EventPage({ params }: EventPageProps) {
       <HeroSection event={event} />
       <CountdownSection startsAt={event.date.toISOString()} label={copyFor(event.type).countdown} />
       <EventDetails event={event} />
-      <QrScanner />
       <HomeFooter event={event} />
     </main>
   );

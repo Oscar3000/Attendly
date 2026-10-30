@@ -1,5 +1,5 @@
 /**
- * One invitation in an event (owner only; guests use /api/invitations/[id] until T-508)
+ * One invitation in an event (owner only)
  * GET    /api/events/[eventId]/invitations/[id]
  * PUT    /api/events/[eventId]/invitations/[id] - Update name, status or plusOne
  * PATCH  /api/events/[eventId]/invitations/[id] - Update RSVP status

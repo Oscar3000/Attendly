@@ -1,15 +1,6 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { describe, expect, it } from "vitest";
 import { NextRequest } from "next/server";
-import { middleware } from "./middleware";
-import { signSession } from "@/server/auth/session";
-
-beforeEach(() => {
-  vi.stubEnv("AUTH_SECRET", "test-secret-that-is-at-least-32-characters-long");
-});
-
-afterEach(() => {
-  vi.unstubAllEnvs();
-});
+import { middleware, config } from "./middleware";
 
 function request(path: string, cookies: Record<string, string> = {}) {
   const cookie = Object.entries(cookies)
@@ -20,8 +11,6 @@ function request(path: string, cookies: Record<string, string> = {}) {
 
 // NextResponse.next() marks the response with this header
 const passedThrough = (response: Response) => response.headers.get("x-middleware-next") === "1";
-
-const forged = Buffer.from(`admin:${Date.now()}`).toString("base64");
 
 // Middleware only checks that a Better Auth session cookie is present; route handlers and pages
 // verify it against the database (guards.db.test.ts)
@@ -47,43 +36,13 @@ describe("account routes (/dashboard, /api/events)", () => {
     expect((await middleware(request("/api/events/abc/invitations"))).status).toBe(401);
   });
 
-  it("doesn't accept the old admin token or a guest session", async () => {
-    const auth_token = await signSession("admin");
-    const invite_token = await signSession("guest");
-    expect((await middleware(request("/api/events/abc/metrics", { auth_token }))).status).toBe(401);
-    expect((await middleware(request("/api/events/abc/metrics", { invite_token }))).status).toBe(
-      401,
-    );
-  });
-});
-
-describe("/api/invitations (PIN guests only)", () => {
-  it("accepts a guest session", async () => {
-    const invite_token = await signSession("guest");
-    expect(passedThrough(await middleware(request("/api/invitations/abc", { invite_token })))).toBe(
-      true,
-    );
+  it("doesn't accept the old admin or PIN guest cookies", async () => {
+    for (const cookie of [{ auth_token: "x" }, { invite_token: "x" }]) {
+      expect((await middleware(request("/api/events/abc/metrics", cookie))).status).toBe(401);
+    }
   });
 
-  it("rejects an account session or a forged guest cookie", async () => {
-    expect((await middleware(request("/api/invitations/abc", sessionCookie))).status).toBe(401);
-    const response = await middleware(request("/api/invitations/abc", { invite_token: forged }));
-    expect(response.status).toBe(401);
-  });
-});
-
-describe("invite pages", () => {
-  it("lets a valid guest session through", async () => {
-    const invite_token = await signSession("guest");
-    expect(passedThrough(await middleware(request("/invite/abc", { invite_token })))).toBe(true);
-  });
-
-  it("redirects a forged guest cookie to the PIN page, keeping the destination", async () => {
-    const response = await middleware(request("/invite/abc?x=1", { invite_token: forged }));
-
-    expect(response.status).toBe(307);
-    const location = new URL(response.headers.get("location")!);
-    expect(location.pathname).toBe("/invite-pin");
-    expect(location.searchParams.get("redirect")).toBe("/invite/abc?x=1");
+  it("only runs for account routes: tickets and door links carry their own credential", () => {
+    expect(config.matcher).toEqual(["/dashboard/:path*", "/api/events/:path*"]);
   });
 });

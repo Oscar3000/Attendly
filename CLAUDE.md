@@ -49,17 +49,13 @@ src/
     dashboard/events/[eventId]/ # Event dashboard, settings, check-in scanner, door helper links, create/edit/bulk/success pages; layout checks ownership (404 otherwise) and shows the public page link
     api/
       auth/login|logout/      # Admin auth endpoints
-      invite/verify-pin/      # Guest PIN verification
       events/                 # POST: create an event (any signed-in user becomes its owner)
       events/[eventId]/       # Event-scoped, owner only (requireEventOwner): PUT settings, invitations (+ [id], bulk), metrics, status, check-in, door-links (+ [linkId])
       door/[token]/check-in/  # A door helper's check-in (link token, no sign-in); same scan() as the host's
-      invitations/[id]/       # PIN guests only: GET their invitation, PATCH its RSVP (requireGuest); removed in T-508
       health/                 # Health check
     e/[slug]/                 # Public event page (no sign-in, noindex) + generated link preview image (opengraph-image.tsx)
     door/[token]/             # A door helper's scanner (T-507): no sign-in, the link is the credential; check-in only
     e/[slug]/i/[token]/       # A guest's ticket (T-502): the token is the credential; read-only, QR code to show at the entrance
-    invite/[id]/              # Guest invitation view
-    invite-pin/               # Guest PIN entry
     login/                    # Email + password login
     signup/                   # Account sign-up (sends a verification email)
     forgot-password/          # Request a password reset email
@@ -86,12 +82,12 @@ src/
     ReduxProvider.tsx          # Provider wrapper
 prisma/
   schema.prisma               # DB schema (Invitation model, RsvpStatus enum)
-middleware.ts                  # Auth route protection
+middleware.ts                  # Account route protection (session cookie present)
 ```
 
 ## Database Schema
 
-- `Invitation` (`invitations`): id (cuid), name, status (PENDING|CONFIRMED|DECLINED|RESCINDED), plusOne, accessToken (unique secret in the guest's ticket link `/e/<slug>/i/<token>`), admittedCount (people let in at the door, at most plusOne + 1), eventId → Event (required, cascade delete), createdAt, updatedAt. The date and venue come from the event. `qrCode` is unused (dropped in T-508): owner reads return `ticketUrl` and a QR code made from the token, PIN-guest reads neither
+- `Invitation` (`invitations`): id (cuid), name, status (PENDING|CONFIRMED|DECLINED|RESCINDED), plusOne, accessToken (unique secret in the guest's ticket link `/e/<slug>/i/<token>`), admittedCount (people let in at the door, at most plusOne + 1), eventId → Event (required, cascade delete), createdAt, updatedAt. The date and venue come from the event. `qrCode` is unused (dropped in T-508b): reads return `ticketUrl` and a QR code made from the token
 - `Event` (`events`): id (cuid), ownerId → User (cascade delete), slug (unique), type (WEDDING|BIRTHDAY|CORPORATE|OTHER), title, date (UTC) + timezone (IANA), venueName?, venueAddress?, rsvpDeadline?, page content (hostNames?, headline?, tagline?, dressCode?, coverImageUrl?, notes?, and JSON `familyLines` / `colorPalette`, typed in `src/lib/event-content.ts` and `[]` when unset), createdAt, updatedAt
 - `CheckIn` (`check_ins`): id (cuid), invitationId → Invitation, eventId → Event (both cascade delete), count, checkedInByUserId? → User or doorLinkId? → DoorLink (both set null), createdAt. One row per admission at the door (T-504)
 - `DoorLink` (`door_links`): id (cuid), eventId → Event (cascade delete), name, tokenHash (SHA-256 of the token in `/door/<token>`; the token is shown once), createdAt, revokedAt?, expiresAt. A door helper's check-in link (T-506)
@@ -102,10 +98,9 @@ middleware.ts                  # Auth route protection
 
 - **Accounts**: Better Auth email + password (`/signup`, `/login`), endpoints at `/api/auth/*`, server instance from `getAuth()` in `src/server/auth/auth.ts`, client in `src/lib/auth-client.ts`
 - **Dashboard pages** (`/dashboard/events/[eventId]/*`) and the event API (`/api/events/...`): owning the event is the permission; other accounts get 404, signed-out users go to `/login` (pages) or get 401 (API)
-- **Guest**: PIN verification -> signed `invite_token` cookie (role `guest`, `src/server/auth/session.ts`) -> access to `/invite/*` (replaced by per-invitation links in Phase 5)
+- **Guests and door helpers** have no accounts: a guest's ticket link (`/e/<slug>/i/<token>`) and a door helper's link (`/door/<token>`) carry the credential in the URL. The shared-PIN flow was removed in T-508a
 - Session helpers live in `src/server/auth/current-user.ts`: `getCurrentUser()` and `requireUser()` (401). Route handlers pass `request.headers`; pages and server actions call them without arguments
-- PIN guests use `GET`/`PATCH /api/invitations/[id]`, guarded by `requireGuest()` from `src/server/auth/guards.ts`; account sessions get 401 there
-- **Middleware** is optimistic for accounts: it only checks a Better Auth session cookie is present (`getSessionCookie()`), redirecting to `/login` (pages) or returning 401 (API). Guest tokens are verified there
+- **Middleware** is optimistic for accounts: it only checks a Better Auth session cookie is present (`getSessionCookie()`), redirecting to `/login` (pages) or returning 401 (API). It only covers `/dashboard` and `/api/events`
 
 ## Environment Variables
 
@@ -132,7 +127,7 @@ All required variables are validated at startup (`src/instrumentation.ts` -> `sr
 - Server Components by default; `'use client'` for interactive UI
 - RTK Query for data fetching with tag-based cache invalidation. Event-scoped hooks (`useGetEventInvitationsQuery`, `useCreateEventInvitationMutation`, ...) live in `src/store/eventInvitationApi.ts`; their tags carry the event id, so a write only refetches that event's data
 - Repositories in `src/server/repositories/` hold all Prisma operations; route handlers stay thin
-- Invitation and metrics repository functions take `eventId` and only touch that event's invitations; another event's invitation behaves like a missing one. The only exceptions are `getInvitationForGuest` / `updateRsvpStatusForGuest` (shared-PIN guests, removed in T-508)
+- Invitation and metrics repository functions take `eventId` and only touch that event's invitations; another event's invitation behaves like a missing one
 - `utils.ts` has status converters between Prisma enums and app types
 - Path alias: `@/*` maps to `./src/*`
 - Security headers and the Content Security Policy live in `next.config.ts`. Everything loads from `'self'`; adding an external script, font, image or API means updating the CSP, or the browser blocks it
