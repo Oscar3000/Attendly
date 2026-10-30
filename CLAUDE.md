@@ -46,7 +46,7 @@ src/
   app/
     dashboard/                # The user's events (sign-in and email links land here); /admin/* redirects here
     dashboard/events/new/     # Create an event (POST /api/events); slug generated from the title
-    dashboard/events/[eventId]/ # Event dashboard, settings, create/edit/bulk/success pages; layout checks ownership (404 otherwise)
+    dashboard/events/[eventId]/ # Event dashboard, settings, create/edit/bulk/success pages; layout checks ownership (404 otherwise) and shows the public page link
     api/
       auth/login|logout/      # Admin auth endpoints
       invite/verify-pin/      # Guest PIN verification
