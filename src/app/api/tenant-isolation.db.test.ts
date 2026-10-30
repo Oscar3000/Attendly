@@ -12,6 +12,7 @@ import { getAuth } from "@/server/auth/auth";
 import { prisma } from "@/server/db/client";
 import { eventRepo, type Event } from "@/server/repositories/event.repo";
 import { invitationRepo } from "@/server/repositories/invitation.repo";
+import { doorLinkRepo } from "@/server/repositories/door-link.repo";
 import { sessionCookieFor, stubAuthEnv } from "../../../tests/helpers/auth";
 import DashboardPage from "../dashboard/page";
 import EventDashboardLayout from "../dashboard/events/[eventId]/layout";
@@ -43,6 +44,8 @@ const ROUTE_POLICY: Record<string, Partial<Record<Method, Policy>> | "not tenant
   "/api/events/[eventId]/invitations/bulk": { POST: "victim" },
   "/api/events/[eventId]/metrics": { GET: "victim" },
   "/api/events/[eventId]/check-in": { POST: "victim" },
+  "/api/events/[eventId]/door-links": { GET: "victim", POST: "victim" },
+  "/api/events/[eventId]/door-links/[linkId]": { DELETE: "victim" },
   "/api/events/[eventId]/status": { GET: "victim" },
   // Creating an event makes the caller its owner (T-310)
   "/api/events": { POST: "own" },
@@ -97,6 +100,7 @@ const BODIES: Partial<Record<string, unknown | ((victim: { token: string }) => u
     timezone: "Europe/London",
   },
   "PATCH /api/invitations/[id]": { status: "declined" },
+  "POST /api/events/[eventId]/door-links": { name: "Intruder at the gate" },
   "POST /api/events/[eventId]/check-in": ({ token }: { token: string }) => ({ code: token }),
 };
 
@@ -105,11 +109,13 @@ const VICTIM = {
   email: "victim@example.com",
   eventTitle: "Victim's secret wedding",
   guest: "Victim's guest Zelda",
+  doorHelper: "Victim's door helper Ben",
 };
 
 let victimEvent: Event;
 let victimInvitationId = "";
 let victimToken = "";
+let victimDoorLinkId = "";
 
 beforeAll(() => {
   stubAuthEnv();
@@ -135,6 +141,7 @@ beforeEach(async () => {
   victimInvitationId = invitation.id;
   victimToken = (await prisma.invitation.findUniqueOrThrow({ where: { id: invitation.id } }))
     .accessToken;
+  victimDoorLinkId = (await doorLinkRepo.create(victimEvent, VICTIM.doorHelper)).link.id;
 });
 
 // Everything about the victim's data, to compare before and after the attacks
@@ -142,7 +149,10 @@ async function victimSnapshot() {
   return JSON.stringify(
     await prisma.event.findMany({
       where: { owner: { email: VICTIM.email } },
-      include: { invitations: { orderBy: { id: "asc" } } },
+      include: {
+        invitations: { orderBy: { id: "asc" } },
+        doorLinks: { orderBy: { id: "asc" } },
+      },
     }),
   );
 }
@@ -194,7 +204,11 @@ describe("another account attacking", () => {
         headers: { cookie },
         ...(body === undefined ? {} : { body: JSON.stringify(body) }),
       });
-      const params = Promise.resolve({ eventId: victimEvent.id, id: victimInvitationId });
+      const params = Promise.resolve({
+        eventId: victimEvent.id,
+        id: victimInvitationId,
+        linkId: victimDoorLinkId,
+      });
       const response = await handler(request, { params });
       const text = await response.text();
 
@@ -202,7 +216,14 @@ describe("another account attacking", () => {
       if (expectation === "victim" && ![401, 403, 404].includes(response.status)) {
         failures.push(`${label}: expected 401, 403 or 404`);
       }
-      for (const secret of [VICTIM.eventTitle, VICTIM.guest, victimEvent.id, victimInvitationId]) {
+      for (const secret of [
+        VICTIM.eventTitle,
+        VICTIM.guest,
+        VICTIM.doorHelper,
+        victimEvent.id,
+        victimInvitationId,
+        victimDoorLinkId,
+      ]) {
         if (text.includes(secret)) failures.push(`${label}: response contains "${secret}"`);
       }
     }

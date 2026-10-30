@@ -89,3 +89,8 @@ export const updateEventSchema = z
     const times = toUtcTimes(fields, ctx);
     return times === z.NEVER ? z.NEVER : { ...times, rsvpDeadline: times.rsvpDeadline ?? null };
   });
+
+// A door helper link (T-506): who it's for, e.g. "Ben, front gate"
+export const createDoorLinkSchema = z.object({
+  name: z.string().trim().min(1).max(80),
+});

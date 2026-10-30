@@ -143,6 +143,7 @@ model Event {
   invitations   Invitation[]
   images        EventImage[]
   checkIns      CheckIn[]
+  doorLinks     DoorLink[]
   createdAt     DateTime     @default(now())
   updatedAt     DateTime     @updatedAt
 
@@ -175,14 +176,35 @@ model CheckIn {
   event             Event      @relation(fields: [eventId], references: [id], onDelete: Cascade)
   // How many people came in with this scan
   count             Int
-  // Who admitted them: the event owner's account (door helper links come in T-506)
+  // Who admitted them: the event owner's account, or a door helper's link (T-506)
   checkedInByUserId String?
   checkedInBy       User?      @relation(fields: [checkedInByUserId], references: [id], onDelete: SetNull)
+  doorLinkId        String?
+  doorLink          DoorLink?  @relation(fields: [doorLinkId], references: [id], onDelete: SetNull)
   createdAt         DateTime   @default(now())
 
   @@index([invitationId, createdAt])
   @@index([eventId, createdAt])
   @@map("check_ins")
+}
+
+// A door helper's check-in link (T-506): opens a scanner that can only check guests in to this
+// event, with no sign-in. Revoking keeps the row, so past check-ins still say who admitted whom
+model DoorLink {
+  id        String    @id @default(cuid())
+  eventId   String
+  event     Event     @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  // Who the host gave it to, e.g. "Ben, front gate"; shown as who admitted guests
+  name      String
+  // SHA-256 (hex) of the token in the link. The token itself is shown to the host once
+  tokenHash String    @unique
+  createdAt DateTime  @default(now())
+  revokedAt DateTime?
+  expiresAt DateTime
+  checkIns  CheckIn[]
+
+  @@index([eventId])
+  @@map("door_links")
 }
 
 enum EventType {

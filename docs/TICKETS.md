@@ -522,12 +522,13 @@ Add `admittedCount` (default 0) to `Invitation` and a `CheckIn` table (invitatio
 - **Files:** ~6
 - **As built:** `src/components/check-in/`: `QrCamera` (html5-qrcode, back camera, reports one code and stops when unmounted) and `CheckInFlow` (takes the API `endpoint` and the event's time zone, so T-507 reuses it with the door link's endpoint). To ask how many are coming in before anyone is admitted, the API gained `preview: true` (`checkInRepo.preview()`, result `ready`), sharing its lookup with the admit path. A scan previews; with one place left it admits straight away, otherwise the helper picks a count (default: everyone left). Results are a full-screen green or red screen with a vibration; the wording for each result is `checkInMessage()` in `src/lib/check-in.ts` (unit-tested), along with the response types. Without a camera, the helper pastes or types the ticket link or code. The page is a "Check in" button in the dashboard header; admitting invalidates the event's RTK Query tags. The header's buttons now wrap on phones (they overflowed the screen).
 
-### T-506 · Door helper links: create, name, revoke · M
+### ✅ T-506 · Door helper links: create, name, revoke · M
 
 A `DoorLink` table: event, name ("Ben, front gate"), the SHA-256 hash of a random token (the token itself is shown once), created, revoked, expires (default: the day after the event). On the event dashboard the host creates a link, copies it, sees each link's check-in count, and revokes it. Owner-only API under `/api/events/[eventId]/door-links`.
 
 - **Depends on:** T-504
 - **Files:** ~7
+- **As built:** `door_links` (`DoorLink`) stores the SHA-256 of a random 32-byte token; `POST /api/events/[eventId]/door-links` returns the link's URL (`/door/<token>`, the T-507 page) once, and the list and revoke responses never include it. `doorLinkRepo` (`src/server/repositories/door-link.repo.ts`) is scoped by event like the other repositories: revoking another event's link is a 404 even for the same host. Revoking (`DELETE …/door-links/[linkId]`) sets `revokedAt` and keeps the row, so past check-ins still name who admitted whom; `CheckIn.doorLinkId` (set null on delete) records it. Links expire a day after the event starts, or a day from now for an event already under way or past (`defaultDoorLinkExpiry()`); there's no custom expiry yet. The host manages them at `/dashboard/events/[eventId]/door-helpers`, linked from the check-in page, with each link's count of people checked in. RTK Query hooks and a `DoorLinks` tag are in `eventInvitationApi.ts`. Both routes are in the tenant isolation test, which now gives the victim a door link too.
 
 ### T-507 · Door helper scanner `/door/[token]` · M
 
