@@ -66,13 +66,6 @@ export interface ButtonProps extends BaseComponentProps {
   textColor?: string;
 }
 
-// Invite page types
-export interface InvitePageProps {
-  params: Promise<{
-    id: string;
-  }>;
-}
-
 export interface InviteDetails extends WeddingInvitation {
   plusOne?: number;
   // The guest's ticket link (T-503), which qrCode encodes. Only in the event owner's responses

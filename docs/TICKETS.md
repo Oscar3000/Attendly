@@ -539,14 +539,21 @@ No sign-in: the link is the credential, and it can only check people in for its 
 - **Files:** ~6
 - **As built:** `doorLinkRepo.findByToken()` hashes the token and answers active, inactive (revoked or expired) or unknown. `/door/[token]` shows the event's names, "Checking in as <link name>" and the T-505 `CheckInFlow`; an inactive link shows "This check-in link no longer works", an unknown one is a 404. Both check-in routes now call `scan()` (`src/server/check-in/scan.ts`), which parses the body and previews or admits within one event; `checkInRepo` takes `{ userId }` or `{ doorLinkId }`, and "already checked in … by" names the link for helper check-ins. A revoked, expired or unknown link gets `{ result: "link_inactive" }` (403), which the scanner shows as a red screen, so a helper whose link is revoked mid-shift finds out on their next scan. The page sends `Referrer-Policy: no-referrer` (`next.config.ts`) and is `noindex`. The tenant isolation harness gives the attacker a door link for their own event and scans the victim's ticket with it.
 
-### T-508 · Remove shared PIN flow · M
+### ✅ T-508a · Remove the shared PIN flow · M
 
-Delete `invite-pin/`, `api/invite/verify-pin`, the `INVITE_PIN` env var, the guest cookie logic in middleware, `invite/[id]/`, `api/invitations/[id]/`, the PIN guest endpoints in `invitationApi.ts`, and the scanner on the public event page (door check-in replaced it).
+Split from T-508 (about 35 files). Delete `invite-pin/`, `api/invite/verify-pin`, the guest cookie logic in middleware, `invite/[id]/`, `api/invitations/[id]/`, the PIN guest endpoints in `invitationApi.ts`, the scanner on the public event page (door check-in replaced it), and `invitationRepo.getInvitationForGuest` / `updateRsvpStatusForGuest` (T-306), the last unscoped invitation queries.
 
-- Delete `invitationRepo.getInvitationForGuest` / `updateRsvpStatusForGuest` (T-306), the last unscoped invitation queries.
-- Drop the unused `invitations.qrCode` column (nullable since T-503).
-- Delete `src/server/auth/session.ts` (the T-101 token code, now only used for guest tokens) and `requireGuest()` / `requireAdminOrGuest()`; the remaining tests that sign an `admin` token go with it.
 - **Depends on:** T-503, T-507
+- **Files:** ~20
+- **As built:** middleware now only covers `/dashboard` and `/api/events`: a session cookie or a redirect to `/login` (401 for the API). `invitationApi.ts` keeps the slice (base URL, tags) with no endpoints of its own; everything is injected from `eventInvitationApi.ts`. `invitationRepo`'s update always returns the ticket link now that only owners call it. `InviteNotFound` and `InvitePageProps` went with the invite page. Old `/invite/<id>` and `/invite-pin` URLs are now 404s (the original wedding is over, and its QR codes pointed there). The guest-token code itself (`session.ts`, `guards.ts`) and the `INVITE_PIN` / `AUTH_SECRET` env vars are unused from here and removed in T-508b.
+
+### T-508b · Remove the guest token code, PIN env vars and `qrCode` column · S
+
+- Delete `src/server/auth/session.ts` (the T-101 token code, used only by guest tokens) and `src/server/auth/guards.ts` (`requireGuest()`), with their tests; the remaining tests that sign tokens go with them.
+- Remove the `INVITE_PIN` and `AUTH_SECRET` env vars (`env.ts`, tests, `docker-compose.yml`, `DEPLOYMENT.md`); Better Auth has its own `BETTER_AUTH_SECRET`.
+- Delete `public/free-qr.png` (only the removed scanner used it).
+- Drop the unused `invitations.qrCode` column (nullable since T-503).
+- **Depends on:** T-508a
 - **Files:** ~15
 
 ### T-509 · Check-in dashboard: arrived vs expected · S

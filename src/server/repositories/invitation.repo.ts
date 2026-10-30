@@ -2,7 +2,7 @@
  * Invitation repository
  * All Prisma reads and writes for invitations
  * Every query is scoped to one event (T-306): an invitation in another event behaves exactly
- * like a missing one. The only exceptions are the two *ForGuest functions at the end
+ * like a missing one
  * The date and venue come from the invitation's event (T-304)
  */
 import "server-only";
@@ -82,12 +82,10 @@ type InvitationUpdates = {
   plusOne?: number | undefined;
 };
 
-// Shared by the scoped and guest updates. The date and venue are changed on the event. Only
-// the owner's (scoped) update returns the ticket link
+// Shared by the updates below. The date and venue are changed on the event
 async function update(
   where: Prisma.InvitationWhereUniqueInput,
   updates: InvitationUpdates,
-  withTicketLink: boolean,
 ): Promise<InviteDetails | undefined> {
   const data: Partial<{ name: string; plusOne: number; status: PrismaRsvpStatus }> = {};
   if (updates.name !== undefined) data.name = updates.name;
@@ -96,7 +94,7 @@ async function update(
 
   try {
     const updated = await prisma.invitation.update({ where, data, include: withEvent });
-    return withTicketLink ? withTicket(updated) : convertToInviteDetails(updated);
+    return withTicket(updated);
   } catch (error) {
     if (isNotFound(error)) return undefined;
     throw error;
@@ -187,7 +185,7 @@ export const invitationRepo = {
     id: string,
     updates: InvitationUpdates,
   ): Promise<InviteDetails | undefined> {
-    return update({ id, eventId }, updates, true);
+    return update({ id, eventId }, updates);
   },
 
   // Delete an invitation within an event
@@ -207,7 +205,7 @@ export const invitationRepo = {
     id: string,
     status: RsvpStatus,
   ): Promise<InviteDetails | undefined> {
-    return update({ id, eventId }, { status }, true);
+    return update({ id, eventId }, { status });
   },
 
   // A guest's ticket by its secret, within the event their link names; another event's token
@@ -291,22 +289,5 @@ export const invitationRepo = {
         totalPages: Math.ceil(total / limit),
       },
     };
-  },
-
-  /*
-   * Guest (shared PIN) access, by invitation id alone: the PIN isn't tied to an event, and the
-   * id in the guest's link is what identifies their invitation. Only for the guest branch of
-   * GET/PATCH /api/invitations/[id]; removed with the PIN flow in T-508
-   */
-  async getInvitationForGuest(id: string): Promise<InviteDetails | undefined> {
-    const invitation = await prisma.invitation.findUnique({ where: { id }, include: withEvent });
-    return invitation ? convertToInviteDetails(invitation) : undefined;
-  },
-
-  async updateRsvpStatusForGuest(
-    id: string,
-    status: RsvpStatus,
-  ): Promise<InviteDetails | undefined> {
-    return update({ id }, { status }, false);
   },
 };

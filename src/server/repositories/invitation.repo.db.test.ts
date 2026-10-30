@@ -70,7 +70,7 @@ describe("invitationRepo", () => {
     for (const token of tokens) expect(token).toMatch(/^[A-Za-z0-9_-]{43}$/);
   });
 
-  it("gives the owner each guest's ticket link and a QR code for it, and PIN guests neither", async () => {
+  it("gives the owner each guest's ticket link and a QR code for it", async () => {
     const one = await createGuest("Ada Lovelace");
     const { accessToken } = await prisma.invitation.findUniqueOrThrow({ where: { id: one.id } });
     const path = `/e/test-event/i/${accessToken}`;
@@ -90,15 +90,6 @@ describe("invitationRepo", () => {
     expect(await invitationRepo.updateRsvpStatus(event.id, one.id, "declined")).toMatchObject(
       ticket,
     );
-
-    // A shared-PIN guest can read any invitation by id, so they must not get its ticket
-    const forGuest = JSON.stringify([
-      await invitationRepo.getInvitationForGuest(one.id),
-      await invitationRepo.updateRsvpStatusForGuest(one.id, "confirmed"),
-    ]);
-    expect(forGuest).not.toContain(accessToken);
-    expect(forGuest).not.toContain("data:image");
-    expect(forGuest).not.toContain("ticketUrl");
   });
 
   it("takes the date and venue from the event, so changing the event changes every invitation", async () => {
@@ -186,18 +177,5 @@ describe("scoping by event", () => {
 
     const untouched = await invitationRepo.getInvitationById(otherEvent.id, theirs.id);
     expect(untouched).toMatchObject({ name: "Other guest", status: "pending" });
-  });
-
-  it("lets a guest read and RSVP by invitation id alone (PIN flow, until T-508)", async () => {
-    const created = await createGuest("Ada Lovelace");
-
-    expect(await invitationRepo.getInvitationForGuest(created.id)).toMatchObject({
-      name: "Ada Lovelace",
-    });
-    expect(await invitationRepo.updateRsvpStatusForGuest(created.id, "confirmed")).toMatchObject({
-      status: "confirmed",
-    });
-    expect(await invitationRepo.getInvitationForGuest("missing")).toBeUndefined();
-    expect(await invitationRepo.updateRsvpStatusForGuest("missing", "confirmed")).toBeUndefined();
   });
 });
