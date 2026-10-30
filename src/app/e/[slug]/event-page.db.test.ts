@@ -1,13 +1,20 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import { prisma } from "@/server/db/client";
 import { eventRepo, type EventInput } from "@/server/repositories/event.repo";
-import EventPage from "./page";
+import { stubAuthEnv } from "../../../../tests/helpers/auth";
+import EventPage, { generateMetadata } from "./page";
+import OpengraphImage from "./opengraph-image";
 
 // The camera scanner needs a browser
 vi.mock("@/components/home/qr-scanner", () => ({ default: () => null }));
 
 let ownerId = "";
+
+// generateMetadata reads BETTER_AUTH_URL for absolute preview image URLs
+beforeAll(() => {
+  stubAuthEnv();
+});
 
 // Users and events are truncated before each test
 beforeEach(async () => {
@@ -93,5 +100,55 @@ describe("/e/[slug]", () => {
     await expect(render("no-such-event")).rejects.toMatchObject({
       digest: expect.stringContaining("404"),
     });
+  });
+});
+
+describe("/e/[slug] metadata (T-404)", () => {
+  const metadataFor = (slug: string) => generateMetadata({ params: Promise.resolve({ slug }) });
+
+  it("titles the page after the hosts and describes when and where, kept out of search", async () => {
+    await eventRepo.create(ownerId, {
+      ...base,
+      hostNames: "Ada & Charles",
+      tagline: "Two families, one celebration",
+      venueName: "Canary World",
+    });
+
+    const metadata = await metadataFor("ada-and-charles");
+
+    const description =
+      "Two families, one celebration · Monday, May 24, 2027 at 12:30 AM · Canary World";
+    expect(metadata).toMatchObject({
+      title: { absolute: "Ada & Charles" },
+      description,
+      openGraph: { title: "Ada & Charles", description },
+      robots: { index: false, follow: false },
+    });
+    expect(String(metadata.metadataBase)).toBe("http://localhost:3000/");
+  });
+
+  it("uses the title, and only the date when there's no venue or tagline", async () => {
+    await eventRepo.create(ownerId, base);
+
+    expect(await metadataFor("ada-and-charles")).toMatchObject({
+      title: { absolute: "Ada & Charles' wedding" },
+      description: "Monday, May 24, 2027 at 12:30 AM",
+    });
+  });
+
+  it("reveals nothing for an unknown slug", async () => {
+    expect(await metadataFor("no-such-event")).toEqual({ title: "Event not found" });
+  });
+
+  it("draws a PNG preview image for the event, and 404s for an unknown slug", async () => {
+    await eventRepo.create(ownerId, base);
+
+    const image = await OpengraphImage({ params: Promise.resolve({ slug: "ada-and-charles" }) });
+    expect(image.headers.get("content-type")).toBe("image/png");
+    expect((await image.arrayBuffer()).byteLength).toBeGreaterThan(1000);
+
+    await expect(
+      OpengraphImage({ params: Promise.resolve({ slug: "no-such-event" }) }),
+    ).rejects.toMatchObject({ digest: expect.stringContaining("404") });
   });
 });

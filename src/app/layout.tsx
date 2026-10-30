@@ -11,10 +11,11 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Oscar & Pamela's Wedding",
-  description: "Manage invitations, RSVPs, and guest details for Oscar and Pamela's wedding.",
-  keywords: ["wedding", "invitation", "rsvp", "oscar", "pamela"],
-  authors: [{ name: "Attendly Team" }],
+  // Pages without their own title get "Attendly"; event pages set theirs in full (T-404)
+  title: { default: "Attendly", template: "%s · Attendly" },
+  description:
+    "Invitations, RSVPs and guest lists for your events, with a QR code for every guest.",
+  applicationName: "Attendly",
   icons: {
     icon: [
       {

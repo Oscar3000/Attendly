@@ -419,11 +419,12 @@ Replace the hard-coded `src/app/page.tsx` with `/e/[slug]`. The hero, details, c
 - **Files:** ~10
 - **As built:** `/e/[slug]` is public (outside the middleware matcher) and 404s for an unknown slug. The hero splits host names written as "A & B" or "A and B" into the two-name layout with a monogram, and shows anything else as written. The hero uses the title when `hostNames` is empty and "You're invited to celebrate" when `headline` is empty (until T-407). The fixed church and reception cards are now a "when" card (with the RSVP deadline) and a "where" card. Dress code, colours of the day and notes ("Good to Know") only appear when set. The countdown counts to `event.date`. The theme colours are still the fixed brand palette (T-405). `/` redirects to `/dashboard` (signed-out visitors land on `/login`) until T-409. Invitations now carry `eventTimezone`, and the guest invite, success and edit pages format with the new `formatEventDate()` / `formatEventTime()` / `formatEventDateTime()`. Any event is public to anyone who knows or guesses its slug, which comes from the title.
 
-### T-404 · Dynamic metadata · S
+### ✅ T-404 · Dynamic metadata · S
 
 Use `generateMetadata` on `/e/[slug]` (title, description, OG image). Make the root `layout.tsx` metadata generic.
 
 - **Files:** ~3
+- **As built:** the title is the host names (or the event title), and the description is the tagline plus when and where, on the event's clock. The OG image is generated per event by `src/app/e/[slug]/opengraph-image.tsx` (`next/og`, 1200×630, no storage needed). Next adds it to `og:image` and `twitter:image` as an absolute URL from `BETTER_AUTH_URL`. Event pages are `noindex, nofollow`: anyone with the link can open them, but search shouldn't list hosts' dates and venues. The page, its metadata and the image share `src/server/events/public-event.ts`, and React `cache` keeps it to one query per page render. The root layout is "Attendly" with a `%s · Attendly` title template. An unknown slug's metadata says only "Event not found". Checked in a running dev server: tags, a 200 PNG, and a 404 for an unknown slug.
 
 ### T-405 · Theme presets · M
 

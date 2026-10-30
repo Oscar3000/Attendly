@@ -54,7 +54,7 @@ src/
       events/[eventId]/       # Event-scoped, owner only (requireEventOwner): PUT settings, invitations (+ [id], bulk), metrics, status
       invitations/[id]/       # PIN guests only: GET their invitation, PATCH its RSVP (requireGuest); removed in T-505
       health/                 # Health check
-    e/[slug]/                 # Public event page (no sign-in), rendered from the event's fields; / redirects to /dashboard until T-409
+    e/[slug]/                 # Public event page (no sign-in, noindex) + generated link preview image (opengraph-image.tsx); / redirects to /dashboard until T-409
     invite/[id]/              # Guest invitation view
     invite-pin/               # Guest PIN entry
     login/                    # Email + password login

@@ -1,16 +1,43 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { eventRepo } from "@/server/repositories/event.repo";
+import { getEnv } from "@/server/env";
+import { eventDisplayName, eventWhenAndWhere, getPublicEvent } from "@/server/events/public-event";
 import HeroSection from "@/components/home/hero-section";
 import CountdownSection from "@/components/home/countdown-section";
 import EventDetails from "@/components/home/event-details";
 import QrScanner from "@/components/home/qr-scanner";
 import HomeFooter from "@/components/home/home-footer";
 
+interface EventPageProps {
+  params: Promise<{ slug: string }>;
+}
+
+// Title, description and link preview (opengraph-image.tsx) for sharing the link (T-404)
+export async function generateMetadata({ params }: EventPageProps): Promise<Metadata> {
+  const event = await getPublicEvent((await params).slug);
+  if (!event) return { title: "Event not found" };
+
+  const title = eventDisplayName(event);
+  const description = event.tagline
+    ? `${event.tagline} · ${eventWhenAndWhere(event)}`
+    : eventWhenAndWhere(event);
+  return {
+    // Absolute URLs for the preview image, which crawlers fetch from outside
+    metadataBase: new URL(getEnv().BETTER_AUTH_URL),
+    title: { absolute: title },
+    description,
+    openGraph: { type: "website", title, description },
+    twitter: { card: "summary_large_image", title, description },
+    // Anyone with the link can open the page, but it shouldn't be findable through search
+    robots: { index: false, follow: false },
+  };
+}
+
 /**
  * An event's public page (T-403): anyone with the link can see it, no sign-in
  */
-export default async function EventPage({ params }: { params: Promise<{ slug: string }> }) {
-  const event = await eventRepo.findBySlug((await params).slug);
+export default async function EventPage({ params }: EventPageProps) {
+  const event = await getPublicEvent((await params).slug);
   if (!event) notFound();
 
   return (
