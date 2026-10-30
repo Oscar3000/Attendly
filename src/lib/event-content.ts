@@ -26,3 +26,17 @@ export const colorPaletteSchema = z.array(paletteColorSchema).max(8);
 
 export type FamilyLine = z.infer<typeof familyLineSchema>;
 export type PaletteColor = z.infer<typeof paletteColorSchema>;
+
+// A wedding's "Pamela & Oscar" -> ["Pamela", "Oscar"]: shown as two names (and a monogram) on
+// the event page and the invitation image. Anything else is shown as written: other event types
+// ("Tech Summit and Expo"), one name, three, or long sides ("Acme Gala and Long Service Awards")
+const MAX_WORDS_PER_NAME = 3;
+export function splitCouple(type: string, names: string): [string, string] | undefined {
+  if (type !== "WEDDING") return undefined;
+  const parts = names.split(/\s+(?:&|and)\s+/i);
+  const [first, second] = parts;
+  const short = (name: string) => name.trim().split(/\s+/).length <= MAX_WORDS_PER_NAME;
+  return parts.length === 2 && first && second && short(first) && short(second)
+    ? [first, second]
+    : undefined;
+}
