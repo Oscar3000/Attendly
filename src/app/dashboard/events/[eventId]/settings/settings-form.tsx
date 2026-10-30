@@ -5,7 +5,12 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { FamilyLine, PaletteColor } from "@/lib/event-content";
 import { THEME_IDS, THEMES } from "@/lib/themes";
-import { useUpdateEventMutation, type EventSettingsForm } from "@/store/eventInvitationApi";
+import {
+  useRemoveEventCoverMutation,
+  useUpdateEventMutation,
+  useUploadEventCoverMutation,
+  type EventSettingsForm,
+} from "@/store/eventInvitationApi";
 import { FormError, SubmitButton } from "@/components/auth/auth-card";
 import { TextField } from "@/components/auth/text-field";
 import { EVENT_TYPES, fieldErrorsFrom, selectClass } from "@/components/events/event-form";
@@ -16,6 +21,7 @@ type TextFieldName = Exclude<keyof EventSettingsForm, "familyLines" | "colorPale
 interface SettingsFormProps {
   eventId: string;
   initial: EventSettingsForm;
+  coverImageUrl: string | null;
   timeZones: string[];
 }
 
@@ -36,7 +42,81 @@ function ListError({ id, message }: { id: string; message?: string | undefined }
   );
 }
 
-export default function SettingsForm({ eventId, initial, timeZones }: SettingsFormProps) {
+// Uploads or removes the cover straight away, separately from the Save button (T-406)
+function CoverImageField({ eventId, initialUrl }: { eventId: string; initialUrl: string | null }) {
+  const [url, setUrl] = useState(initialUrl);
+  const [error, setError] = useState<string>();
+  const [uploadCover, { isLoading: uploading }] = useUploadEventCoverMutation();
+  const [removeCover, { isLoading: removing }] = useRemoveEventCoverMutation();
+  const busy = uploading || removing;
+
+  const handleFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+    setError(undefined);
+    try {
+      setUrl((await uploadCover({ eventId, file }).unwrap()).coverImageUrl);
+    } catch (err) {
+      setError(
+        fieldErrorsFrom<"file">(err)?.file ?? "Couldn't upload the image. Please try again.",
+      );
+    }
+  };
+
+  const handleRemove = async () => {
+    setError(undefined);
+    try {
+      await removeCover({ eventId }).unwrap();
+      setUrl(null);
+    } catch {
+      setError("Couldn't remove the image. Please try again.");
+    }
+  };
+
+  return (
+    <div className="mb-4">
+      <span className={labelClass}>Cover image</span>
+      {url && (
+        // eslint-disable-next-line @next/next/no-img-element -- already resized server-side
+        <img
+          src={url}
+          alt="Current cover"
+          className="mb-3 max-h-56 w-full rounded-lg object-cover"
+        />
+      )}
+      <div className="flex flex-wrap items-center gap-2">
+        <label className={`${smallButtonClass} cursor-pointer has-focus-visible:ring-2`}>
+          {uploading ? "Uploading…" : url ? "Replace image" : "Upload image"}
+          <input
+            type="file"
+            accept="image/jpeg,image/png,image/webp"
+            onChange={handleFile}
+            disabled={busy}
+            aria-describedby="cover-help cover-error"
+            className="sr-only"
+          />
+        </label>
+        {url && (
+          <button type="button" onClick={handleRemove} disabled={busy} className={smallButtonClass}>
+            {removing ? "Removing…" : "Remove"}
+          </button>
+        )}
+      </div>
+      <p id="cover-help" className="font-inter mt-1 text-xs text-[#666666]">
+        JPEG, PNG or WebP, up to 5 MB. Saved right away.
+      </p>
+      <ListError id="cover-error" message={error} />
+    </div>
+  );
+}
+
+export default function SettingsForm({
+  eventId,
+  initial,
+  coverImageUrl,
+  timeZones,
+}: SettingsFormProps) {
   const router = useRouter();
   const [form, setForm] = useState<EventSettingsForm>(initial);
   const [errors, setErrors] = useState<FieldErrors>({});
@@ -172,6 +252,7 @@ export default function SettingsForm({ eventId, initial, timeZones }: SettingsFo
             <p className="font-inter mb-4 text-sm text-[#666666]">
               What guests see on your event page. Everything here is optional.
             </p>
+            <CoverImageField eventId={eventId} initialUrl={coverImageUrl} />
             <TextField
               label="Host names"
               placeholder={`Leave empty to show "${form.title || "the title"}"`}

@@ -71,8 +71,9 @@ src/
     utils.ts                  # Formatting, QR generation, status helpers
   server/                     # Server-only code (`import 'server-only'`)
     db/client.ts              # Prisma client singleton
-    repositories/             # invitation.repo.ts, event.repo.ts, metrics.repo.ts (all Prisma queries)
+    repositories/             # invitation.repo.ts, event.repo.ts, metrics.repo.ts, image.repo.ts (all Prisma queries)
     email/send-email.ts       # sendEmail(): Resend when RESEND_API_KEY is set, console log in dev
+    uploads/cover-images.ts   # Cover uploads: sharp re-encode to WebP, stored in Postgres (image.repo.ts), served by /uploads/[file]
   store/
     store.ts                  # Redux store config
     invitationApi.ts          # RTK Query API slice
@@ -86,6 +87,7 @@ middleware.ts                  # Auth route protection
 
 - `Invitation` (`invitations`): id (cuid), name, qrCode, status (PENDING|CONFIRMED|DECLINED|RESCINDED), plusOne, eventId → Event (required, cascade delete), createdAt, updatedAt. The date and venue come from the event
 - `Event` (`events`): id (cuid), ownerId → User (cascade delete), slug (unique), type (WEDDING|BIRTHDAY|CORPORATE|OTHER), title, date (UTC) + timezone (IANA), venueName?, venueAddress?, rsvpDeadline?, page content (hostNames?, headline?, tagline?, dressCode?, coverImageUrl?, notes?, and JSON `familyLines` / `colorPalette`, typed in `src/lib/event-content.ts` and `[]` when unset), createdAt, updatedAt
+- `EventImage` (`event_images`): id (uuid), eventId → Event (cascade delete), bytes (re-encoded WebP), contentType, createdAt. Uploaded covers, served at `/uploads/<id>.webp`
 - Better Auth tables: `users`, `sessions`, `accounts`, `verifications` (create users through Better Auth, never with Prisma directly)
 
 ## Auth Flow

@@ -40,5 +40,12 @@ export default async function EventSettingsPage({
   };
 
   // The zone list comes from the server so the server and browser render the same options
-  return <SettingsForm eventId={event.id} initial={initial} timeZones={listTimeZones()} />;
+  return (
+    <SettingsForm
+      eventId={event.id}
+      initial={initial}
+      coverImageUrl={event.coverImageUrl}
+      timeZones={listTimeZones()}
+    />
+  );
 }

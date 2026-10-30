@@ -60,6 +60,11 @@ export default async function EventPage({ params }: EventPageProps) {
       className={`min-h-screen ${playfair.variable} ${montserrat.variable}`}
       style={themeStyle(event.theme)}
     >
+      {event.coverImageUrl && (
+        // Decorative: the hero below says what the event is
+        // eslint-disable-next-line @next/next/no-img-element -- already resized server-side
+        <img src={event.coverImageUrl} alt="" className="block max-h-[60vh] w-full object-cover" />
+      )}
       <HeroSection event={event} />
       <CountdownSection startsAt={event.date.toISOString()} />
       <EventDetails event={event} />

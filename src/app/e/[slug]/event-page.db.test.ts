@@ -115,6 +115,15 @@ describe("/e/[slug]", () => {
     expect(await render("ada-and-charles")).toContain("--event-accent:#C07A54");
   });
 
+  it("shows the cover image above the hero when there is one (T-406)", async () => {
+    const event = await eventRepo.create(ownerId, base);
+    expect(await render("ada-and-charles")).not.toContain("<img");
+
+    const cover = "/uploads/0b8e9d4c-2f7a-4c1e-9d3b-5a6f7e8d9c0b.webp";
+    await eventRepo.update(event.id, { coverImageUrl: cover });
+    expect(await render("ada-and-charles")).toContain(`<img src="${cover}" alt=""`);
+  });
+
   it("is a 404 for an unknown slug", async () => {
     await expect(render("no-such-event")).rejects.toMatchObject({
       digest: expect.stringContaining("404"),

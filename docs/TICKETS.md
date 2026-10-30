@@ -433,11 +433,12 @@ Store `theme` on `Event` (accent color, font pairing). Apply it with CSS variabl
 - **Files:** ~8
 - **As built:** `Event.theme` is a preset id (`TEXT NOT NULL DEFAULT 'terracotta'`), not an enum, so adding a preset needs no migration. An id that's no longer in the code reads as the default. `src/lib/themes.ts` has four presets: Terracotta (the original look), Sage garden, Midnight navy and Blush. Each has nine colour roles and a heading/body font pair. `themeStyle()` sets them as `--event-*` variables on the `/e/[slug]` root, and the `src/components/home/*` components read those variables instead of hex values. White text on each accent is at least as readable as on the original. Playfair Display and Montserrat are self-hosted with `next/font` and not preloaded, so a page only downloads the fonts its theme uses (CSP unchanged). The settings page has a theme picker (swatches, keyboard focus ring), and the generated preview image (T-404) uses the theme's colours.
 
-### T-406 · Cover image upload · M
+### ✅ T-406 · Cover image upload · M
 
 Upload to S3, R2, or UploadThing and store the URL. Validate size and type.
 
 - **Files:** ~6
+- **As built:** images are stored in Postgres (`event_images`, `bytea`, cascading from the event) rather than S3, R2, UploadThing or a disk volume. That means no new paid service, no volume (a Railway volume would mean root-owned mounts and downtime on every redeploy), images are included in database backups, and deleting an event or account deletes its covers. Storage goes through `imageRepo` (`src/server/repositories/image.repo.ts`), so moving to S3/R2 later changes only that plus a one-off copy. `POST /api/events/[eventId]/cover` (owner only, multipart `file`) refuses bodies over 5 MB, decodes with sharp and accepts only JPEG/PNG/WebP by content (an SVG or GIF labelled as a PNG is refused). It refuses decompression bombs (40 MP limit), applies the photo's orientation, resizes to at most 2000px wide and re-encodes as WebP, which drops EXIF including GPS. The new image, the event's `coverImageUrl` (`/uploads/<uuid>.webp`) and deleting the previous image happen in one transaction. `DELETE .../cover` clears the cover. `GET /uploads/[file]` serves images by id with immutable caching (a new cover gets a new id), so each visitor's browser fetches an image once. The settings page uploads and removes straight away (separate from Save), and `/e/[slug]` shows the cover as a banner above the hero. Because images are same-origin, the CSP is unchanged. Not done: covers in the generated preview image. Move to object storage if images reach tens of thousands or traffic gets heavy.
 
 ### T-407 · Copy by event type · S
 

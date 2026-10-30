@@ -96,6 +96,19 @@ export const eventInvitationApi = invitationApi.injectEndpoints({
       ],
     }),
 
+    // The cover image (T-406): a multipart upload, re-encoded server-side
+    uploadEventCover: builder.mutation<{ coverImageUrl: string }, EventArg & { file: File }>({
+      query: ({ eventId, file }) => {
+        const body = new FormData();
+        body.set("file", file);
+        return { url: `${base(eventId)}/cover`, method: "POST", body };
+      },
+    }),
+
+    removeEventCover: builder.mutation<{ coverImageUrl: null }, EventArg>({
+      query: ({ eventId }) => ({ url: `${base(eventId)}/cover`, method: "DELETE" }),
+    }),
+
     // Paginated invitation list for the dashboard table
     getEventInvitations: builder.query<
       { invitations: InvitationTableEntry[]; pagination: Pagination },
@@ -188,6 +201,8 @@ export const eventInvitationApi = invitationApi.injectEndpoints({
 export const {
   useCreateEventMutation,
   useUpdateEventMutation,
+  useUploadEventCoverMutation,
+  useRemoveEventCoverMutation,
   useGetEventInvitationsQuery,
   useGetEventMetricsQuery,
   useGetEventStatusUpdatesQuery,
