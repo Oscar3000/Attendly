@@ -50,7 +50,7 @@ src/
     api/
       auth/login|logout/      # Admin auth endpoints
       events/                 # POST: create an event (any signed-in user becomes its owner)
-      events/[eventId]/       # Event-scoped, owner only (requireEventOwner): PUT settings, invitations (+ [id], bulk), metrics, status, check-in, door-links (+ [linkId])
+      events/[eventId]/       # Event-scoped, owner only (requireEventOwner): PUT settings, invitations (+ [id], bulk), metrics, status, check-in, check-ins (+ [checkInId] undo), door-links (+ [linkId])
       door/[token]/check-in/  # A door helper's check-in (link token, no sign-in); same scan() as the host's
       health/                 # Health check
     e/[slug]/                 # Public event page (no sign-in, noindex) + generated link preview image (opengraph-image.tsx)
@@ -62,7 +62,7 @@ src/
     reset-password/           # Set a new password from the emailed link (?token= or ?error=)
     account/                  # Account settings: name, email (confirmed by email), password
   components/
-    admin/                    # Dashboard components (header, table, metrics, status)
+    admin/                    # Dashboard components (header, table, metrics, status, check-in panel)
     check-in/                 # Door check-in: QrCamera and CheckInFlow (scan, how many, green/red result); wording in src/lib/check-in.ts
     landing/                  # The product landing page at / (sign-up CTA, or "Your events" when signed in)
     button.tsx                # Reusable button (variants: primary, secondary, danger, attendly)

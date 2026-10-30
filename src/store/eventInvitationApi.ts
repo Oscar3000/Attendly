@@ -64,7 +64,19 @@ export const eventTags = {
   status: (eventId: string) => ({ type: "EventStatus" as const, id: eventId }),
   invitation: (id: string) => ({ type: "Invitation" as const, id }),
   doorLinks: (eventId: string) => ({ type: "DoorLinks" as const, id: eventId }),
+  checkIns: (eventId: string) => ({ type: "CheckIns" as const, id: eventId }),
 };
+
+// The dashboard's check-in panel (T-509), as the API returns it
+export interface CheckInsOverview {
+  summary: {
+    admitted: number;
+    expected: number;
+    invitationsCheckedIn: number;
+    invitations: number;
+  };
+  recent: { id: string; guestName: string; count: number; at: string; by: string | null }[];
+}
 
 // A door helper's check-in link (T-506), as the API returns it
 export interface DoorLink {
@@ -77,13 +89,15 @@ export interface DoorLink {
   admitted: number;
 }
 
-// What a write in an event makes stale: that event's list, metrics and status updates,
-// and the invitation itself when there is one
+// What a write in an event makes stale: that event's list, metrics, status updates and
+// check-in counts (a guest's plus-ones are part of who's expected), and the invitation itself
+// when there is one
 export function staleAfterWrite(eventId: string, invitationId?: string) {
   return [
     eventTags.invitations(eventId),
     eventTags.metrics(eventId),
     eventTags.status(eventId),
+    eventTags.checkIns(eventId),
     ...(invitationId ? [eventTags.invitation(invitationId)] : []),
   ];
 }
@@ -227,6 +241,20 @@ export const eventInvitationApi = invitationApi.injectEndpoints({
       invalidatesTags: (_result, _error, { eventId }) => [eventTags.doorLinks(eventId)],
     }),
 
+    // Check-ins (T-509): people in vs expected, the latest check-ins, and undo
+    getCheckIns: builder.query<CheckInsOverview, string>({
+      query: (eventId) => `${base(eventId)}/check-ins`,
+      providesTags: (_result, _error, eventId) => [eventTags.checkIns(eventId)],
+    }),
+
+    undoCheckIn: builder.mutation<{ message: string }, EventArg & { id: string }>({
+      query: ({ eventId, id }) => ({
+        url: `${base(eventId)}/check-ins/${encodeURIComponent(id)}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: (_result, _error, { eventId }) => staleAfterWrite(eventId),
+    }),
+
     deleteEventInvitation: builder.mutation<{ message: string }, InvitationArg>({
       query: ({ eventId, id }) => ({
         url: `${base(eventId)}/invitations/${encodeURIComponent(id)}`,
@@ -254,4 +282,6 @@ export const {
   useGetDoorLinksQuery,
   useCreateDoorLinkMutation,
   useRevokeDoorLinkMutation,
+  useGetCheckInsQuery,
+  useUndoCheckInMutation,
 } = eventInvitationApi;

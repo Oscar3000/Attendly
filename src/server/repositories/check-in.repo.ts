@@ -104,6 +104,25 @@ async function attempt(
   };
 }
 
+// The check-in panel on the event dashboard (T-509)
+export interface CheckInSummary {
+  // People let in so far, out of everyone on invitations that aren't declined or cancelled
+  admitted: number;
+  expected: number;
+  // Invitations with at least one person in, out of those still valid
+  invitationsCheckedIn: number;
+  invitations: number;
+}
+
+export interface CheckInEntry {
+  id: string;
+  guestName: string;
+  count: number;
+  at: Date;
+  // The host's name or the door helper link's; null if that account was deleted
+  by: string | null;
+}
+
 export const checkInRepo = {
   // What admitting would find, without admitting anyone: "ready" when there are places left
   // (T-505: the scanner then asks how many are coming in)
@@ -127,5 +146,72 @@ export const checkInRepo = {
       if (outcome !== RACED) return outcome;
     }
     throw new Error("Check-in kept racing with other scans");
+  },
+
+  async summary(eventId: string): Promise<CheckInSummary> {
+    const valid = { eventId, status: { notIn: ["DECLINED" as const, "RESCINDED" as const] } };
+    const [totals, invitationsCheckedIn] = await Promise.all([
+      prisma.invitation.aggregate({
+        where: valid,
+        _count: true,
+        _sum: { plusOne: true, admittedCount: true },
+      }),
+      prisma.invitation.count({ where: { ...valid, admittedCount: { gt: 0 } } }),
+    ]);
+    return {
+      admitted: totals._sum.admittedCount ?? 0,
+      // Each invitation is its guest plus their plus-ones
+      expected: totals._count + (totals._sum.plusOne ?? 0),
+      invitationsCheckedIn,
+      invitations: totals._count,
+    };
+  },
+
+  // Newest first
+  async recent(eventId: string, limit = 10): Promise<CheckInEntry[]> {
+    const rows = await prisma.checkIn.findMany({
+      where: { eventId },
+      orderBy: { createdAt: "desc" },
+      take: limit,
+      select: {
+        id: true,
+        count: true,
+        createdAt: true,
+        invitation: { select: { name: true } },
+        checkedInBy: { select: { name: true } },
+        doorLink: { select: { name: true } },
+      },
+    });
+    return rows.map((row) => ({
+      id: row.id,
+      guestName: row.invitation.name,
+      count: row.count,
+      at: row.createdAt,
+      by: row.checkedInBy?.name ?? row.doorLink?.name ?? null,
+    }));
+  },
+
+  // Undo a check-in made by mistake: those people are no longer counted as in, so the ticket
+  // admits them again. Once nobody on the invitation is in, it goes back to pending, as checking
+  // in had confirmed it. False if the check-in isn't in this event
+  async undo(eventId: string, id: string): Promise<boolean> {
+    return prisma.$transaction(async (tx) => {
+      const checkIn = await tx.checkIn.findUnique({
+        where: { id, eventId },
+        select: { invitationId: true, count: true },
+      });
+      if (!checkIn) return false;
+
+      await tx.checkIn.delete({ where: { id } });
+      await tx.$executeRaw`
+        UPDATE "invitations"
+        SET "admittedCount" = GREATEST("admittedCount" - ${checkIn.count}, 0),
+            "status" = CASE
+              WHEN "admittedCount" - ${checkIn.count} <= 0 AND "status" = 'CONFIRMED'
+              THEN 'PENDING'::"rsvp_status" ELSE "status" END,
+            "updatedAt" = NOW()
+        WHERE "id" = ${checkIn.invitationId}`;
+      return true;
+    });
   },
 };

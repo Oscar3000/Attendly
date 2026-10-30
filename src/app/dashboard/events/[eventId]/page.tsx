@@ -7,6 +7,7 @@ import InvitationCounter from "@/components/admin/invitation-counter";
 import StatusUpdates from "@/components/admin/status-updates";
 import MetricsChart from "@/components/admin/metrics-chart";
 import InvitationsTable from "@/components/admin/invitations-table";
+import CheckInPanel from "@/components/admin/check-in-panel";
 import { DashboardMetrics, InvitationTableEntry } from "@/lib/types";
 import {
   useGetEventInvitationsQuery,
@@ -132,6 +133,11 @@ export default function EventDashboard() {
           <div>
             <StatusUpdates updates={statusUpdatesData?.statusUpdates || []} />
           </div>
+        </div>
+
+        {/* Door check-ins (T-509) */}
+        <div className="mb-6">
+          <CheckInPanel eventId={eventId} />
         </div>
 
         {/* Middle Row - Metrics Chart */}

@@ -13,6 +13,7 @@ import { prisma } from "@/server/db/client";
 import { eventRepo, type Event } from "@/server/repositories/event.repo";
 import { invitationRepo } from "@/server/repositories/invitation.repo";
 import { doorLinkRepo } from "@/server/repositories/door-link.repo";
+import { checkInRepo } from "@/server/repositories/check-in.repo";
 import { sessionCookieFor, stubAuthEnv } from "../../../tests/helpers/auth";
 import DashboardPage from "../dashboard/page";
 import EventDashboardLayout from "../dashboard/events/[eventId]/layout";
@@ -44,6 +45,8 @@ const ROUTE_POLICY: Record<string, Partial<Record<Method, Policy>> | "not tenant
   "/api/events/[eventId]/invitations/bulk": { POST: "victim" },
   "/api/events/[eventId]/metrics": { GET: "victim" },
   "/api/events/[eventId]/check-in": { POST: "victim" },
+  "/api/events/[eventId]/check-ins": { GET: "victim" },
+  "/api/events/[eventId]/check-ins/[checkInId]": { DELETE: "victim" },
   "/api/events/[eventId]/door-links": { GET: "victim", POST: "victim" },
   "/api/events/[eventId]/door-links/[linkId]": { DELETE: "victim" },
   // A door helper link for the attacker's own event, scanning the victim's guest (T-507)
@@ -115,6 +118,7 @@ let victimEvent: Event;
 let victimInvitationId = "";
 let victimToken = "";
 let victimDoorLinkId = "";
+let victimCheckInId = "";
 
 beforeAll(() => {
   stubAuthEnv();
@@ -141,6 +145,10 @@ beforeEach(async () => {
   victimToken = (await prisma.invitation.findUniqueOrThrow({ where: { id: invitation.id } }))
     .accessToken;
   victimDoorLinkId = (await doorLinkRepo.create(victimEvent, VICTIM.doorHelper)).link.id;
+  // One person of two checked in, so there's a check-in to read or undo (T-509)
+  await checkInRepo.checkIn(victimEvent.id, victimToken, 1, { doorLinkId: victimDoorLinkId });
+  victimCheckInId = (await prisma.checkIn.findFirstOrThrow({ where: { eventId: victimEvent.id } }))
+    .id;
 });
 
 // Everything about the victim's data, to compare before and after the attacks
@@ -151,6 +159,7 @@ async function victimSnapshot() {
       include: {
         invitations: { orderBy: { id: "asc" } },
         doorLinks: { orderBy: { id: "asc" } },
+        checkIns: { orderBy: { id: "asc" } },
       },
     }),
   );
@@ -209,6 +218,7 @@ describe("another account attacking", () => {
         eventId: victimEvent.id,
         id: victimInvitationId,
         linkId: victimDoorLinkId,
+        checkInId: victimCheckInId,
         token: doorToken,
       });
       const response = await handler(request, { params });
@@ -225,6 +235,7 @@ describe("another account attacking", () => {
         victimEvent.id,
         victimInvitationId,
         victimDoorLinkId,
+        victimCheckInId,
       ]) {
         if (text.includes(secret)) failures.push(`${label}: response contains "${secret}"`);
       }
