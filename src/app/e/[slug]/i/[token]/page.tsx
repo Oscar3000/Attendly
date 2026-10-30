@@ -1,35 +1,22 @@
 import type { Metadata } from "next";
-import { cache } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import QRCode from "qrcode";
-import { eventDisplayName, getPublicEvent } from "@/server/events/public-event";
-import { invitationRepo, type GuestTicket } from "@/server/repositories/invitation.repo";
+import { eventDisplayName, getGuestTicket } from "@/server/events/public-event";
+import type { GuestTicket } from "@/server/repositories/invitation.repo";
 import { copyFor } from "@/lib/event-copy";
 import { themeStyle } from "@/lib/themes";
 import { formatEventDate, formatEventTime } from "@/lib/timezones";
 import { absoluteUrl, ticketPath } from "@/lib/utils";
 import { eventFontVariables } from "../../fonts";
 
-// What newAccessToken() makes (T-501); anything else is a 404 without a database query
-const TOKEN = /^[A-Za-z0-9_-]{43}$/;
-
 interface TicketPageProps {
   params: Promise<{ slug: string; token: string }>;
 }
 
-// The page and generateMetadata both load the ticket in one request: query once
-const getTicket = cache(async (slug: string, token: string) => {
-  if (!TOKEN.test(token)) return undefined;
-  const event = await getPublicEvent(slug);
-  if (!event) return undefined;
-  const invitation = await invitationRepo.getTicket(event.id, token);
-  return invitation && { event, invitation };
-});
-
 export async function generateMetadata({ params }: TicketPageProps): Promise<Metadata> {
   const { slug, token } = await params;
-  const ticket = await getTicket(slug, token);
+  const ticket = await getGuestTicket(slug, token);
   return {
     title: ticket
       ? { absolute: `Your invitation · ${eventDisplayName(ticket.event)}` }
@@ -51,7 +38,7 @@ const headingStyle = { color: "var(--event-ink)", fontFamily: "var(--event-headi
  */
 export default async function TicketPage({ params }: TicketPageProps) {
   const { slug, token } = await params;
-  const ticket = await getTicket(slug, token);
+  const ticket = await getGuestTicket(slug, token);
   if (!ticket) notFound();
   const { event, invitation } = ticket;
 
@@ -115,6 +102,17 @@ export default async function TicketPage({ params }: TicketPageProps) {
                   </p>
                 )}
               </>
+            )}
+            {valid && (
+              // A file download, not a page: a plain link, so the browser hands it to the calendar
+              <a
+                href={`${ticketPath(slug, token)}/calendar.ics`}
+                download
+                className="mt-4 inline-block rounded-full border px-4 py-2 font-medium"
+                style={{ borderColor: "var(--event-accent)", color: "var(--event-accent)" }}
+              >
+                Add to calendar
+              </a>
             )}
           </div>
         </div>

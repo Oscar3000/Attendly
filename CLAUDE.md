@@ -55,7 +55,7 @@ src/
       health/                 # Health check
     e/[slug]/                 # Public event page (no sign-in, noindex) + generated link preview image (opengraph-image.tsx)
     door/[token]/             # A door helper's scanner (T-507): no sign-in, the link is the credential; check-in only
-    e/[slug]/i/[token]/       # A guest's ticket (T-502): the token is the credential; read-only, QR code to show at the entrance
+    e/[slug]/i/[token]/       # A guest's ticket (T-502): the token is the credential; read-only, QR code to show at the entrance; calendar.ics/ for Add to calendar (T-510)
     login/                    # Email + password login
     signup/                   # Account sign-up (sends a verification email)
     forgot-password/          # Request a password reset email

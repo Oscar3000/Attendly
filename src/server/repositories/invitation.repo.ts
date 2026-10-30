@@ -71,6 +71,7 @@ export interface BulkCreateResult {
 
 // What a guest's ticket page shows about their invitation (T-502)
 export interface GuestTicket {
+  id: string;
   name: string;
   plusOne: number;
   status: RsvpStatus;
@@ -213,7 +214,7 @@ export const invitationRepo = {
   async getTicket(eventId: string, accessToken: string): Promise<GuestTicket | undefined> {
     const invitation = await prisma.invitation.findUnique({
       where: { accessToken, eventId },
-      select: { name: true, plusOne: true, status: true },
+      select: { id: true, name: true, plusOne: true, status: true },
     });
     return invitation
       ? { ...invitation, status: convertPrismaStatus(invitation.status as PrismaRsvpStatus) }
