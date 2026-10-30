@@ -8,16 +8,19 @@ datasource db {
 }
 
 model Invitation {
-  id        String     @id @default(cuid())
-  name      String
-  qrCode    String
-  status    RsvpStatus @default(PENDING)
-  plusOne   Int        @default(0)
+  id          String     @id @default(cuid())
+  name        String
+  qrCode      String
+  status      RsvpStatus @default(PENDING)
+  plusOne     Int        @default(0)
+  // The secret in the guest's ticket link (T-501): random 32 bytes, base64url. Only that
+  // guest's link and QR code contain it; API responses leave it out
+  accessToken String     @unique
   // Deleting an event deletes its invitations
-  eventId   String
-  event     Event      @relation(fields: [eventId], references: [id], onDelete: Cascade)
-  createdAt DateTime   @default(now())
-  updatedAt DateTime   @updatedAt
+  eventId     String
+  event       Event      @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
 
   @@index([eventId])
   @@map("invitations")

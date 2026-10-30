@@ -55,6 +55,35 @@ describe("invitationRepo", () => {
     expect(found?.eventDate.toISOString()).toBe(eventDate.toISOString());
   });
 
+  it("gives every invitation its own ticket token and keeps it out of what callers get back", async () => {
+    const one = await createGuest("Ada Lovelace");
+    const bulk = await invitationRepo.createInvitations(event, "pending", [
+      { name: "Charles Babbage" },
+      { name: "Grace Hopper" },
+    ]);
+    expect(bulk.summary.createdCount).toBe(2);
+
+    const tokens = (await prisma.invitation.findMany({ select: { accessToken: true } })).map(
+      (row) => row.accessToken,
+    );
+    expect(tokens).toHaveLength(3);
+    expect(new Set(tokens).size).toBe(3);
+    for (const token of tokens) expect(token).toMatch(/^[A-Za-z0-9_-]{43}$/);
+
+    // The token is a guest's credential; API responses are built from these
+    const page = await invitationRepo.getAdminInvitations(event.id);
+    const returned = JSON.stringify([
+      one,
+      await invitationRepo.getInvitationById(event.id, one.id),
+      await invitationRepo.getAllInvitations(event.id),
+      page.invitations,
+      await invitationRepo.getInvitationForGuest(one.id),
+      await invitationRepo.updateInvitation(event.id, one.id, { name: "Ada King" }),
+    ]);
+    expect(returned).not.toContain("accessToken");
+    for (const token of tokens) expect(returned).not.toContain(token);
+  });
+
   it("takes the date and venue from the event, so changing the event changes every invitation", async () => {
     const created = await createGuest("Ada Lovelace");
     expect(created).toMatchObject({ eventId: event.id, venue: "Test Venue" });

@@ -6,6 +6,7 @@
  * The date and venue come from the invitation's event (T-304)
  */
 import "server-only";
+import { randomBytes } from "node:crypto";
 import { Prisma, type Event } from "@prisma/client";
 import { prisma } from "@/server/db/client";
 import type {
@@ -29,6 +30,9 @@ const withEvent = {
     select: { date: true, timezone: true, type: true, venueName: true, venueAddress: true },
   },
 } as const;
+
+// The secret in a guest's ticket link (T-501): 32 random bytes, URL-safe
+export const newAccessToken = () => randomBytes(32).toString("base64url");
 
 // Prisma's "record to update/delete does not exist" (including a match on id but not eventId)
 const isNotFound = (error: unknown) =>
@@ -95,6 +99,7 @@ export const invitationRepo = {
       data: {
         name: invitation.name,
         qrCode: "PLACEHOLDER", // Temporary placeholder
+        accessToken: newAccessToken(),
         eventId: event.id,
         status: convertToPrismaStatus(invitation.status),
         plusOne: invitation.plusOne ?? 0,
