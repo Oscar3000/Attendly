@@ -55,6 +55,7 @@ src/
       invitations/[id]/       # PIN guests only: GET their invitation, PATCH its RSVP (requireGuest); removed in T-508
       health/                 # Health check
     e/[slug]/                 # Public event page (no sign-in, noindex) + generated link preview image (opengraph-image.tsx)
+    e/[slug]/i/[token]/       # A guest's ticket (T-502): the token is the credential; read-only, QR code to show at the entrance
     invite/[id]/              # Guest invitation view
     invite-pin/               # Guest PIN entry
     login/                    # Email + password login

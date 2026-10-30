@@ -138,16 +138,23 @@ export function getTableStatusColor(status: string): string {
 }
 
 /**
+ * An absolute URL on this app, for links that leave the site (QR codes, shared links)
+ * @param path - Starts with "/"
+ */
+export function absoluteUrl(path: string): string {
+  const rawBase = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
+  const baseUrl = /^https?:\/\//i.test(rawBase) ? rawBase : `https://${rawBase}`;
+  return `${baseUrl.replace(/\/$/, "")}${path}`;
+}
+
+/**
  * Generates QR code data URL for invitation links
  * @param invitationId - The invitation ID to generate QR code for
  * @returns Promise resolving to QR code data URL or placeholder
  */
 export async function generateQRCode(invitationId: string): Promise<string> {
   try {
-    const rawBase = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
-    const baseUrl = /^https?:\/\//i.test(rawBase) ? rawBase : `https://${rawBase}`;
-    const inviteUrl = `${baseUrl.replace(/\/$/, "")}/invite/${invitationId}`;
-    const qrCodeDataURL = await QRCode.toDataURL(inviteUrl, {
+    const qrCodeDataURL = await QRCode.toDataURL(absoluteUrl(`/invite/${invitationId}`), {
       width: 200,
       margin: 2,
       color: {
