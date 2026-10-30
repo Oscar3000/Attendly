@@ -557,12 +557,13 @@ Split from T-508 (about 35 files). Delete `invite-pin/`, `api/invite/verify-pin`
 - **Files:** ~15
 - **As built:** also deleted `src/server/auth/compare.ts` (the constant-time PIN comparison, unused once the PIN went). `getEnv()` no longer knows `AUTH_SECRET` or `INVITE_PIN`, and a deployment that still sets them keeps starting (tested), so removing them from the host's env can happen any time. The events API test still checks that an old `invite_token` cookie gets a 401. The migration drops `invitations.qrCode`; since T-503 nothing reads or writes it, so a rollback to T-503 or later still works.
 
-### T-509 · Check-in dashboard: arrived vs expected · S
+### ✅ T-509 · Check-in dashboard: arrived vs expected · S
 
 On the event dashboard: people admitted vs expected, invitations checked in, the latest check-ins (who, when, by whom), and an undo for a check-in made by mistake (host only).
 
 - **Depends on:** T-504
 - **Files:** ~5
+- **As built:** a "Check-ins" card on the event dashboard (`src/components/admin/check-in-panel.tsx`), refreshed every 30 seconds while open since helpers check people in from their own phones: people in vs expected (guest + plus-ones on invitations that aren't declined or cancelled) with a progress bar, invitations checked in, and the 10 latest check-ins with the time and who admitted them (host or door link), each with Undo. `GET /api/events/[eventId]/check-ins` returns `{ summary, recent }` (`checkInRepo.summary()` / `.recent()`); `DELETE …/check-ins/[checkInId]` (`checkInRepo.undo()`) deletes the check-in and takes its people off `admittedCount` in one transaction, so the ticket admits them again; once nobody on the invitation is in, a `CONFIRMED` status goes back to `PENDING`. Door helpers can't undo. Every invitation write (`staleAfterWrite`) also refreshes the card, since plus-ones change who's expected. Both routes are in the tenant isolation test, whose victim now has a check-in.
 
 ### T-510 · "Add to calendar" (ICS) on the ticket page · S
 
