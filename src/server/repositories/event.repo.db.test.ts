@@ -75,6 +75,47 @@ describe("eventRepo", () => {
     });
   });
 
+  it("starts with empty content, then stores and clears it", async () => {
+    const created = await eventRepo.create(ownerId, wedding);
+    expect(created).toMatchObject({
+      hostNames: null,
+      headline: null,
+      notes: null,
+      familyLines: [],
+      colorPalette: [],
+    });
+
+    const content = {
+      hostNames: "Ada & Charles",
+      headline: "Request your presence",
+      familyLines: [{ name: "Mr & Mrs Obi", detail: "of Ntezi" }, { name: "The Smiths" }],
+      colorPalette: [{ name: "Gold", hex: "#D4AF37" }],
+      notes: "Church service at 10:00 AM",
+    };
+    await eventRepo.update(created.id, content);
+    expect(await eventRepo.findById(created.id)).toMatchObject(content);
+
+    const cleared = await eventRepo.update(created.id, { hostNames: null, familyLines: [] });
+    expect(cleared).toMatchObject({
+      hostNames: null,
+      familyLines: [],
+      colorPalette: content.colorPalette,
+    });
+  });
+
+  it("reads content that doesn't match its shape as empty", async () => {
+    const created = await eventRepo.create(ownerId, wedding);
+    await prisma.event.update({
+      where: { id: created.id },
+      data: { familyLines: { name: "not a list" }, colorPalette: [{ name: "Gold", hex: "gold" }] },
+    });
+
+    expect(await eventRepo.findById(created.id)).toMatchObject({
+      familyLines: [],
+      colorPalette: [],
+    });
+  });
+
   it("reports a missing event on update and delete", async () => {
     expect(await eventRepo.update("missing", { title: "x" })).toBeUndefined();
     expect(await eventRepo.delete("missing")).toBe(false);
