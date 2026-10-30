@@ -20,7 +20,7 @@ Goal: turn Attendly from a single hard-coded wedding into a product any host can
 | 2     | Accounts with Better Auth (users, sign-up, sessions) | T-201 – T-209 | ✅ Done     |
 | 3     | Events & multi-tenancy                               | T-301 – T-312 | ✅ Done     |
 | 4     | Remove hard-coded content / theming                  | T-401 – T-410 | ✅ Done     |
-| 5     | Guest tickets & door check-in                        | T-501 – T-510 | Not started |
+| 5     | Guest tickets & door check-in                        | T-501 – T-510 | ✅ Done     |
 | 6     | Product features                                     | T-601 – T-610 | Not started |
 | 7     | Ops, compliance, launch                              | T-701 – T-710 | Not started |
 | 8     | Billing                                              | T-801 – T-805 | Not started |
@@ -565,10 +565,11 @@ On the event dashboard: people admitted vs expected, invitations checked in, the
 - **Files:** ~5
 - **As built:** a "Check-ins" card on the event dashboard (`src/components/admin/check-in-panel.tsx`), refreshed every 30 seconds while open since helpers check people in from their own phones: people in vs expected (guest + plus-ones on invitations that aren't declined or cancelled) with a progress bar, invitations checked in, and the 10 latest check-ins with the time and who admitted them (host or door link), each with Undo. `GET /api/events/[eventId]/check-ins` returns `{ summary, recent }` (`checkInRepo.summary()` / `.recent()`); `DELETE …/check-ins/[checkInId]` (`checkInRepo.undo()`) deletes the check-in and takes its people off `admittedCount` in one transaction, so the ticket admits them again; once nobody on the invitation is in, a `CONFIRMED` status goes back to `PENDING`. Door helpers can't undo. Every invitation write (`staleAfterWrite`) also refreshes the card, since plus-ones change who's expected. Both routes are in the tenant isolation test, whose victim now has a check-in.
 
-### T-510 · "Add to calendar" (ICS) on the ticket page · S
+### ✅ T-510 · "Add to calendar" (ICS) on the ticket page · S
 
 - **Depends on:** T-502
 - **Files:** ~3
+- **As built:** an "Add to calendar" link on valid tickets downloads `/e/[slug]/i/[token]/calendar.ics`, built by `toIcs()` (`src/lib/ics.ts`: RFC 5545 escaping, CRLF, lines folded at 75 bytes without splitting characters, times in UTC). The entry is about the event, not the guest: the names or title, the venue, and the ticket's link in the URL and description so the guest can open their QR code from the calendar. Its UID is the invitation id, so downloading again updates the entry. Events have no end time yet, so entries last three hours. Declined, cancelled and unknown tickets are 404s; responses are `Cache-Control: private, no-store` since they carry the ticket link. The ticket lookup moved to `getGuestTicket()` in `src/server/events/public-event.ts`, shared by the page and the file. No Google Calendar link: it would put the ticket link in a Google URL.
 
 ---
 

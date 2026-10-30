@@ -4,6 +4,8 @@ import { prisma } from "@/server/db/client";
 import { eventRepo, type Event, type EventInput } from "@/server/repositories/event.repo";
 import { invitationRepo } from "@/server/repositories/invitation.repo";
 import TicketPage, { generateMetadata } from "./page";
+import * as calendar from "./calendar.ics/route";
+import { absoluteUrl } from "@/lib/utils";
 
 // next/font only works under Next's compiler
 vi.mock("next/font/google", () => ({
@@ -118,5 +120,62 @@ describe("/e/[slug]/i/[token]", () => {
       referrer: "no-referrer",
     });
     expect(JSON.stringify(metadata)).not.toContain("Zelda");
+  });
+});
+
+describe("/e/[slug]/i/[token]/calendar.ics", () => {
+  const download = (slug: string, token: string) =>
+    calendar.GET(new Request("http://localhost/x"), params(slug, token));
+
+  it("is the event as a calendar file, linking back to the ticket", async () => {
+    const { id, token } = await guest("Zelda Fitzgerald", 2);
+
+    const response = await download(base.slug, token);
+    const ics = (await response.text()).replace(/\r\n /g, "");
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get("content-type")).toBe("text/calendar; charset=utf-8");
+    expect(response.headers.get("content-disposition")).toBe(
+      'attachment; filename="ada-and-charles.ics"',
+    );
+    expect(response.headers.get("cache-control")).toBe("private, no-store");
+    expect(ics).toContain(`UID:${id}@attendly`);
+    expect(ics).toContain("SUMMARY:Ada & Charles");
+    // Starts at the event's time; three hours long, as events have no end time yet
+    expect(ics).toContain("DTSTART:20270523T233000Z");
+    expect(ics).toContain("DTEND:20270524T023000Z");
+    expect(ics).toContain("LOCATION:Canary World\\, 23 Road\\, Festac Town");
+    expect(ics).toContain(`URL:${absoluteUrl(`/e/${base.slug}/i/${token}`)}`);
+    // About the event, not the guest
+    expect(ics).not.toContain("Zelda");
+  });
+
+  it("is linked from a valid ticket only", async () => {
+    const valid = await guest("Valid");
+    const cancelled = await guest("Cancelled");
+    await invitationRepo.updateRsvpStatus(event.id, cancelled.id, "rescinded");
+
+    expect(await render(base.slug, valid.token)).toContain(
+      `href="/e/${base.slug}/i/${valid.token}/calendar.ics"`,
+    );
+    expect(await render(base.slug, cancelled.token)).not.toContain("calendar.ics");
+  });
+
+  it("is a 404 wherever the ticket page is, and for cancelled or declined invitations", async () => {
+    const theirs = await guest("Someone else", 0, other);
+    const cancelled = await guest("Cancelled");
+    const declined = await guest("Declined");
+    await invitationRepo.updateRsvpStatus(event.id, cancelled.id, "rescinded");
+    await invitationRepo.updateRsvpStatus(event.id, declined.id, "declined");
+
+    for (const [slug, token] of [
+      [base.slug, "A".repeat(43)],
+      [base.slug, "not-a-token"],
+      [base.slug, theirs.token],
+      [base.slug, cancelled.token],
+      [base.slug, declined.token],
+    ] as const) {
+      expect((await download(slug, token)).status).toBe(404);
+    }
   });
 });
