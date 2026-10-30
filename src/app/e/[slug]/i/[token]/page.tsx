@@ -8,7 +8,7 @@ import { invitationRepo, type GuestTicket } from "@/server/repositories/invitati
 import { copyFor } from "@/lib/event-copy";
 import { themeStyle } from "@/lib/themes";
 import { formatEventDate, formatEventTime } from "@/lib/timezones";
-import { absoluteUrl } from "@/lib/utils";
+import { absoluteUrl, ticketPath } from "@/lib/utils";
 import { eventFontVariables } from "../../fonts";
 
 // What newAccessToken() makes (T-501); anything else is a 404 without a database query
@@ -59,7 +59,7 @@ export default async function TicketPage({ params }: TicketPageProps) {
   // Only valid invitations get a QR code. It encodes this page's own URL
   const valid = invitation.status !== "rescinded" && invitation.status !== "declined";
   const qrCode = valid
-    ? await QRCode.toDataURL(absoluteUrl(`/e/${slug}/i/${token}`), { width: 240, margin: 1 })
+    ? await QRCode.toDataURL(absoluteUrl(ticketPath(slug, token)), { width: 240, margin: 1 })
     : undefined;
 
   return (

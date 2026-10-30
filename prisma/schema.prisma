@@ -10,11 +10,13 @@ datasource db {
 model Invitation {
   id          String     @id @default(cuid())
   name        String
-  qrCode      String
+  // Unused since T-503 (QR codes are made from accessToken on read); nullable so a rollback
+  // still runs, dropped in T-508
+  qrCode      String?
   status      RsvpStatus @default(PENDING)
   plusOne     Int        @default(0)
-  // The secret in the guest's ticket link (T-501): random 32 bytes, base64url. Only that
-  // guest's link and QR code contain it; API responses leave it out
+  // The secret in the guest's ticket link (T-501): random 32 bytes, base64url. Only the event
+  // owner's API responses carry it, as the ticket link and its QR code
   accessToken String     @unique
   // Deleting an event deletes its invitations
   eventId     String

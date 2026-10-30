@@ -494,12 +494,13 @@ Look up the invitation by token and the event by slug (a token from another even
 - **Files:** ~6
 - **As built:** `src/app/e/[slug]/i/[token]/page.tsx` looks the event up by slug, then the invitation by `invitationRepo.getTicket(eventId, token)` (name, plus-ones and status only); a token that isn't 43 base64url characters is a 404 without a query. The QR code is generated on the page from the ticket's own URL (`absoluteUrl()`, now shared with `generateQRCode`); stored codes and invitation images still point at `/invite/[id]` until T-503. Declined and cancelled invitations get a message instead of the QR code; until check-in (T-504), a `CONFIRMED` invitation shows its ticket like a pending one. The page title has the event, not the guest's name, so a shared link preview doesn't show it. `Referrer-Policy: no-referrer` comes from `next.config.ts` for these URLs and a `<meta name="referrer">` tag. The theme fonts moved to `src/app/e/[slug]/fonts.ts`, shared with the event page.
 
-### T-503 · QR codes encode the ticket link · S
+### ✅ T-503 · QR codes encode the ticket link · S
 
 New QR codes, the downloaded/shared invitation image and the success page point to `/e/[slug]/i/[token]`. Regenerate codes for existing invitations.
 
 - **Depends on:** T-502
 - **Files:** ~4
+- **As built:** QR codes aren't stored any more. Owner reads and writes in `invitation.repo.ts` return `ticketUrl` and a QR code made from the slug and token on every read (`ticketPath()` + `generateQRCode(path)` in `utils.ts`), so there was nothing to regenerate and a domain change can't leave stale codes. The migration makes `qrCode` nullable and clears it (the old codes pointed at `/invite/[id]`), keeping the column so the previous release still runs after a rollback; T-508 drops it. The invite success page shares, copies and opens the ticket link; the dashboard table and invitation images use the new codes. The PIN guest reads (`getInvitationForGuest`, `updateRsvpStatusForGuest`) return no ticket link or QR code, since a PIN guest can read any invitation by id.
 
 ### T-504 · Check-in model and API · M
 
@@ -539,6 +540,7 @@ No sign-in: the link is the credential, and it can only check people in for its 
 Delete `invite-pin/`, `api/invite/verify-pin`, the `INVITE_PIN` env var, the guest cookie logic in middleware, `invite/[id]/`, `api/invitations/[id]/`, the PIN guest endpoints in `invitationApi.ts`, and the scanner on the public event page (door check-in replaced it).
 
 - Delete `invitationRepo.getInvitationForGuest` / `updateRsvpStatusForGuest` (T-306), the last unscoped invitation queries.
+- Drop the unused `invitations.qrCode` column (nullable since T-503).
 - Delete `src/server/auth/session.ts` (the T-101 token code, now only used for guest tokens) and `requireGuest()` / `requireAdminOrGuest()`; the remaining tests that sign an `admin` token go with it.
 - **Depends on:** T-503, T-507
 - **Files:** ~15

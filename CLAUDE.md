@@ -88,7 +88,7 @@ middleware.ts                  # Auth route protection
 
 ## Database Schema
 
-- `Invitation` (`invitations`): id (cuid), name, qrCode, status (PENDING|CONFIRMED|DECLINED|RESCINDED), plusOne, accessToken (unique secret for the guest's ticket link; never in API responses), eventId → Event (required, cascade delete), createdAt, updatedAt. The date and venue come from the event
+- `Invitation` (`invitations`): id (cuid), name, status (PENDING|CONFIRMED|DECLINED|RESCINDED), plusOne, accessToken (unique secret in the guest's ticket link `/e/<slug>/i/<token>`), eventId → Event (required, cascade delete), createdAt, updatedAt. The date and venue come from the event. `qrCode` is unused (dropped in T-508): owner reads return `ticketUrl` and a QR code made from the token, PIN-guest reads neither
 - `Event` (`events`): id (cuid), ownerId → User (cascade delete), slug (unique), type (WEDDING|BIRTHDAY|CORPORATE|OTHER), title, date (UTC) + timezone (IANA), venueName?, venueAddress?, rsvpDeadline?, page content (hostNames?, headline?, tagline?, dressCode?, coverImageUrl?, notes?, and JSON `familyLines` / `colorPalette`, typed in `src/lib/event-content.ts` and `[]` when unset), createdAt, updatedAt
 - `EventImage` (`event_images`): id (uuid), eventId → Event (cascade delete), bytes (re-encoded WebP), contentType, createdAt. Uploaded covers, served at `/uploads/<id>.webp`
 - Better Auth tables: `users`, `sessions`, `accounts`, `verifications` (create users through Better Auth, never with Prisma directly)
