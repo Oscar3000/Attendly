@@ -478,11 +478,12 @@ Online RSVP (guests confirming or declining before the event) is out of scope fo
 
 The original wedding has passed, so no live event depends on the shared PIN flow while these tickets land. Until T-508 removes it, the PIN flow keeps working for QR codes made before T-503.
 
-### T-501 · Per-invitation `accessToken` · S
+### ✅ T-501 · Per-invitation `accessToken` · S
 
 Add `accessToken` (unique, random 32 bytes, base64url) to `Invitation`. Backfill existing rows. Generated on create (single and bulk).
 
 - **Files:** ~3
+- **As built:** `newAccessToken()` in `invitation.repo.ts` (`randomBytes(32)`, base64url, 43 characters) is set by `createInvitation`, which bulk creation also goes through. The migration backfills existing rows in SQL with the same format, from two `gen_random_uuid()` values (cryptographically random, no `pgcrypto` needed), then makes the column `NOT NULL` and unique. API responses are built field by field (`convertToInviteDetails`, `getAdminInvitations`), so the token stays out of them; a test checks every read and write function. Nothing uses the token yet (T-502).
 
 ### T-502 · Read-only guest ticket page `/e/[slug]/i/[token]` · M
 
