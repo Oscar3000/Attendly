@@ -4,6 +4,7 @@ import { canSendEmail } from "@/server/email/send-email";
 import { eventRepo } from "@/server/repositories/event.repo";
 import { VerifyEmailBanner } from "@/components/admin/verify-email-banner";
 import { EventCardProvider } from "@/components/admin/event-card-context";
+import { EventPageLink } from "@/components/admin/event-page-link";
 
 /**
  * Server-side gate for every page of one event's dashboard (middleware only checks a session
@@ -27,6 +28,7 @@ export default async function EventDashboardLayout({
     <>
       {/* Hidden when email isn't configured: the resend button could never succeed */}
       {!user.emailVerified && canSendEmail() && <VerifyEmailBanner email={user.email} />}
+      <EventPageLink slug={event.slug} />
       <EventCardProvider
         event={{
           type: event.type,

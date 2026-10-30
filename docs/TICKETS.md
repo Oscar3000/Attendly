@@ -19,7 +19,7 @@ Goal: turn Attendly from a single hard-coded wedding into a product any host can
 | 1     | Lock down security on the current app                | T-101 – T-108 | ✅ Done     |
 | 2     | Accounts with Better Auth (users, sign-up, sessions) | T-201 – T-209 | ✅ Done     |
 | 3     | Events & multi-tenancy                               | T-301 – T-312 | ✅ Done     |
-| 4     | Remove hard-coded content / theming                  | T-401 – T-409 | In progress |
+| 4     | Remove hard-coded content / theming                  | T-401 – T-410 | In progress |
 | 5     | Guest experience                                     | T-501 – T-508 | Not started |
 | 6     | Product features                                     | T-601 – T-610 | Not started |
 | 7     | Ops, compliance, launch                              | T-701 – T-710 | Not started |
@@ -459,6 +459,13 @@ Update the image generation in `utils.ts` (names, date, venue, colors) to read f
 Marketing page: what it is, how it works, sign-up CTA.
 
 - **Files:** ~6
+
+### ✅ T-410 · Link to the public event page from the dashboard · S
+
+Hosts had no way to find or share their event page (`/e/[slug]`, T-403): nothing in the app showed the slug.
+
+- **Files:** ~4
+- **As built:** the event layout shows a bar above every page of an event's dashboard (dashboard, settings, create/edit/bulk) with the page's path, **View** (opens it in a new tab) and **Copy link** (copies the full URL from the browser's origin, and says so if the clipboard is refused). It's not on the `/dashboard` events list, whose cards are already links. The tenant isolation test checks the owner's layout includes it; other accounts still get a 404 before anything renders.
 
 ---
 
