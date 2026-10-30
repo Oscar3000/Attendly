@@ -3,8 +3,6 @@ import { getEnv } from "./env";
 
 const valid = {
   DATABASE_URL: "postgresql://user:pass@localhost:5432/db",
-  AUTH_SECRET: "test-secret-that-is-at-least-32-characters-long",
-  INVITE_PIN: "2468",
   BETTER_AUTH_SECRET: "better-auth-test-secret-at-least-32-characters",
   BETTER_AUTH_URL: "http://localhost:3000",
 };
@@ -23,14 +21,14 @@ describe("getEnv", () => {
   });
 
   it("names every missing variable", () => {
-    vi.stubEnv("AUTH_SECRET", undefined);
-    vi.stubEnv("INVITE_PIN", undefined);
+    vi.stubEnv("DATABASE_URL", undefined);
+    vi.stubEnv("BETTER_AUTH_SECRET", undefined);
 
-    expect(() => getEnv()).toThrow(/AUTH_SECRET is required[\s\S]*INVITE_PIN is required/);
+    expect(() => getEnv()).toThrow(/DATABASE_URL is required[\s\S]*BETTER_AUTH_SECRET is required/);
   });
 
   it("explains invalid values without printing them", () => {
-    vi.stubEnv("AUTH_SECRET", "too-short-secret");
+    vi.stubEnv("BETTER_AUTH_SECRET", "too-short-secret");
 
     let message = "";
     try {
@@ -39,7 +37,7 @@ describe("getEnv", () => {
       message = (error as Error).message;
     }
 
-    expect(message).toContain("AUTH_SECRET must be at least 32 characters");
+    expect(message).toContain("BETTER_AUTH_SECRET must be at least 32 characters");
     expect(message).not.toContain("too-short-secret");
   });
 
@@ -74,8 +72,10 @@ describe("getEnv", () => {
     expect(getEnv()).toMatchObject({ RESEND_API_KEY: undefined, EMAIL_FROM: undefined });
   });
 
-  it("has no default PIN", () => {
-    vi.stubEnv("INVITE_PIN", undefined);
-    expect(() => getEnv()).toThrow("INVITE_PIN is required");
+  // Removed with the PIN flow (T-508b); a deployment that still sets them keeps starting
+  it("ignores the old AUTH_SECRET and INVITE_PIN", () => {
+    vi.stubEnv("AUTH_SECRET", "x");
+    vi.stubEnv("INVITE_PIN", "1");
+    expect(getEnv()).toEqual(valid);
   });
 });

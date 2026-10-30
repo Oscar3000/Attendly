@@ -547,7 +547,7 @@ Split from T-508 (about 35 files). Delete `invite-pin/`, `api/invite/verify-pin`
 - **Files:** ~20
 - **As built:** middleware now only covers `/dashboard` and `/api/events`: a session cookie or a redirect to `/login` (401 for the API). `invitationApi.ts` keeps the slice (base URL, tags) with no endpoints of its own; everything is injected from `eventInvitationApi.ts`. `invitationRepo`'s update always returns the ticket link now that only owners call it. `InviteNotFound` and `InvitePageProps` went with the invite page. Old `/invite/<id>` and `/invite-pin` URLs are now 404s (the original wedding is over, and its QR codes pointed there). The guest-token code itself (`session.ts`, `guards.ts`) and the `INVITE_PIN` / `AUTH_SECRET` env vars are unused from here and removed in T-508b.
 
-### T-508b · Remove the guest token code, PIN env vars and `qrCode` column · S
+### ✅ T-508b · Remove the guest token code, PIN env vars and `qrCode` column · S
 
 - Delete `src/server/auth/session.ts` (the T-101 token code, used only by guest tokens) and `src/server/auth/guards.ts` (`requireGuest()`), with their tests; the remaining tests that sign tokens go with them.
 - Remove the `INVITE_PIN` and `AUTH_SECRET` env vars (`env.ts`, tests, `docker-compose.yml`, `DEPLOYMENT.md`); Better Auth has its own `BETTER_AUTH_SECRET`.
@@ -555,6 +555,7 @@ Split from T-508 (about 35 files). Delete `invite-pin/`, `api/invite/verify-pin`
 - Drop the unused `invitations.qrCode` column (nullable since T-503).
 - **Depends on:** T-508a
 - **Files:** ~15
+- **As built:** also deleted `src/server/auth/compare.ts` (the constant-time PIN comparison, unused once the PIN went). `getEnv()` no longer knows `AUTH_SECRET` or `INVITE_PIN`, and a deployment that still sets them keeps starting (tested), so removing them from the host's env can happen any time. The events API test still checks that an old `invite_token` cookie gets a 401. The migration drops `invitations.qrCode`; since T-503 nothing reads or writes it, so a rollback to T-503 or later still works.
 
 ### T-509 · Check-in dashboard: arrived vs expected · S
 

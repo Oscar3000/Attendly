@@ -1,7 +1,6 @@
 import { beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { NextRequest } from "next/server";
 import { prisma } from "@/server/db/client";
-import { signSession } from "@/server/auth/session";
 import { eventRepo, type Event } from "@/server/repositories/event.repo";
 import { sessionCookieFor, stubAuthEnv } from "../../../../tests/helpers/auth";
 import * as invitations from "./[eventId]/invitations/route";
@@ -14,13 +13,13 @@ import * as eventSettings from "./[eventId]/route";
 
 let hostCookie = "";
 let otherCookie = "";
-let guestCookie = "";
+// The removed PIN flow's guest cookie (T-508a): it grants nothing
+const guestCookie = "invite_token=old-pin-session";
 let event: Event;
 let secondEvent: Event;
 
-beforeAll(async () => {
+beforeAll(() => {
   stubAuthEnv();
-  guestCookie = `invite_token=${await signSession("guest")}`;
 });
 
 // Accounts and events are truncated before each test. Any account can host:
