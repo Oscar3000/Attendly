@@ -259,12 +259,12 @@ describe("the victim themself", () => {
   it("still sees their own event dashboard", async () => {
     requestCookie = await signInVictim();
 
-    await expect(
-      EventDashboardLayout({
-        children: "ok",
-        params: Promise.resolve({ eventId: victimEvent.id }),
-      }),
-    ).resolves.toBeTruthy();
+    const layout = await EventDashboardLayout({
+      children: "ok",
+      params: Promise.resolve({ eventId: victimEvent.id }),
+    });
+    // Including the link to their public event page (T-410)
+    expect(stringsIn(layout)).toContain(victimEvent.slug);
     const settings = await EventSettingsPage({
       params: Promise.resolve({ eventId: victimEvent.id }),
     });
