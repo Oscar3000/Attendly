@@ -155,6 +155,17 @@ export function ticketPath(slug: string, accessToken: string): string {
 }
 
 /**
+ * The ticket token in a scanned QR code (T-504): a ticket URL, on any host, or the bare token
+ * @returns The token, or undefined if the scan isn't a ticket
+ */
+export function ticketTokenFrom(scanned: string): string | undefined {
+  const match = /^(?:\S*\/e\/[^/?#\s]+\/i\/)?([A-Za-z0-9_-]{43})\/?(?:[?#]\S*)?$/.exec(
+    scanned.trim(),
+  );
+  return match?.[1];
+}
+
+/**
  * Generates a QR code data URL for a link on this app
  * @param path - The path the QR code opens, e.g. ticketPath(...)
  * @returns Promise resolving to QR code data URL, or "" if generation fails
