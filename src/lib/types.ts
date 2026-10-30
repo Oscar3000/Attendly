@@ -3,6 +3,8 @@
  * Following TypeScript best practices with proper interfaces
  */
 
+import type { EventType } from "./event-copy";
+
 // Form-related types
 export interface FormField<T = string> {
   value: T;
@@ -25,6 +27,8 @@ export interface WeddingInvitation {
   eventDate: Date;
   // The event's IANA zone: show eventDate on this clock, not the viewer's
   eventTimezone: string;
+  // Picks the default wording (src/lib/event-copy.ts)
+  eventType: EventType;
   venue: string;
   status: RsvpStatus;
   createdAt: Date;
@@ -131,6 +135,7 @@ export type PrismaRsvpStatus = "PENDING" | "CONFIRMED" | "DECLINED" | "RESCINDED
 export interface InvitationEvent {
   date: Date;
   timezone: string;
+  type: EventType;
   venueName: string | null;
   venueAddress: string | null;
 }

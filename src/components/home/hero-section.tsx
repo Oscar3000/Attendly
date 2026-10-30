@@ -1,4 +1,5 @@
 import type { Event } from "@/server/repositories/event.repo";
+import { copyFor } from "@/lib/event-copy";
 import { formatEventDate } from "@/lib/timezones";
 
 // "Pamela & Oscar" -> ["Pamela", "Oscar"], shown as two names with an ampersand between them;
@@ -7,9 +8,6 @@ function splitCouple(names: string): [string, string] | undefined {
   const parts = names.split(/\s+(?:&|and)\s+/i);
   return parts.length === 2 && parts[0] && parts[1] ? [parts[0], parts[1]] : undefined;
 }
-
-// Until T-407 adds wording per event type
-const DEFAULT_HEADLINE = "You're invited to celebrate";
 
 export default function HeroSection({ event }: { event: Event }) {
   const names = event.hostNames ?? event.title;
@@ -51,7 +49,7 @@ export default function HeroSection({ event }: { event: Event }) {
         className="text-xs uppercase tracking-[0.35em] mb-6"
         style={{ color: "var(--event-muted)" }}
       >
-        {event.headline ?? DEFAULT_HEADLINE}
+        {event.headline ?? copyFor(event.type).headline}
       </p>
 
       {/* Host names */}
