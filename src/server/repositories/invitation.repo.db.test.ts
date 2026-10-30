@@ -46,6 +46,9 @@ describe("invitationRepo", () => {
       id: created.id,
       name: "Ada Lovelace",
       venue: "Test Venue",
+      // The guest and dashboard pages show times on this clock and pick wording by type
+      eventTimezone: "Africa/Lagos",
+      eventType: "WEDDING",
       status: "pending",
       plusOne: 1,
     });

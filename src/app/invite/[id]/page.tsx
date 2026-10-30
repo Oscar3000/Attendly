@@ -6,6 +6,7 @@ import { Button } from "@/components/button";
 import InviteNotFound from "@/components/invite-not-found";
 import { useGetInvitationQuery, useUpdateRsvpStatusMutation } from "@/store/invitationApi";
 import { formatEventDate, formatEventTime } from "@/lib/timezones";
+import { copyFor } from "@/lib/event-copy";
 
 export default function InvitePage({ params }: InvitePageProps) {
   const resolvedParams = use(params) as { id: string };
@@ -109,7 +110,9 @@ export default function InvitePage({ params }: InvitePageProps) {
           <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-2">
             You&apos;re Invited!
           </h1>
-          <p className="text-base sm:text-lg text-gray-600">Wedding Celebration</p>
+          <p className="text-base sm:text-lg text-gray-600">
+            {copyFor(invite.eventType).invitationSubtitle}
+          </p>
         </div>
 
         {/* Invitation Card */}

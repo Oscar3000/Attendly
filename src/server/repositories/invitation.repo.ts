@@ -25,7 +25,9 @@ import {
 
 // Joined on every read so callers get the event's date and venue
 const withEvent = {
-  event: { select: { date: true, timezone: true, venueName: true, venueAddress: true } },
+  event: {
+    select: { date: true, timezone: true, type: true, venueName: true, venueAddress: true },
+  },
 } as const;
 
 // Prisma's "record to update/delete does not exist" (including a match on id but not eventId)

@@ -33,8 +33,9 @@ function useCountdown(startsAt: string) {
   return timeLeft;
 }
 
-// startsAt is an ISO string: it crosses from the server page to this client component
-export default function CountdownSection({ startsAt }: { startsAt: string }) {
+// startsAt is an ISO string: it crosses from the server page to this client component.
+// label is the event type's wording (src/lib/event-copy.ts)
+export default function CountdownSection({ startsAt, label }: { startsAt: string; label: string }) {
   const countdown = useCountdown(startsAt);
 
   return (
@@ -43,7 +44,7 @@ export default function CountdownSection({ startsAt }: { startsAt: string }) {
         className="text-xs uppercase tracking-[0.35em] mb-7"
         style={{ color: "var(--event-ornament)" }}
       >
-        Counting Down to the Big Day
+        {label}
       </p>
       <div className="flex justify-center gap-3 sm:gap-8">
         {[
