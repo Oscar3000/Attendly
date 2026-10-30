@@ -16,6 +16,7 @@ import { sessionCookieFor, stubAuthEnv } from "../../../tests/helpers/auth";
 import DashboardPage from "../dashboard/page";
 import EventDashboardLayout from "../dashboard/events/[eventId]/layout";
 import EventSettingsPage from "../dashboard/events/[eventId]/settings/page";
+import * as checkIn from "./events/[eventId]/check-in/route";
 
 type Method = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
 type Handler = (request: NextRequest, context: { params: Promise<object> }) => Promise<Response>;
@@ -41,6 +42,7 @@ const ROUTE_POLICY: Record<string, Partial<Record<Method, Policy>> | "not tenant
   },
   "/api/events/[eventId]/invitations/bulk": { POST: "victim" },
   "/api/events/[eventId]/metrics": { GET: "victim" },
+  "/api/events/[eventId]/check-in": { POST: "victim" },
   "/api/events/[eventId]/status": { GET: "victim" },
   // Creating an event makes the caller its owner (T-310)
   "/api/events": { POST: "own" },
@@ -75,8 +77,9 @@ const attacks = routes
   })
   .sort((a, b) => Number(a.expectation === "own") - Number(b.expectation === "own"));
 
-// Bodies valid enough that only authorization can stop them
-const BODIES: Partial<Record<string, unknown>> = {
+// Bodies valid enough that only authorization can stop them. A function gets the victim's
+// data, e.g. their guest's ticket token to scan
+const BODIES: Partial<Record<string, unknown | ((victim: { token: string }) => unknown)>> = {
   "PUT /api/events/[eventId]": {
     title: "Hacked",
     type: "OTHER",
@@ -94,6 +97,7 @@ const BODIES: Partial<Record<string, unknown>> = {
     timezone: "Europe/London",
   },
   "PATCH /api/invitations/[id]": { status: "declined" },
+  "POST /api/events/[eventId]/check-in": ({ token }: { token: string }) => ({ code: token }),
 };
 
 // Recognisable values, so any leak in a response body is easy to spot
@@ -105,6 +109,7 @@ const VICTIM = {
 
 let victimEvent: Event;
 let victimInvitationId = "";
+let victimToken = "";
 
 beforeAll(() => {
   stubAuthEnv();
@@ -128,6 +133,8 @@ beforeEach(async () => {
     plusOne: 1,
   });
   victimInvitationId = invitation.id;
+  victimToken = (await prisma.invitation.findUniqueOrThrow({ where: { id: invitation.id } }))
+    .accessToken;
 });
 
 // Everything about the victim's data, to compare before and after the attacks
@@ -180,7 +187,8 @@ describe("another account attacking", () => {
     const failures: string[] = [];
 
     for (const { path, method, handler, expectation } of attacks) {
-      const body = BODIES[`${method} ${path}`];
+      const entry = BODIES[`${method} ${path}`];
+      const body = typeof entry === "function" ? entry({ token: victimToken }) : entry;
       const request = new NextRequest(`http://localhost${path}`, {
         method,
         headers: { cookie },
@@ -200,6 +208,24 @@ describe("another account attacking", () => {
     }
 
     expect(failures).toEqual([]);
+    expect(await victimSnapshot()).toBe(before);
+  });
+
+  it("can't check the victim's guests in through their own event (T-504)", async () => {
+    const { cookie, ownEvent } = await signInAttacker(email);
+    const before = await victimSnapshot();
+
+    const response = await checkIn.POST(
+      new NextRequest("http://localhost/api/events/x/check-in", {
+        method: "POST",
+        headers: { cookie },
+        body: JSON.stringify({ code: victimToken }),
+      }),
+      { params: Promise.resolve({ eventId: ownEvent.id }) },
+    );
+
+    expect(response.status).toBe(404);
+    expect(await response.text()).not.toContain(VICTIM.guest);
     expect(await victimSnapshot()).toBe(before);
   });
 

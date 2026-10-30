@@ -502,7 +502,7 @@ New QR codes, the downloaded/shared invitation image and the success page point 
 - **Files:** ~4
 - **As built:** QR codes aren't stored any more. Owner reads and writes in `invitation.repo.ts` return `ticketUrl` and a QR code made from the slug and token on every read (`ticketPath()` + `generateQRCode(path)` in `utils.ts`), so there was nothing to regenerate and a domain change can't leave stale codes. The migration makes `qrCode` nullable and clears it (the old codes pointed at `/invite/[id]`), keeping the column so the previous release still runs after a rollback; T-508 drops it. The invite success page shares, copies and opens the ticket link; the dashboard table and invitation images use the new codes. The PIN guest reads (`getInvitationForGuest`, `updateRsvpStatusForGuest`) return no ticket link or QR code, since a PIN guest can read any invitation by id.
 
-### T-504 · Check-in model and API · M
+### ✅ T-504 · Check-in model and API · M
 
 Add `admittedCount` (default 0) to `Invitation` and a `CheckIn` table (invitation, event, count, time, who: the host's user id or a door link from T-506) as the audit trail. `POST /api/events/[eventId]/check-in` (owner only) takes the scanned token and how many people are entering.
 
@@ -511,6 +511,7 @@ Add `admittedCount` (default 0) to `Invitation` and a `CheckIn` table (invitatio
 - Checking in sets the status to `CONFIRMED`, so the dashboard's "confirmed" keeps meaning "arrived", as it did with the PIN flow. Revisit when online RSVP lands (T-611).
 - **Depends on:** T-501
 - **Files:** ~7
+- **As built:** `checkInRepo.checkIn(eventId, token, count, by)` (`src/server/repositories/check-in.repo.ts`) reads the invitation for the result message, then admits with one raw SQL `UPDATE … WHERE "admittedCount" + n <= "plusOne" + 1 AND status NOT IN (DECLINED, RESCINDED)`. If a simultaneous scan got there first, the update matches nothing, nothing is written, and it reads again (up to 3 times), so the result reflects the other scan. The `CheckIn` row is written in the same transaction. Without `count`, everyone left on the invitation is admitted. The route takes `{ code, count? }`, where `code` is whatever the QR code held: `ticketTokenFrom()` in `utils.ts` accepts a ticket URL on any host or the bare token, and anything else is `not_found`. Responses always carry a `result`: `admitted` 200, `full` / `too_many` / `not_valid` 409, `not_found` 404. `CheckIn.checkedInByUserId` is set null if the account is deleted; T-506 adds the door link column. Tests cover concurrent scans (10 at once admit once; they fail if the SQL guard is removed), and the tenant isolation test also scans a victim's ticket through the attacker's own event.
 
 ### T-505 · Check-in scanner screen in the dashboard · M
 

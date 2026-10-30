@@ -51,7 +51,7 @@ src/
       auth/login|logout/      # Admin auth endpoints
       invite/verify-pin/      # Guest PIN verification
       events/                 # POST: create an event (any signed-in user becomes its owner)
-      events/[eventId]/       # Event-scoped, owner only (requireEventOwner): PUT settings, invitations (+ [id], bulk), metrics, status
+      events/[eventId]/       # Event-scoped, owner only (requireEventOwner): PUT settings, invitations (+ [id], bulk), metrics, status, check-in
       invitations/[id]/       # PIN guests only: GET their invitation, PATCH its RSVP (requireGuest); removed in T-508
       health/                 # Health check
     e/[slug]/                 # Public event page (no sign-in, noindex) + generated link preview image (opengraph-image.tsx)
@@ -74,7 +74,7 @@ src/
     invitation-image.ts       # The downloadable/shareable invitation image (canvas), from the event's details
   server/                     # Server-only code (`import 'server-only'`)
     db/client.ts              # Prisma client singleton
-    repositories/             # invitation.repo.ts, event.repo.ts, metrics.repo.ts, image.repo.ts (all Prisma queries)
+    repositories/             # invitation.repo.ts, event.repo.ts, metrics.repo.ts, image.repo.ts, check-in.repo.ts (all Prisma queries)
     email/send-email.ts       # sendEmail(): Resend when RESEND_API_KEY is set, console log in dev
     uploads/cover-images.ts   # Cover uploads: sharp re-encode to WebP, stored in Postgres (image.repo.ts), served by /uploads/[file]
   store/
@@ -88,8 +88,9 @@ middleware.ts                  # Auth route protection
 
 ## Database Schema
 
-- `Invitation` (`invitations`): id (cuid), name, status (PENDING|CONFIRMED|DECLINED|RESCINDED), plusOne, accessToken (unique secret in the guest's ticket link `/e/<slug>/i/<token>`), eventId → Event (required, cascade delete), createdAt, updatedAt. The date and venue come from the event. `qrCode` is unused (dropped in T-508): owner reads return `ticketUrl` and a QR code made from the token, PIN-guest reads neither
+- `Invitation` (`invitations`): id (cuid), name, status (PENDING|CONFIRMED|DECLINED|RESCINDED), plusOne, accessToken (unique secret in the guest's ticket link `/e/<slug>/i/<token>`), admittedCount (people let in at the door, at most plusOne + 1), eventId → Event (required, cascade delete), createdAt, updatedAt. The date and venue come from the event. `qrCode` is unused (dropped in T-508): owner reads return `ticketUrl` and a QR code made from the token, PIN-guest reads neither
 - `Event` (`events`): id (cuid), ownerId → User (cascade delete), slug (unique), type (WEDDING|BIRTHDAY|CORPORATE|OTHER), title, date (UTC) + timezone (IANA), venueName?, venueAddress?, rsvpDeadline?, page content (hostNames?, headline?, tagline?, dressCode?, coverImageUrl?, notes?, and JSON `familyLines` / `colorPalette`, typed in `src/lib/event-content.ts` and `[]` when unset), createdAt, updatedAt
+- `CheckIn` (`check_ins`): id (cuid), invitationId → Invitation, eventId → Event (both cascade delete), count, checkedInByUserId? → User (set null), createdAt. One row per admission at the door (T-504)
 - `EventImage` (`event_images`): id (uuid), eventId → Event (cascade delete), bytes (re-encoded WebP), contentType, createdAt. Uploaded covers, served at `/uploads/<id>.webp`
 - Better Auth tables: `users`, `sessions`, `accounts`, `verifications` (create users through Better Auth, never with Prisma directly)
 

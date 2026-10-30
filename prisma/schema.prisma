@@ -8,21 +8,24 @@ datasource db {
 }
 
 model Invitation {
-  id          String     @id @default(cuid())
-  name        String
+  id            String     @id @default(cuid())
+  name          String
   // Unused since T-503 (QR codes are made from accessToken on read); nullable so a rollback
   // still runs, dropped in T-508
-  qrCode      String?
-  status      RsvpStatus @default(PENDING)
-  plusOne     Int        @default(0)
+  qrCode        String?
+  status        RsvpStatus @default(PENDING)
+  plusOne       Int        @default(0)
   // The secret in the guest's ticket link (T-501): random 32 bytes, base64url. Only the event
   // owner's API responses carry it, as the ticket link and its QR code
-  accessToken String     @unique
+  accessToken   String     @unique
+  // People admitted at the door so far (T-504), at most plusOne + 1
+  admittedCount Int        @default(0)
+  checkIns      CheckIn[]
   // Deleting an event deletes its invitations
-  eventId     String
-  event       Event      @relation(fields: [eventId], references: [id], onDelete: Cascade)
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
+  eventId       String
+  event         Event      @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
 
   @@index([eventId])
   @@map("invitations")
@@ -48,6 +51,7 @@ model User {
   sessions      Session[]
   accounts      Account[]
   events        Event[]
+  checkIns      CheckIn[]
 
   @@unique([email])
   @@map("users")
@@ -138,6 +142,7 @@ model Event {
   theme         String       @default("terracotta")
   invitations   Invitation[]
   images        EventImage[]
+  checkIns      CheckIn[]
   createdAt     DateTime     @default(now())
   updatedAt     DateTime     @updatedAt
 
@@ -158,6 +163,26 @@ model EventImage {
 
   @@index([eventId])
   @@map("event_images")
+}
+
+// Each time someone admits people on an invitation at the door (T-504): the audit trail behind
+// Invitation.admittedCount, and the "already checked in at 7:42 PM by Ada" message
+model CheckIn {
+  id                String     @id @default(cuid())
+  invitationId      String
+  invitation        Invitation @relation(fields: [invitationId], references: [id], onDelete: Cascade)
+  eventId           String
+  event             Event      @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  // How many people came in with this scan
+  count             Int
+  // Who admitted them: the event owner's account (door helper links come in T-506)
+  checkedInByUserId String?
+  checkedInBy       User?      @relation(fields: [checkedInByUserId], references: [id], onDelete: SetNull)
+  createdAt         DateTime   @default(now())
+
+  @@index([invitationId, createdAt])
+  @@index([eventId, createdAt])
+  @@map("check_ins")
 }
 
 enum EventType {
