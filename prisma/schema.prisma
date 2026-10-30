@@ -98,24 +98,39 @@ model Verification {
 
 // An event a host runs (wedding, birthday...). Invitations move onto events in T-302 – T-304
 model Event {
-  id           String       @id @default(cuid())
+  id            String       @id @default(cuid())
   // Deleting the owner's account deletes their events
-  ownerId      String
-  owner        User         @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  ownerId       String
+  owner         User         @relation(fields: [ownerId], references: [id], onDelete: Cascade)
   // Public URL segment for the event page (/e/[slug], T-403)
-  slug         String       @unique
-  type         EventType
-  title        String
+  slug          String       @unique
+  type          EventType
+  title         String
   // When the event starts, stored in UTC; timezone is the IANA zone to display it in
-  date         DateTime
-  timezone     String
+  date          DateTime
+  timezone      String
   // Optional so an event can be created before the venue is settled
-  venueName    String?
-  venueAddress String?
-  rsvpDeadline DateTime?
-  invitations  Invitation[]
-  createdAt    DateTime     @default(now())
-  updatedAt    DateTime     @updatedAt
+  venueName     String?
+  venueAddress  String?
+  rsvpDeadline  DateTime?
+  // Content for the public event page (T-403); all optional so a new event works without them
+  // Shown in the hero, e.g. "Pamela & Oscar"; the title is used when empty
+  hostNames     String?
+  // The line above the names, e.g. "Solemnly request your presence..."; empty uses the event type's wording (T-407)
+  headline      String?
+  // A short line under the names
+  tagline       String?
+  // [{ name, detail? }], see src/lib/event-content.ts; [] when unset
+  familyLines   Json         @default("[]")
+  dressCode     String?
+  // Colours of the day, [{ name, hex }]; [] when unset
+  colorPalette  Json         @default("[]")
+  coverImageUrl String?
+  // Free text for anything else, e.g. a church service before the reception
+  notes         String?
+  invitations   Invitation[]
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
 
   @@index([ownerId])
   @@map("events")

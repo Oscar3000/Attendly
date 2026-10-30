@@ -19,7 +19,7 @@ Goal: turn Attendly from a single hard-coded wedding into a product any host can
 | 1     | Lock down security on the current app                | T-101 – T-108 | ✅ Done     |
 | 2     | Accounts with Better Auth (users, sign-up, sessions) | T-201 – T-209 | ✅ Done     |
 | 3     | Events & multi-tenancy                               | T-301 – T-312 | ✅ Done     |
-| 4     | Remove hard-coded content / theming                  | T-401 – T-409 | Next        |
+| 4     | Remove hard-coded content / theming                  | T-401 – T-409 | In progress |
 | 5     | Guest experience                                     | T-501 – T-508 | Not started |
 | 6     | Product features                                     | T-601 – T-610 | Not started |
 | 7     | Ops, compliance, launch                              | T-701 – T-710 | Not started |
@@ -394,11 +394,12 @@ Drop `Invitation.eventDate` and `Invitation.venue`. Delete the old `/admin` page
 
 ## Phase 4 — Remove hard-coded content / theming
 
-### T-401 · Event content fields · S
+### ✅ T-401 · Event content fields · S
 
 Add to `Event`: `hostNames`, `headline`, `tagline`, `familyLines` (JSON), `dressCode`, `colorPalette` (JSON), `coverImageUrl`, `notes`.
 
 - **Files:** ~3
+- **As built:** the text fields are nullable; `familyLines` (`[{ name, detail? }]`) and `colorPalette` (`[{ name, hex }]`) are `JSONB NOT NULL DEFAULT '[]'`, so "unset" is an empty list rather than Prisma's `DbNull`/`JsonNull`. Their zod shapes live in `src/lib/event-content.ts` (client-safe, for T-402's form and T-403's page). `eventRepo` now returns its own `Event` type with those two fields typed, parsing them on every read; a stored value that doesn't match reads as `[]` rather than breaking the page. `hostNames` empty means "use the title"; `headline` empty means "use the type's wording" (T-407). Nothing reads the fields yet.
 
 ### T-402 · Event settings page · M
 
