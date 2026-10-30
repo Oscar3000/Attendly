@@ -401,12 +401,13 @@ Add to `Event`: `hostNames`, `headline`, `tagline`, `familyLines` (JSON), `dress
 - **Files:** ~3
 - **As built:** the text fields are nullable; `familyLines` (`[{ name, detail? }]`) and `colorPalette` (`[{ name, hex }]`) are `JSONB NOT NULL DEFAULT '[]'`, so "unset" is an empty list rather than Prisma's `DbNull`/`JsonNull`. Their zod shapes live in `src/lib/event-content.ts` (client-safe, for T-402's form and T-403's page). `eventRepo` now returns its own `Event` type with those two fields typed, parsing them on every read; a stored value that doesn't match reads as `[]` rather than breaking the page. `hostNames` empty means "use the title"; `headline` empty means "use the type's wording" (T-407). Nothing reads the fields yet.
 
-### T-402 · Event settings page · M
+### ✅ T-402 · Event settings page · M
 
 `/dashboard/events/[eventId]/settings`, a form to edit all the event fields.
 
 - **Depends on:** T-401
 - **Files:** ~6
+- **As built:** `PUT /api/events/[eventId]` (owner only, via `requireEventOwner`) replaces the event's settings: the form sends every field, and blank or missing optional ones are cleared (`updateEventSchema`, which shares the title/type/date/zone/deadline rules with `createEventSchema`). The slug can't be edited, since shared links and QR codes point at it. `coverImageUrl` isn't on the form: the CSP only allows images from `'self'`, so it waits for T-406's upload. The page is server-rendered: it checks ownership itself (it loads the event; the layout check isn't enough on its own) and prefills dates on the event's clock with the new `utcToZonedLocal()`. Families and colours are add/remove lists, and fully empty rows are dropped on save. The new event form's type list, select style and error mapping moved to `src/components/events/event-form.ts`. The dashboard header has a Settings button, and the tenant isolation test covers the route and the page.
 
 ### T-403 · Public event page reads from DB · M
 

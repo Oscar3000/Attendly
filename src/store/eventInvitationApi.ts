@@ -3,7 +3,7 @@
  * Every endpoint takes eventId and calls /api/events/[eventId]/...; cache tags carry the event,
  * so a change in one event never refetches another event's data
  * Used by the event dashboard under /dashboard/events/[eventId] (T-309), plus createEvent
- * for /dashboard/events/new (T-310)
+ * for /dashboard/events/new (T-310) and updateEvent for the settings page (T-402)
  */
 import type {
   AdminMetrics,
@@ -13,6 +13,7 @@ import type {
   RsvpStatus,
   StatusUpdate,
 } from "@/lib/types";
+import type { FamilyLine, PaletteColor } from "@/lib/event-content";
 import { invitationApi } from "./invitationApi";
 
 type EventArg = { eventId: string };
@@ -34,6 +35,17 @@ export interface CreateEventForm {
   venueName: string;
   venueAddress: string;
   rsvpDeadline: string;
+}
+
+// Everything on the settings page; blank text clears a field
+export interface EventSettingsForm extends CreateEventForm {
+  hostNames: string;
+  headline: string;
+  tagline: string;
+  dressCode: string;
+  notes: string;
+  familyLines: FamilyLine[];
+  colorPalette: PaletteColor[];
 }
 
 export interface BulkCreateResult {
@@ -68,6 +80,18 @@ export const eventInvitationApi = invitationApi.injectEndpoints({
     // The events list is server-rendered, so nothing in this cache needs invalidating
     createEvent: builder.mutation<{ event: { id: string; slug: string } }, CreateEventForm>({
       query: (body) => ({ url: "events", method: "POST", body }),
+    }),
+
+    // Invitations show the event's date and venue, so cached invitations are refetched
+    updateEvent: builder.mutation<
+      { event: { id: string } },
+      EventArg & { settings: EventSettingsForm }
+    >({
+      query: ({ eventId, settings }) => ({ url: base(eventId), method: "PUT", body: settings }),
+      invalidatesTags: (_result, _error, { eventId }) => [
+        eventTags.invitations(eventId),
+        "Invitation",
+      ],
     }),
 
     // Paginated invitation list for the dashboard table
@@ -161,6 +185,7 @@ export const eventInvitationApi = invitationApi.injectEndpoints({
 
 export const {
   useCreateEventMutation,
+  useUpdateEventMutation,
   useGetEventInvitationsQuery,
   useGetEventMetricsQuery,
   useGetEventStatusUpdatesQuery,

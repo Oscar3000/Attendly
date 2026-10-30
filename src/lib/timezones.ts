@@ -58,6 +58,23 @@ export function zonedTimeToUtc(local: string, timeZone: string): Date {
   return new Date(utc);
 }
 
+// The reverse of zonedTimeToUtc: a UTC Date as a datetime-local value ("2026-05-23T15:00") on
+// the wall clock in `timeZone`, to prefill a form
+export function utcToZonedLocal(date: Date, timeZone: string): string {
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone,
+    hourCycle: "h23",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+  }).formatToParts(date);
+  const get = (type: Intl.DateTimeFormatPartTypes) =>
+    parts.find((part) => part.type === type)?.value;
+  return `${get("year")}-${get("month")}-${get("day")}T${get("hour")}:${get("minute")}`;
+}
+
 // "Saturday, May 23, 2026 at 3:00 PM", read on the event's own wall clock
 export function formatEventDateTime(date: Date, timeZone: string): string {
   return new Intl.DateTimeFormat("en-US", {
