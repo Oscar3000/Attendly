@@ -11,13 +11,15 @@ import {
   type FamilyLine,
   type PaletteColor,
 } from "@/lib/event-content";
+import { DEFAULT_THEME, isThemeId, type ThemeId } from "@/lib/themes";
 
 export type { EventType };
 
-// A row with its JSON content fields typed
-export type Event = Omit<EventRow, "familyLines" | "colorPalette"> & {
+// A row with its JSON content fields and theme typed
+export type Event = Omit<EventRow, "familyLines" | "colorPalette" | "theme"> & {
   familyLines: FamilyLine[];
   colorPalette: PaletteColor[];
+  theme: ThemeId;
 };
 
 // Fields a host sets; id, ownerId and timestamps are managed here
@@ -39,6 +41,7 @@ export interface EventInput {
   colorPalette?: PaletteColor[] | undefined;
   coverImageUrl?: string | null | undefined;
   notes?: string | null | undefined;
+  theme?: ThemeId | undefined;
 }
 
 // Any subset of the fields; undefined (or missing) leaves a field unchanged
@@ -61,6 +64,8 @@ const toEvent = (row: EventRow): Event => ({
   ...row,
   familyLines: familyLinesSchema.catch([]).parse(row.familyLines),
   colorPalette: colorPaletteSchema.catch([]).parse(row.colorPalette),
+  // A preset removed from the code falls back to the default
+  theme: isThemeId(row.theme) ? row.theme : DEFAULT_THEME,
 });
 
 export const eventRepo = {

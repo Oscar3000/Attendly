@@ -426,11 +426,12 @@ Use `generateMetadata` on `/e/[slug]` (title, description, OG image). Make the r
 - **Files:** ~3
 - **As built:** the title is the host names (or the event title), and the description is the tagline plus when and where, on the event's clock. The OG image is generated per event by `src/app/e/[slug]/opengraph-image.tsx` (`next/og`, 1200×630, no storage needed). Next adds it to `og:image` and `twitter:image` as an absolute URL from `BETTER_AUTH_URL`. Event pages are `noindex, nofollow`: anyone with the link can open them, but search shouldn't list hosts' dates and venues. The page, its metadata and the image share `src/server/events/public-event.ts`, and React `cache` keeps it to one query per page render. The root layout is "Attendly" with a `%s · Attendly` title template. An unknown slug's metadata says only "Event not found". Checked in a running dev server: tags, a 200 PNG, and a 404 for an unknown slug.
 
-### T-405 · Theme presets · M
+### ✅ T-405 · Theme presets · M
 
 Store `theme` on `Event` (accent color, font pairing). Apply it with CSS variables at the event page root. Start with 3–4 presets, with `#C07A54` as the default.
 
 - **Files:** ~8
+- **As built:** `Event.theme` is a preset id (`TEXT NOT NULL DEFAULT 'terracotta'`), not an enum, so adding a preset needs no migration. An id that's no longer in the code reads as the default. `src/lib/themes.ts` has four presets: Terracotta (the original look), Sage garden, Midnight navy and Blush. Each has nine colour roles and a heading/body font pair. `themeStyle()` sets them as `--event-*` variables on the `/e/[slug]` root, and the `src/components/home/*` components read those variables instead of hex values. White text on each accent is at least as readable as on the original. Playfair Display and Montserrat are self-hosted with `next/font` and not preloaded, so a page only downloads the fonts its theme uses (CSP unchanged). The settings page has a theme picker (swatches, keyboard focus ring), and the generated preview image (T-404) uses the theme's colours.
 
 ### T-406 · Cover image upload · M
 

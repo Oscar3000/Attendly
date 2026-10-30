@@ -36,6 +36,7 @@ export default async function EventSettingsPage({
     notes: event.notes ?? "",
     familyLines: event.familyLines,
     colorPalette: event.colorPalette,
+    theme: event.theme,
   };
 
   // The zone list comes from the server so the server and browser render the same options

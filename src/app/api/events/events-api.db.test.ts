@@ -264,6 +264,7 @@ describe("PUT /api/events/[eventId]", () => {
       { name: "The Smiths", detail: "of York" },
     ],
     colorPalette: [{ name: "Gold", hex: "#D4AF37" }],
+    theme: "navy",
   };
 
   it("replaces the event's settings, clearing blank fields and keeping the slug", async () => {
@@ -289,6 +290,7 @@ describe("PUT /api/events/[eventId]", () => {
       tagline: null,
       familyLines: [{ name: "Mr & Mrs Obi" }, { name: "The Smiths", detail: "of York" }],
       colorPalette: [{ name: "Gold", hex: "#D4AF37" }],
+      theme: "navy",
     });
     expect(await eventRepo.findById(event.id)).toMatchObject({
       title: "Main, renamed",
@@ -305,6 +307,7 @@ describe("PUT /api/events/[eventId]", () => {
           title: "",
           colorPalette: [{ name: "Gold", hex: "gold" }],
           familyLines: [{ name: " " }],
+          theme: "neon",
         }),
         ctx(event.id),
       ),
@@ -314,6 +317,7 @@ describe("PUT /api/events/[eventId]", () => {
     expect(Object.keys(body.details.fieldErrors).sort()).toEqual([
       "colorPalette",
       "familyLines",
+      "theme",
       "title",
     ]);
     expect((await eventRepo.findById(event.id))?.title).toBe("Main");

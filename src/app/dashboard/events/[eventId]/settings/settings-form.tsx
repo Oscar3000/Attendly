@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { FamilyLine, PaletteColor } from "@/lib/event-content";
+import { THEME_IDS, THEMES } from "@/lib/themes";
 import { useUpdateEventMutation, type EventSettingsForm } from "@/store/eventInvitationApi";
 import { FormError, SubmitButton } from "@/components/auth/auth-card";
 import { TextField } from "@/components/auth/text-field";
@@ -294,6 +295,54 @@ export default function SettingsForm({ eventId, initial, timeZones }: SettingsFo
               />
               <ListError id="notes-error" message={errors.notes} />
             </div>
+          </section>
+
+          <section className={sectionClass}>
+            <fieldset>
+              <legend className={sectionTitleClass}>Theme</legend>
+              <p className="font-inter mb-4 text-sm text-[#666666]">
+                Colours and fonts for your event page.
+              </p>
+              <div className="grid gap-3 sm:grid-cols-2">
+                {THEME_IDS.map((id) => {
+                  const { label, colors, fonts } = THEMES[id];
+                  return (
+                    <label
+                      key={id}
+                      className={`flex cursor-pointer items-center gap-3 rounded-lg border-2 p-3 has-focus-visible:ring-2 has-focus-visible:ring-[#C07A54] ${
+                        form.theme === id ? "border-[#C07A54]" : "border-[#E0E0E0]"
+                      }`}
+                      style={{ backgroundColor: colors.background }}
+                    >
+                      <input
+                        type="radio"
+                        name="theme"
+                        value={id}
+                        checked={form.theme === id}
+                        onChange={() => update({ theme: id })}
+                        disabled={isLoading}
+                        className="sr-only"
+                      />
+                      <span className="flex shrink-0 gap-1" aria-hidden>
+                        {[colors.accent, colors.ornament, colors.ink].map((color) => (
+                          <span
+                            key={color}
+                            className="h-6 w-6 rounded-full border border-white shadow"
+                            style={{ backgroundColor: color }}
+                          />
+                        ))}
+                      </span>
+                      <span
+                        className="text-base"
+                        style={{ color: colors.ink, fontFamily: fonts.heading }}
+                      >
+                        {label}
+                      </span>
+                    </label>
+                  );
+                })}
+              </div>
+            </fieldset>
           </section>
 
           <FormError message={formError} />

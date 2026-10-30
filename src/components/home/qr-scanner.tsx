@@ -83,22 +83,28 @@ export default function QrScanner() {
     <section
       className="px-4 py-14 text-center"
       style={{
-        background: "linear-gradient(180deg, #FFF9F4 0%, #FDF0E6 100%)",
+        background: "linear-gradient(180deg, var(--event-bg) 0%, var(--event-bg-alt) 100%)",
       }}
     >
       <div className="max-w-sm mx-auto">
         <div className="mb-8">
-          <div className="w-12 h-px mx-auto mb-5" style={{ backgroundColor: "#D4AF37" }} />
+          <div
+            className="w-12 h-px mx-auto mb-5"
+            style={{ backgroundColor: "var(--event-ornament)" }}
+          />
           <h2
             className="text-3xl sm:text-4xl font-bold mb-3"
-            style={{ color: "#2C1810", fontFamily: "Georgia, serif" }}
+            style={{ color: "var(--event-ink)", fontFamily: "var(--event-heading-font)" }}
           >
             Verify Your Invitation
           </h2>
-          <p className="text-sm" style={{ color: "#6B4A3A" }}>
+          <p className="text-sm" style={{ color: "var(--event-text)" }}>
             Scan your personal QR code to confirm your attendance
           </p>
-          <div className="w-12 h-px mx-auto mt-5" style={{ backgroundColor: "#D4AF37" }} />
+          <div
+            className="w-12 h-px mx-auto mt-5"
+            style={{ backgroundColor: "var(--event-ornament)" }}
+          />
         </div>
 
         <div className="flex flex-col items-center">
@@ -135,7 +141,7 @@ export default function QrScanner() {
           <button
             onClick={startScanner}
             className="font-inter font-semibold text-white w-full mt-8 py-4 rounded-2xl transition-opacity hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2"
-            style={{ backgroundColor: "#C07A54" }}
+            style={{ backgroundColor: "var(--event-accent)" }}
           >
             Scan QR Code
           </button>

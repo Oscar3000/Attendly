@@ -6,6 +6,7 @@
 import "server-only";
 import { z } from "zod";
 import { colorPaletteSchema, familyLinesSchema } from "@/lib/event-content";
+import { DEFAULT_THEME, THEME_IDS } from "@/lib/themes";
 import { isValidTimeZone, zonedTimeToUtc } from "@/lib/timezones";
 
 const localDateTime = z.string().regex(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/, "Enter a date and time");
@@ -82,6 +83,7 @@ export const updateEventSchema = z
     notes: clearableText(2000),
     familyLines: familyLinesSchema.default([]),
     colorPalette: colorPaletteSchema.default([]),
+    theme: z.enum(THEME_IDS).default(DEFAULT_THEME),
   })
   .transform((fields, ctx) => {
     const times = toUtcTimes(fields, ctx);

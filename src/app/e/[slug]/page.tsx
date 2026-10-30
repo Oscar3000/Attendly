@@ -1,12 +1,27 @@
 import type { Metadata } from "next";
+import { Montserrat, Playfair_Display } from "next/font/google";
 import { notFound } from "next/navigation";
 import { getEnv } from "@/server/env";
 import { eventDisplayName, eventWhenAndWhere, getPublicEvent } from "@/server/events/public-event";
+import { themeStyle } from "@/lib/themes";
 import HeroSection from "@/components/home/hero-section";
 import CountdownSection from "@/components/home/countdown-section";
 import EventDetails from "@/components/home/event-details";
 import QrScanner from "@/components/home/qr-scanner";
 import HomeFooter from "@/components/home/home-footer";
+
+// Fonts the theme presets use (src/lib/themes.ts), self-hosted at build time like Inter. Not
+// preloaded: the browser then downloads only the ones the event's theme actually names
+const playfair = Playfair_Display({
+  subsets: ["latin"],
+  variable: "--font-playfair",
+  preload: false,
+});
+const montserrat = Montserrat({
+  subsets: ["latin"],
+  variable: "--font-montserrat",
+  preload: false,
+});
 
 interface EventPageProps {
   params: Promise<{ slug: string }>;
@@ -41,7 +56,10 @@ export default async function EventPage({ params }: EventPageProps) {
   if (!event) notFound();
 
   return (
-    <main className="min-h-screen" style={{ backgroundColor: "#FFF9F4" }}>
+    <main
+      className={`min-h-screen ${playfair.variable} ${montserrat.variable}`}
+      style={themeStyle(event.theme)}
+    >
       <HeroSection event={event} />
       <CountdownSection startsAt={event.date.toISOString()} />
       <EventDetails event={event} />

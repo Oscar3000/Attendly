@@ -126,6 +126,7 @@ All required variables are validated at startup (`src/instrumentation.ts` -> `sr
 - `utils.ts` has status converters between Prisma enums and app types
 - Path alias: `@/*` maps to `./src/*`
 - Security headers and the Content Security Policy live in `next.config.ts`. Everything loads from `'self'`; adding an external script, font, image or API means updating the CSP, or the browser blocks it
+- The event page's colours and fonts come from theme presets (`src/lib/themes.ts`, `Event.theme`), set as `--event-*` CSS variables at the `/e/[slug]` root; components under `src/components/home/` use `var(--event-*)`, never hex values
 - Pagination defaults: 10 items per page
 - Tests: Vitest, colocated as `*.test.ts` (unit) and `*.db.test.ts` (real Postgres, tables truncated before each test)
 - `src/app/api/tenant-isolation.db.test.ts` discovers every API route; a new route fails it until it's added to `ROUTE_POLICY` ("victim": must refuse another account's data, "own": works on the caller's data, or "not tenant data")

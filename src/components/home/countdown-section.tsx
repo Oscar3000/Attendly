@@ -38,8 +38,11 @@ export default function CountdownSection({ startsAt }: { startsAt: string }) {
   const countdown = useCountdown(startsAt);
 
   return (
-    <section className="px-4 py-12 text-center" style={{ backgroundColor: "#2C1810" }}>
-      <p className="text-xs uppercase tracking-[0.35em] mb-7" style={{ color: "#D4AF37" }}>
+    <section className="px-4 py-12 text-center" style={{ backgroundColor: "var(--event-ink)" }}>
+      <p
+        className="text-xs uppercase tracking-[0.35em] mb-7"
+        style={{ color: "var(--event-ornament)" }}
+      >
         Counting Down to the Big Day
       </p>
       <div className="flex justify-center gap-3 sm:gap-8">
@@ -53,16 +56,19 @@ export default function CountdownSection({ startsAt }: { startsAt: string }) {
             <div
               className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl flex items-center justify-center text-2xl sm:text-3xl font-bold mb-2 leading-none"
               style={{
-                backgroundColor: "#C07A54",
+                backgroundColor: "var(--event-accent)",
                 color: "#FFFFFF",
-                fontFamily: "'Palatino Linotype', Palatino, serif",
+                fontFamily: "var(--event-heading-font)",
                 fontVariantNumeric: "lining-nums tabular-nums",
-                boxShadow: "0 4px 14px rgba(192,122,84,0.4)",
+                boxShadow: "0 4px 14px color-mix(in srgb, var(--event-accent) 40%, transparent)",
               }}
             >
               {String(value).padStart(2, "0")}
             </div>
-            <span className="text-xs uppercase tracking-wider" style={{ color: "#9A7B6B" }}>
+            <span
+              className="text-xs uppercase tracking-wider"
+              style={{ color: "var(--event-muted)" }}
+            >
               {label}
             </span>
           </div>

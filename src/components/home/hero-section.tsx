@@ -19,14 +19,16 @@ export default function HeroSection({ event }: { event: Event }) {
     <section
       className="relative flex flex-col items-center justify-center px-4 pt-16 pb-20 text-center overflow-hidden"
       style={{
-        background: "linear-gradient(160deg, #FFF9F4 0%, #FDF0E6 55%, #FFF9F4 100%)",
+        background:
+          "linear-gradient(160deg, var(--event-bg) 0%, var(--event-bg-alt) 55%, var(--event-bg) 100%)",
       }}
     >
       {/* Gold top border */}
       <div
         className="absolute top-0 left-0 right-0 h-1"
         style={{
-          background: "linear-gradient(90deg, transparent, #C07A54, #D4AF37, #C07A54, transparent)",
+          background:
+            "linear-gradient(90deg, transparent, var(--event-accent), var(--event-ornament), var(--event-accent), transparent)",
         }}
       />
 
@@ -35,9 +37,9 @@ export default function HeroSection({ event }: { event: Event }) {
         <div
           className="mb-5 text-5xl sm:text-6xl font-bold tracking-widest select-none"
           style={{
-            color: "#C07A54",
-            fontFamily: "Georgia, serif",
-            textShadow: "0 2px 6px rgba(192,122,84,0.25)",
+            color: "var(--event-accent)",
+            fontFamily: "var(--event-heading-font)",
+            textShadow: "0 2px 6px color-mix(in srgb, var(--event-accent) 25%, transparent)",
           }}
         >
           {couple[0].charAt(0)} &amp; {couple[1].charAt(0)}
@@ -45,7 +47,10 @@ export default function HeroSection({ event }: { event: Event }) {
       )}
 
       {/* Headline */}
-      <p className="text-xs uppercase tracking-[0.35em] mb-6" style={{ color: "#9A7B6B" }}>
+      <p
+        className="text-xs uppercase tracking-[0.35em] mb-6"
+        style={{ color: "var(--event-muted)" }}
+      >
         {event.headline ?? DEFAULT_HEADLINE}
       </p>
 
@@ -54,19 +59,19 @@ export default function HeroSection({ event }: { event: Event }) {
         <>
           <h1
             className="text-6xl sm:text-8xl font-bold mb-2 leading-tight break-words"
-            style={{ color: "#2C1810", fontFamily: "Georgia, serif" }}
+            style={{ color: "var(--event-ink)", fontFamily: "var(--event-heading-font)" }}
           >
             {couple[0]}
           </h1>
           <div
             className="text-3xl sm:text-4xl my-1"
-            style={{ color: "#C07A54", fontFamily: "Georgia, serif" }}
+            style={{ color: "var(--event-accent)", fontFamily: "var(--event-heading-font)" }}
           >
             &amp;
           </div>
           <p
             className="text-6xl sm:text-8xl font-bold mb-8 leading-tight break-words"
-            style={{ color: "#2C1810", fontFamily: "Georgia, serif" }}
+            style={{ color: "var(--event-ink)", fontFamily: "var(--event-heading-font)" }}
           >
             {couple[1]}
           </p>
@@ -74,14 +79,17 @@ export default function HeroSection({ event }: { event: Event }) {
       ) : (
         <h1
           className="text-5xl sm:text-7xl font-bold mb-8 leading-tight break-words"
-          style={{ color: "#2C1810", fontFamily: "Georgia, serif" }}
+          style={{ color: "var(--event-ink)", fontFamily: "var(--event-heading-font)" }}
         >
           {names}
         </h1>
       )}
 
       {event.tagline && (
-        <p className="text-base sm:text-lg italic mb-8 max-w-md" style={{ color: "#6B4A3A" }}>
+        <p
+          className="text-base sm:text-lg italic mb-8 max-w-md"
+          style={{ color: "var(--event-text)" }}
+        >
           {event.tagline}
         </p>
       )}
@@ -89,7 +97,7 @@ export default function HeroSection({ event }: { event: Event }) {
       {/* Date pill */}
       <div
         className="px-8 py-3 rounded-full text-base sm:text-lg font-semibold mb-10 tracking-wide"
-        style={{ backgroundColor: "#C07A54", color: "#FFFFFF" }}
+        style={{ backgroundColor: "var(--event-accent)", color: "#FFFFFF" }}
       >
         {formatEventDate(event.date, event.timezone)}
       </div>
@@ -98,28 +106,28 @@ export default function HeroSection({ event }: { event: Event }) {
         <>
           {/* Ornamental divider */}
           <div className="flex items-center gap-3 mb-8 w-full max-w-xs">
-            <div className="flex-1 h-px" style={{ backgroundColor: "#D4AF37" }} />
-            <span className="text-xl" style={{ color: "#D4AF37" }}>
+            <div className="flex-1 h-px" style={{ backgroundColor: "var(--event-ornament)" }} />
+            <span className="text-xl" style={{ color: "var(--event-ornament)" }}>
               ❧
             </span>
-            <div className="flex-1 h-px" style={{ backgroundColor: "#D4AF37" }} />
+            <div className="flex-1 h-px" style={{ backgroundColor: "var(--event-ornament)" }} />
           </div>
 
           {/* Families */}
           <div
             className="text-center text-sm sm:text-base max-w-sm leading-relaxed"
-            style={{ color: "#6B4A3A" }}
+            style={{ color: "var(--event-text)" }}
           >
             {event.familyLines.map((family, index) => (
               <div key={index}>
                 {index > 0 && (
-                  <p className="my-3 text-sm" style={{ color: "#9A7B6B" }}>
+                  <p className="my-3 text-sm" style={{ color: "var(--event-muted)" }}>
                     and
                   </p>
                 )}
                 <p className="font-semibold">{family.name}</p>
                 {family.detail && (
-                  <p className="italic text-xs" style={{ color: "#9A7B6B" }}>
+                  <p className="italic text-xs" style={{ color: "var(--event-muted)" }}>
                     {family.detail}
                   </p>
                 )}
@@ -133,7 +141,8 @@ export default function HeroSection({ event }: { event: Event }) {
       <div
         className="absolute bottom-0 left-0 right-0 h-1"
         style={{
-          background: "linear-gradient(90deg, transparent, #C07A54, #D4AF37, #C07A54, transparent)",
+          background:
+            "linear-gradient(90deg, transparent, var(--event-accent), var(--event-ornament), var(--event-accent), transparent)",
         }}
       />
     </section>
