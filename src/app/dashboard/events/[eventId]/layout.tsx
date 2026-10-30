@@ -3,6 +3,7 @@ import { getCurrentUser } from "@/server/auth/current-user";
 import { canSendEmail } from "@/server/email/send-email";
 import { eventRepo } from "@/server/repositories/event.repo";
 import { VerifyEmailBanner } from "@/components/admin/verify-email-banner";
+import { EventCardProvider } from "@/components/admin/event-card-context";
 import { EventPageLink } from "@/components/admin/event-page-link";
 
 /**
@@ -28,7 +29,22 @@ export default async function EventDashboardLayout({
       {/* Hidden when email isn't configured: the resend button could never succeed */}
       {!user.emailVerified && canSendEmail() && <VerifyEmailBanner email={user.email} />}
       <EventPageLink slug={event.slug} />
-      {children}
+      <EventCardProvider
+        event={{
+          type: event.type,
+          title: event.title,
+          hostNames: event.hostNames,
+          date: event.date.toISOString(),
+          timezone: event.timezone,
+          venueName: event.venueName,
+          venueAddress: event.venueAddress,
+          tagline: event.tagline,
+          colorPalette: event.colorPalette,
+          theme: event.theme,
+        }}
+      >
+        {children}
+      </EventCardProvider>
     </>
   );
 }

@@ -69,6 +69,7 @@ src/
   lib/
     types.ts                  # TypeScript interfaces
     utils.ts                  # Formatting, QR generation, status helpers
+    invitation-image.ts       # The downloadable/shareable invitation image (canvas), from the event's details
   server/                     # Server-only code (`import 'server-only'`)
     db/client.ts              # Prisma client singleton
     repositories/             # invitation.repo.ts, event.repo.ts, metrics.repo.ts, image.repo.ts (all Prisma queries)

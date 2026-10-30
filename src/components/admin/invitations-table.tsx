@@ -1,6 +1,8 @@
 import { InvitationTableEntry } from "@/lib/types";
 import { QrCode } from "../qr-code";
-import { downloadQRCode, getTableStatusColor } from "@/lib/utils";
+import { getTableStatusColor } from "@/lib/utils";
+import { downloadQRCode } from "@/lib/invitation-image";
+import { useEventCard } from "./event-card-context";
 
 interface InvitationsTableProps {
   invitations: InvitationTableEntry[];
@@ -26,13 +28,13 @@ export default function InvitationsTable({
   search,
   onSearchChange,
 }: InvitationsTableProps) {
+  const event = useEventCard();
   const handleDownloadQR = (invitation: InvitationTableEntry) => {
     if (invitation.qrCode) {
-      downloadQRCode(
+      void downloadQRCode(
         invitation.qrCode,
         `invitation-qr-${invitation.name}`,
-        invitation.name,
-        invitation.plusOne ?? 0,
+        event && { guest: { name: invitation.name, plusOne: invitation.plusOne ?? 0 }, event },
       );
     }
   };

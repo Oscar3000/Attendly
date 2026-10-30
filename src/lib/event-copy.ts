@@ -16,6 +16,9 @@ export interface EventCopy {
   // The email subject and message a host sends with an invitation link
   shareSubject: string;
   shareMessage: string;
+  // On the invitation image a guest gets (T-408): above the QR code, and the closing line
+  imageInvitation: string;
+  imageClosing: string;
 }
 
 export const EVENT_COPY: Record<EventType, EventCopy> = {
@@ -25,6 +28,9 @@ export const EVENT_COPY: Record<EventType, EventCopy> = {
     invitationSubtitle: "Wedding celebration",
     shareSubject: "Wedding invitation",
     shareMessage: "You're invited to our wedding! We can't wait to celebrate with you.",
+    imageInvitation:
+      "You have been specially invited to witness and celebrate this beautiful union. This is your personal invitation.",
+    imageClosing: "We look forward to celebrating with you!",
   },
   BIRTHDAY: {
     headline: "You're invited to celebrate the birthday of",
@@ -33,6 +39,9 @@ export const EVENT_COPY: Record<EventType, EventCopy> = {
     shareSubject: "Birthday invitation",
     shareMessage:
       "You're invited to the birthday celebration! We can't wait to celebrate with you.",
+    imageInvitation:
+      "You have been specially invited to celebrate with us. This is your personal invitation.",
+    imageClosing: "We look forward to celebrating with you!",
   },
   CORPORATE: {
     headline: "You're invited to join us at",
@@ -40,6 +49,8 @@ export const EVENT_COPY: Record<EventType, EventCopy> = {
     invitationSubtitle: "Event invitation",
     shareSubject: "Event invitation",
     shareMessage: "You're invited to our event. We look forward to seeing you there.",
+    imageInvitation: "You are cordially invited to join us. This is your personal invitation.",
+    imageClosing: "We look forward to seeing you there.",
   },
   OTHER: {
     headline: "You're invited to",
@@ -47,6 +58,8 @@ export const EVENT_COPY: Record<EventType, EventCopy> = {
     invitationSubtitle: "Event invitation",
     shareSubject: "Invitation",
     shareMessage: "You're invited! We look forward to seeing you there.",
+    imageInvitation: "You have been specially invited. This is your personal invitation.",
+    imageClosing: "We look forward to seeing you there.",
   },
 };
 

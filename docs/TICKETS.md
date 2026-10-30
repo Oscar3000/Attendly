@@ -447,11 +447,12 @@ Wedding, birthday, and corporate events get different default wording ("Solemnly
 - **Files:** ~4
 - **As built:** `src/lib/event-copy.ts` holds each type's wording (`copyFor(type)`, unknown types read as OTHER): the event page headline when the host leaves it empty, the countdown label, the subtitle on a guest's invitation (it said "Wedding Celebration" for every event), and the share email/WhatsApp text on the invite success page (it said "our wedding"). Invitations now carry `eventType` alongside `eventTimezone`. The settings page's headline placeholder shows the type's default, which is what guests see while it's empty. The generated invite image's wording is left for T-408.
 
-### T-408 · Generated invite image uses event data · S
+### ✅ T-408 · Generated invite image uses event data · S
 
 Update the image generation in `utils.ts` (names, date, venue, colors) to read from `Event`.
 
 - **Files:** ~3
+- **As built:** moved out of `utils.ts` into `src/lib/invitation-image.ts`. `invitationCardContent()` (pure, unit-tested) decides what's on the card: a monogram for a wedding couple, otherwise the names written out; date and time on the event's clock; the type's invitation and closing wording (T-407); venue name and address; colours of the day; and the tagline in place of the hard-coded hashtag, all in the event's theme colours (T-405). Sections the event doesn't have are left out. The canvas now sizes itself to what it draws (drawn on a scratch canvas, then cropped) instead of a hand-kept height sum. The event dashboard layout provides the event's card details through `EventCardProvider` / `useEventCard()`, so the invitations table and invite success page need no extra request, and saving settings refreshes it. Also fixed: a non-wedding title containing "and" was shown as a couple ("Acme Gala and Awards Night" → "A & A") on the event page hero too; couples are now weddings only, with at most three words a side. Checked by rendering cards with a Node canvas.
 
 ### T-409 · Product landing page at `/` · M
 

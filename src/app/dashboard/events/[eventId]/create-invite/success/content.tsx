@@ -5,7 +5,8 @@ import { useState } from "react";
 import { Button } from "@/components/button";
 import { QrCode } from "@/components/qr-code";
 import { useGetEventInvitationQuery } from "@/store/eventInvitationApi";
-import { downloadQRCode, shareQRCodeAsImage } from "@/lib/utils";
+import { downloadQRCode, shareQRCodeAsImage } from "@/lib/invitation-image";
+import { useEventCard } from "@/components/admin/event-card-context";
 import { formatEventDateTime } from "@/lib/timezones";
 import { copyFor } from "@/lib/event-copy";
 
@@ -24,6 +25,12 @@ export function SuccessPageContent() {
   );
 
   const invitation = data?.invitation;
+  const event = useEventCard();
+  // The guest and event drawn on the invitation image (T-408)
+  const imageInput =
+    invitation && event
+      ? { guest: { name: invitation.name, plusOne: invitation.plusOne ?? 0 }, event }
+      : undefined;
   const inviteUrl = `${typeof window !== "undefined" ? window.location.origin : ""}/invite/${invitationId}`;
 
   const handleCopyLink = async () => {
@@ -37,9 +44,9 @@ export function SuccessPageContent() {
   };
 
   const handleShare = async () => {
-    if (!invitation?.qrCode || !invitation?.name) return;
+    if (!invitation?.qrCode || !imageInput) return;
     try {
-      await shareQRCodeAsImage(invitation.qrCode, invitation.name, invitation.plusOne ?? 0);
+      await shareQRCodeAsImage(invitation.qrCode, imageInput);
     } catch (err) {
       console.error("Share failed:", err);
       handleCopyLink();
@@ -57,9 +64,9 @@ export function SuccessPageContent() {
   };
 
   const handleWhatsAppShare = async () => {
-    if (!invitation?.qrCode || !invitation?.name) return;
+    if (!invitation?.qrCode || !imageInput) return;
     try {
-      await shareQRCodeAsImage(invitation.qrCode, invitation.name, invitation.plusOne ?? 0);
+      await shareQRCodeAsImage(invitation.qrCode, imageInput);
     } catch {
       const text = encodeURIComponent(shareText);
       window.open(`https://wa.me/?text=${text}`, "_blank");
@@ -68,12 +75,7 @@ export function SuccessPageContent() {
 
   const handleDownloadQR = () => {
     if (!invitation?.qrCode) return;
-    downloadQRCode(
-      invitation.qrCode,
-      `invitation-qr-${invitation.name}`,
-      invitation.name,
-      invitation.plusOne ?? 0,
-    );
+    void downloadQRCode(invitation.qrCode, `invitation-qr-${invitation.name}`, imageInput);
   };
 
   if (isLoading) {
