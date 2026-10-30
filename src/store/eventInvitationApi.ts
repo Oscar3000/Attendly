@@ -14,6 +14,7 @@ import type {
   StatusUpdate,
 } from "@/lib/types";
 import type { FamilyLine, PaletteColor } from "@/lib/event-content";
+import type { ThemeId } from "@/lib/themes";
 import { invitationApi } from "./invitationApi";
 
 type EventArg = { eventId: string };
@@ -46,6 +47,7 @@ export interface EventSettingsForm extends CreateEventForm {
   notes: string;
   familyLines: FamilyLine[];
   colorPalette: PaletteColor[];
+  theme: ThemeId;
 }
 
 export interface BulkCreateResult {

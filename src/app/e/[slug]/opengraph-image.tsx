@@ -1,5 +1,6 @@
 import { ImageResponse } from "next/og";
 import { notFound } from "next/navigation";
+import { THEMES } from "@/lib/themes";
 import { eventDisplayName, eventWhenAndWhere, getPublicEvent } from "@/server/events/public-event";
 
 /**
@@ -13,6 +14,8 @@ export const contentType = "image/png";
 export default async function OpengraphImage({ params }: { params: Promise<{ slug: string }> }) {
   const event = await getPublicEvent((await params).slug);
   if (!event) notFound();
+  // The image is drawn outside the page, so it takes the theme's colours directly
+  const { colors } = THEMES[event.theme];
 
   return new ImageResponse(
     <div
@@ -25,9 +28,9 @@ export default async function OpengraphImage({ params }: { params: Promise<{ slu
         justifyContent: "center",
         padding: "60px 80px",
         textAlign: "center",
-        background: "linear-gradient(160deg, #FFF9F4 0%, #FDF0E6 55%, #FFF9F4 100%)",
-        borderTop: "12px solid #C07A54",
-        borderBottom: "12px solid #C07A54",
+        background: `linear-gradient(160deg, ${colors.background} 0%, ${colors.backgroundAlt} 55%, ${colors.background} 100%)`,
+        borderTop: `12px solid ${colors.accent}`,
+        borderBottom: `12px solid ${colors.accent}`,
       }}
     >
       <div
@@ -35,13 +38,13 @@ export default async function OpengraphImage({ params }: { params: Promise<{ slu
           fontSize: 26,
           letterSpacing: 8,
           textTransform: "uppercase",
-          color: "#9A7B6B",
+          color: colors.muted,
           marginBottom: 28,
         }}
       >
         You&apos;re invited
       </div>
-      <div style={{ fontSize: 88, fontWeight: 700, color: "#2C1810", lineHeight: 1.1 }}>
+      <div style={{ fontSize: 88, fontWeight: 700, color: colors.ink, lineHeight: 1.1 }}>
         {eventDisplayName(event)}
       </div>
       <div
@@ -51,7 +54,7 @@ export default async function OpengraphImage({ params }: { params: Promise<{ slu
           borderRadius: 999,
           fontSize: 30,
           color: "#FFFFFF",
-          backgroundColor: "#C07A54",
+          backgroundColor: colors.accent,
         }}
       >
         {eventWhenAndWhere(event)}

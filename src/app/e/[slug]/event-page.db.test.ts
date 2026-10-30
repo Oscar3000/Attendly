@@ -8,6 +8,11 @@ import OpengraphImage from "./opengraph-image";
 
 // The camera scanner needs a browser
 vi.mock("@/components/home/qr-scanner", () => ({ default: () => null }));
+// next/font only works under Next's compiler
+vi.mock("next/font/google", () => ({
+  Playfair_Display: () => ({ variable: "font-playfair" }),
+  Montserrat: () => ({ variable: "font-montserrat" }),
+}));
 
 let ownerId = "";
 
@@ -94,6 +99,20 @@ describe("/e/[slug]", () => {
     for (const absent of ["📍", "Colours of the Day", "Dress Code", "Good to Know", "RSVP by"]) {
       expect(html).not.toContain(absent);
     }
+  });
+
+  it("sets the event's theme as CSS variables, defaulting to terracotta (T-405)", async () => {
+    const event = await eventRepo.create(ownerId, base);
+    expect(await render("ada-and-charles")).toContain("--event-accent:#C07A54");
+
+    await eventRepo.update(event.id, { theme: "navy" });
+    const html = await render("ada-and-charles");
+    expect(html).toContain("--event-accent:#2B4C7E");
+    expect(html).toContain("--event-heading-font:var(--font-montserrat)");
+
+    // A preset that no longer exists falls back to the default
+    await prisma.event.update({ where: { id: event.id }, data: { theme: "retired" } });
+    expect(await render("ada-and-charles")).toContain("--event-accent:#C07A54");
   });
 
   it("is a 404 for an unknown slug", async () => {
