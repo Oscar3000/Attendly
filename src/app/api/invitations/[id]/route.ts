@@ -3,7 +3,7 @@
  * GET /api/invitations/[id] - Read the invitation
  * PATCH /api/invitations/[id] - Update its RSVP status
  * Hosts use /api/events/[eventId]/invitations/[id]. The PIN isn't tied to an event, so the id
- * in the guest's link identifies the invitation; replaced by per-invitation links (T-502 – T-505)
+ * in the guest's link identifies the invitation; replaced by ticket links and door check-in (T-502 – T-508)
  */
 import { NextResponse } from "next/server";
 import { invitationRepo } from "@/server/repositories/invitation.repo";

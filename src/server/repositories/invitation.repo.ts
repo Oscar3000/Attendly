@@ -248,7 +248,7 @@ export const invitationRepo = {
   /*
    * Guest (shared PIN) access, by invitation id alone: the PIN isn't tied to an event, and the
    * id in the guest's link is what identifies their invitation. Only for the guest branch of
-   * GET/PATCH /api/invitations/[id]; removed with the PIN flow in T-505
+   * GET/PATCH /api/invitations/[id]; removed with the PIN flow in T-508
    */
   async getInvitationForGuest(id: string): Promise<InviteDetails | undefined> {
     const invitation = await prisma.invitation.findUnique({ where: { id }, include: withEvent });

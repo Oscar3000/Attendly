@@ -142,7 +142,7 @@ describe("scoping by event", () => {
     expect(untouched).toMatchObject({ name: "Other guest", status: "pending" });
   });
 
-  it("lets a guest read and RSVP by invitation id alone (PIN flow, until T-505)", async () => {
+  it("lets a guest read and RSVP by invitation id alone (PIN flow, until T-508)", async () => {
     const created = await createGuest("Ada Lovelace");
 
     expect(await invitationRepo.getInvitationForGuest(created.id)).toMatchObject({
