@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it } from "vitest";
 import { prisma } from "@/server/db/client";
 import { eventRepo, type Event } from "./event.repo";
 import { invitationRepo } from "./invitation.repo";
+import { absoluteUrl, generateQRCode } from "@/lib/utils";
 
 const eventDate = new Date("2026-05-23T10:00:00Z");
 let event: Event;
@@ -36,10 +37,8 @@ function createGuest(name: string) {
 }
 
 describe("invitationRepo", () => {
-  it("creates an invitation with a generated QR code and reads it back", async () => {
+  it("creates an invitation and reads it back", async () => {
     const created = await createGuest("Ada Lovelace");
-
-    expect(created.qrCode).toMatch(/^data:image\/png;base64,/);
 
     const found = await invitationRepo.getInvitationById(event.id, created.id);
     expect(found).toMatchObject({
@@ -55,8 +54,8 @@ describe("invitationRepo", () => {
     expect(found?.eventDate.toISOString()).toBe(eventDate.toISOString());
   });
 
-  it("gives every invitation its own ticket token and keeps it out of what callers get back", async () => {
-    const one = await createGuest("Ada Lovelace");
+  it("gives every invitation its own ticket token", async () => {
+    await createGuest("Ada Lovelace");
     const bulk = await invitationRepo.createInvitations(event, "pending", [
       { name: "Charles Babbage" },
       { name: "Grace Hopper" },
@@ -69,19 +68,37 @@ describe("invitationRepo", () => {
     expect(tokens).toHaveLength(3);
     expect(new Set(tokens).size).toBe(3);
     for (const token of tokens) expect(token).toMatch(/^[A-Za-z0-9_-]{43}$/);
+  });
 
-    // The token is a guest's credential; API responses are built from these
-    const page = await invitationRepo.getAdminInvitations(event.id);
-    const returned = JSON.stringify([
-      one,
-      await invitationRepo.getInvitationById(event.id, one.id),
-      await invitationRepo.getAllInvitations(event.id),
-      page.invitations,
-      await invitationRepo.getInvitationForGuest(one.id),
-      await invitationRepo.updateInvitation(event.id, one.id, { name: "Ada King" }),
+  it("gives the owner each guest's ticket link and a QR code for it, and PIN guests neither", async () => {
+    const one = await createGuest("Ada Lovelace");
+    const { accessToken } = await prisma.invitation.findUniqueOrThrow({ where: { id: one.id } });
+    const path = `/e/test-event/i/${accessToken}`;
+    const ticket = { ticketUrl: absoluteUrl(path), qrCode: await generateQRCode(path) };
+    expect(ticket.qrCode).toMatch(/^data:image\/png;base64,/);
+
+    // Every owner read and write returns the same link and code
+    expect(one).toMatchObject(ticket);
+    expect(await invitationRepo.getInvitationById(event.id, one.id)).toMatchObject(ticket);
+    expect(await invitationRepo.getAllInvitations(event.id)).toMatchObject([ticket]);
+    expect((await invitationRepo.getAdminInvitations(event.id)).invitations).toMatchObject([
+      { ...ticket, hasQrCode: true },
     ]);
-    expect(returned).not.toContain("accessToken");
-    for (const token of tokens) expect(returned).not.toContain(token);
+    expect(
+      await invitationRepo.updateInvitation(event.id, one.id, { name: "Ada King" }),
+    ).toMatchObject(ticket);
+    expect(await invitationRepo.updateRsvpStatus(event.id, one.id, "declined")).toMatchObject(
+      ticket,
+    );
+
+    // A shared-PIN guest can read any invitation by id, so they must not get its ticket
+    const forGuest = JSON.stringify([
+      await invitationRepo.getInvitationForGuest(one.id),
+      await invitationRepo.updateRsvpStatusForGuest(one.id, "confirmed"),
+    ]);
+    expect(forGuest).not.toContain(accessToken);
+    expect(forGuest).not.toContain("data:image");
+    expect(forGuest).not.toContain("ticketUrl");
   });
 
   it("takes the date and venue from the event, so changing the event changes every invitation", async () => {

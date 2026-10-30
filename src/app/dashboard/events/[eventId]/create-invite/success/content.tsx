@@ -31,7 +31,8 @@ export function SuccessPageContent() {
     invitation && event
       ? { guest: { name: invitation.name, plusOne: invitation.plusOne ?? 0 }, event }
       : undefined;
-  const inviteUrl = `${typeof window !== "undefined" ? window.location.origin : ""}/invite/${invitationId}`;
+  // The guest's ticket (T-502), which the QR code also opens
+  const inviteUrl = invitation?.ticketUrl ?? "";
 
   const handleCopyLink = async () => {
     try {
@@ -288,10 +289,7 @@ export function SuccessPageContent() {
 
         {/* Actions */}
         <div className="grid grid-cols-2 sm:flex sm:flex-row gap-3 sm:gap-4 sm:justify-center">
-          <Button
-            variant="secondary"
-            onClick={() => window.open(`/invite/${invitation.id}`, "_blank")}
-          >
+          <Button variant="secondary" onClick={() => window.open(inviteUrl, "_blank", "noopener")}>
             <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
                 strokeLinecap="round"

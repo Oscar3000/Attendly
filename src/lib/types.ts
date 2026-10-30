@@ -75,6 +75,8 @@ export interface InvitePageProps {
 
 export interface InviteDetails extends WeddingInvitation {
   plusOne?: number;
+  // The guest's ticket link (T-503), which qrCode encodes. Only in the event owner's responses
+  ticketUrl?: string;
 }
 
 // Admin dashboard types
@@ -102,6 +104,8 @@ export interface InvitationTableEntry {
   status: RsvpStatus;
   hasQrCode: boolean;
   qrCode?: string | undefined;
+  // The guest's ticket link, which qrCode encodes (T-503)
+  ticketUrl: string;
   plusOne: number;
   createdAt: Date;
   updatedAt: Date;
@@ -145,7 +149,6 @@ export interface Invitation {
   id: string;
   name: string;
   status: PrismaRsvpStatus;
-  qrCode: string | null;
   plusOne: number;
   eventId: string;
   event: InvitationEvent;

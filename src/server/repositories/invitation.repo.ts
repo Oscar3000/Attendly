@@ -17,19 +17,44 @@ import type {
   Invitation,
 } from "@/lib/types";
 import {
+  absoluteUrl,
   generateQRCode,
   convertPrismaStatus,
   convertToPrismaStatus,
   convertToInviteDetails,
   eventVenueLabel,
+  ticketPath,
 } from "@/lib/utils";
 
-// Joined on every read so callers get the event's date and venue
+// Joined on every read so callers get the event's date and venue, and the slug for ticket links
 const withEvent = {
   event: {
-    select: { date: true, timezone: true, type: true, venueName: true, venueAddress: true },
+    select: {
+      slug: true,
+      date: true,
+      timezone: true,
+      type: true,
+      venueName: true,
+      venueAddress: true,
+    },
   },
 } as const;
+
+// The guest's ticket link and its QR code, made from the token on every read rather than stored,
+// so they always point at the current address (T-503)
+async function ticketFor(slug: string, accessToken: string) {
+  const path = ticketPath(slug, accessToken);
+  return { ticketUrl: absoluteUrl(path), qrCode: await generateQRCode(path) };
+}
+
+// An owner read: the invitation plus its ticket link and QR code
+type InvitationRow = Invitation & { accessToken: string; event: { slug: string } };
+async function withTicket(invitation: InvitationRow): Promise<InviteDetails> {
+  return {
+    ...convertToInviteDetails(invitation),
+    ...(await ticketFor(invitation.event.slug, invitation.accessToken)),
+  };
+}
 
 // The secret in a guest's ticket link (T-501): 32 random bytes, URL-safe
 export const newAccessToken = () => randomBytes(32).toString("base64url");
@@ -57,10 +82,12 @@ type InvitationUpdates = {
   plusOne?: number | undefined;
 };
 
-// Shared by the scoped and guest updates. The date and venue are changed on the event
+// Shared by the scoped and guest updates. The date and venue are changed on the event. Only
+// the owner's (scoped) update returns the ticket link
 async function update(
   where: Prisma.InvitationWhereUniqueInput,
   updates: InvitationUpdates,
+  withTicketLink: boolean,
 ): Promise<InviteDetails | undefined> {
   const data: Partial<{ name: string; plusOne: number; status: PrismaRsvpStatus }> = {};
   if (updates.name !== undefined) data.name = updates.name;
@@ -69,7 +96,7 @@ async function update(
 
   try {
     const updated = await prisma.invitation.update({ where, data, include: withEvent });
-    return convertToInviteDetails(updated as Invitation);
+    return withTicketLink ? withTicket(updated) : convertToInviteDetails(updated);
   } catch (error) {
     if (isNotFound(error)) return undefined;
     throw error;
@@ -84,7 +111,7 @@ export const invitationRepo = {
       orderBy: { createdAt: "desc" },
       include: withEvent,
     });
-    return invitations.map((invitation) => convertToInviteDetails(invitation as Invitation));
+    return Promise.all(invitations.map(withTicket));
   },
 
   // Get an invitation by ID within an event
@@ -93,7 +120,7 @@ export const invitationRepo = {
       where: { id, eventId },
       include: withEvent,
     });
-    return invitation ? convertToInviteDetails(invitation as Invitation) : undefined;
+    return invitation ? withTicket(invitation) : undefined;
   },
 
   // Create new invitation for an event
@@ -101,29 +128,17 @@ export const invitationRepo = {
     event: Pick<Event, "id">,
     invitation: { name: string; status: RsvpStatus; plusOne?: number | undefined },
   ): Promise<InviteDetails> {
-    // Create invitation first to get the ID
-    const newInvitation = await prisma.invitation.create({
+    const created = await prisma.invitation.create({
       data: {
         name: invitation.name,
-        qrCode: "PLACEHOLDER", // Temporary placeholder
         accessToken: newAccessToken(),
         eventId: event.id,
         status: convertToPrismaStatus(invitation.status),
         plusOne: invitation.plusOne ?? 0,
       },
-    });
-
-    // Generate QR code with the actual ID
-    const qrCode = await generateQRCode(newInvitation.id);
-
-    // Update invitation with the real QR code
-    const updatedInvitation = await prisma.invitation.update({
-      where: { id: newInvitation.id },
-      data: { qrCode },
       include: withEvent,
     });
-
-    return convertToInviteDetails(updatedInvitation as Invitation);
+    return withTicket(created);
   },
 
   // Create many invitations in an event. Each row succeeds or fails on its own; rows with an
@@ -172,7 +187,7 @@ export const invitationRepo = {
     id: string,
     updates: InvitationUpdates,
   ): Promise<InviteDetails | undefined> {
-    return update({ id, eventId }, updates);
+    return update({ id, eventId }, updates, true);
   },
 
   // Delete an invitation within an event
@@ -192,7 +207,7 @@ export const invitationRepo = {
     id: string,
     status: RsvpStatus,
   ): Promise<InviteDetails | undefined> {
-    return update({ id, eventId }, { status });
+    return update({ id, eventId }, { status }, true);
   },
 
   // A guest's ticket by its secret, within the event their link names; another event's token
@@ -239,7 +254,7 @@ export const invitationRepo = {
           status: true,
           createdAt: true,
           updatedAt: true,
-          qrCode: true,
+          accessToken: true,
           plusOne: true,
           ...withEvent,
         },
@@ -248,18 +263,27 @@ export const invitationRepo = {
     ]);
 
     return {
-      invitations: invitations.map((invitation) => ({
-        id: invitation.id,
-        name: invitation.name,
-        eventDate: invitation.event.date,
-        venue: eventVenueLabel(invitation.event),
-        status: convertPrismaStatus(invitation.status as PrismaRsvpStatus),
-        hasQrCode: Boolean(invitation.qrCode),
-        qrCode: invitation.qrCode ?? undefined,
-        plusOne: invitation.plusOne,
-        createdAt: invitation.createdAt,
-        updatedAt: invitation.updatedAt,
-      })),
+      invitations: await Promise.all(
+        invitations.map(async (invitation) => {
+          const { ticketUrl, qrCode } = await ticketFor(
+            invitation.event.slug,
+            invitation.accessToken,
+          );
+          return {
+            id: invitation.id,
+            name: invitation.name,
+            eventDate: invitation.event.date,
+            venue: eventVenueLabel(invitation.event),
+            status: convertPrismaStatus(invitation.status as PrismaRsvpStatus),
+            hasQrCode: Boolean(qrCode),
+            qrCode: qrCode || undefined,
+            ticketUrl,
+            plusOne: invitation.plusOne,
+            createdAt: invitation.createdAt,
+            updatedAt: invitation.updatedAt,
+          };
+        }),
+      ),
       pagination: {
         page,
         limit,
@@ -276,13 +300,13 @@ export const invitationRepo = {
    */
   async getInvitationForGuest(id: string): Promise<InviteDetails | undefined> {
     const invitation = await prisma.invitation.findUnique({ where: { id }, include: withEvent });
-    return invitation ? convertToInviteDetails(invitation as Invitation) : undefined;
+    return invitation ? convertToInviteDetails(invitation) : undefined;
   },
 
   async updateRsvpStatusForGuest(
     id: string,
     status: RsvpStatus,
   ): Promise<InviteDetails | undefined> {
-    return update({ id }, { status });
+    return update({ id }, { status }, false);
   },
 };

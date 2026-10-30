@@ -148,13 +148,20 @@ export function absoluteUrl(path: string): string {
 }
 
 /**
- * Generates QR code data URL for invitation links
- * @param invitationId - The invitation ID to generate QR code for
- * @returns Promise resolving to QR code data URL or placeholder
+ * The path of a guest's ticket page (T-502); its QR code encodes the absolute URL
  */
-export async function generateQRCode(invitationId: string): Promise<string> {
+export function ticketPath(slug: string, accessToken: string): string {
+  return `/e/${slug}/i/${accessToken}`;
+}
+
+/**
+ * Generates a QR code data URL for a link on this app
+ * @param path - The path the QR code opens, e.g. ticketPath(...)
+ * @returns Promise resolving to QR code data URL, or "" if generation fails
+ */
+export async function generateQRCode(path: string): Promise<string> {
   try {
-    const qrCodeDataURL = await QRCode.toDataURL(absoluteUrl(`/invite/${invitationId}`), {
+    const qrCodeDataURL = await QRCode.toDataURL(absoluteUrl(path), {
       width: 200,
       margin: 2,
       color: {
@@ -165,7 +172,7 @@ export async function generateQRCode(invitationId: string): Promise<string> {
     return qrCodeDataURL;
   } catch (error) {
     console.error("Error generating QR code:", error);
-    return `QR_CODE_PLACEHOLDER_${invitationId}`;
+    return "";
   }
 }
 
@@ -215,7 +222,8 @@ export function convertToInviteDetails(invitation: Invitation): InviteDetails {
   return {
     id: invitation.id,
     name: invitation.name,
-    qrCode: invitation.qrCode || "",
+    // Owner reads add the ticket link and its QR code (invitation.repo.ts); guests get neither
+    qrCode: "",
     eventId: invitation.eventId,
     eventDate: invitation.event.date,
     eventTimezone: invitation.event.timezone,
