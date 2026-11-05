@@ -591,7 +591,7 @@ These rules apply to every ticket in this phase:
 
 Order: T-601 to T-604 come first. After that, the screens can land in any order their dependencies allow. T-615 removes the old pages once their replacements are in, and T-622 closes the phase.
 
-### T-601 · Design tokens, fonts and brand assets · M
+### ✅ T-601 · Design tokens, fonts and brand assets · M
 
 Add the design's tokens to `globals.css` with Tailwind 4's `@theme`: Ink `#16141D`, Paper `#F6F4EF`, Card `#FFFFFF`, Line `#E3DFD6`, Slate `#5F5B68`, Ember `#FF6A3D` (ink text on it, never white), Lime `#CDF25C` and Danger `#B3261E`. Load Bricolage Grotesque, Instrument Sans and DM Mono with `next/font`, which self-hosts them, so the CSP doesn't change.
 
@@ -600,6 +600,7 @@ Add the design's tokens to `globals.css` with Tailwind 4's `@theme`: Ink `#16141
 - Add a global `prefers-reduced-motion` rule.
 - New favicons in `public/`, and the auth email link in `auth-emails.ts` moves off `#C07A54`. Ember fails contrast as link text on white, so use Ink.
 - **Files:** ~10
+- **As built:** tokens are in an `@theme` block, so `bg-ink`, `text-slate`, `border-line`, `font-display` and `font-mono` are real utilities. `font-sans` is Instrument Sans. Only Instrument Sans is preloaded; Bricolage Grotesque and DM Mono load when a page uses them, so guest pages don't download them. The focus ring is an ink outline with a paper halo, so it shows on light and dark surfaces. `.font-inter` stays as an alias for the body font, because removing it touches 16 files of pages that are about to be rebuilt; T-622 removes it. The inline `fontFamily: "Inter"` on the create and edit pages had to go now, or they'd fall back to the browser's default font. Favicons, including `src/app/favicon.ico`, are an ember ticket on an ink tile.
 
 ### T-602 · Shared UI components · M
 
@@ -806,6 +807,7 @@ The ticket on `/e/[slug]/i/[token]` shows the guest, admits line and QR code on 
 Add `not-found.tsx` and `error.tsx` in the new style; the app has neither, and a 404 is what other accounts see for an event they don't own. Then close the phase:
 
 - No leftover `#C07A54`, `#FFF9F4`, blue or gray classes outside `themes.ts` and test fixtures.
+- Remove the `.font-inter` alias (T-601) and any uses left.
 - Check every screen at phone width, by keyboard and with reduced motion on.
 - Update `CLAUDE.md`: stack, brand colours, project structure and the components list.
 - **Depends on:** T-605, T-606, T-608, T-609, T-615, T-616, T-617, T-618, T-619, T-620, T-621

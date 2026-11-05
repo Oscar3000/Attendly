@@ -27,7 +27,7 @@ function linkEmail(
     text: `${intro}\n\n${action}: ${url}\n\n${outro}`,
     html: [
       `<p>${escapeHtml(intro)}</p>`,
-      `<p><a href="${link}" style="color:#C07A54;font-weight:600">${escapeHtml(action)}</a></p>`,
+      `<p><a href="${link}" style="color:#16141D;font-weight:600">${escapeHtml(action)}</a></p>`,
       `<p style="color:#666666;font-size:13px">${escapeHtml(outro)}</p>`,
     ].join("\n"),
   };

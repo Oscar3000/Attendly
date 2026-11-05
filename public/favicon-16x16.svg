@@ -1,12 +1,12 @@
 <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <!-- Background circle -->
-  <circle cx="8" cy="8" r="8" fill="rgb(192, 122, 84)"/>
-  
-  <!-- Checkmark icon representing attendance -->
-  <path d="M4.5 8l1.5 1.5 3.5-3.5" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-  
-  <!-- Small dots representing people/attendees -->
-  <circle cx="11" cy="5" r="0.75" fill="white" opacity="0.8"/>
-  <circle cx="12.5" cy="6.5" r="0.75" fill="white" opacity="0.6"/>
-  <circle cx="11.5" cy="12" r="0.75" fill="white" opacity="0.7"/>
+  <!-- Ink tile -->
+  <rect width="16" height="16" rx="4" fill="#16141D"/>
+
+  <!-- Ember ticket with two notches on its tear line -->
+  <g transform="rotate(-12 8 8)">
+    <rect x="2.5" y="4.5" width="11" height="7" rx="1.5" fill="#FF6A3D"/>
+    <circle cx="10" cy="4.5" r="1" fill="#16141D"/>
+    <circle cx="10" cy="11.5" r="1" fill="#16141D"/>
+    <path d="M10 6.25v3.5" stroke="#16141D" stroke-width="0.75" stroke-dasharray="1 0.75"/>
+  </g>
 </svg>

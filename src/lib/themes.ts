@@ -31,7 +31,7 @@ export interface Theme {
 const serif = "Georgia, 'Times New Roman', serif";
 const playfair = "var(--font-playfair), Georgia, serif";
 const montserrat = "var(--font-montserrat), 'Helvetica Neue', Arial, sans-serif";
-const inter = "var(--font-inter), 'Helvetica Neue', Arial, sans-serif";
+const instrument = "var(--font-instrument), 'Helvetica Neue', Arial, sans-serif";
 
 export const THEMES: Record<ThemeId, Theme> = {
   terracotta: {
@@ -47,7 +47,7 @@ export const THEMES: Record<ThemeId, Theme> = {
       border: "#E8D5C4",
       card: "#FFFCF9",
     },
-    fonts: { heading: serif, body: inter },
+    fonts: { heading: serif, body: instrument },
   },
   sage: {
     label: "Sage garden",
@@ -62,7 +62,7 @@ export const THEMES: Record<ThemeId, Theme> = {
       border: "#D3DFCC",
       card: "#FBFDFA",
     },
-    fonts: { heading: playfair, body: inter },
+    fonts: { heading: playfair, body: instrument },
   },
   navy: {
     label: "Midnight navy",
@@ -92,7 +92,7 @@ export const THEMES: Record<ThemeId, Theme> = {
       border: "#F0D5DC",
       card: "#FFFBFC",
     },
-    fonts: { heading: playfair, body: inter },
+    fonts: { heading: playfair, body: instrument },
   },
 };
 
