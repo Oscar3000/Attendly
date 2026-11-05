@@ -658,12 +658,13 @@ The split layout with the form on one side and the stacked tickets on the other,
 - **Depends on:** T-602
 - **Files:** ~9
 
-### T-607 · Reply counts for the events list · S
+### ✅ T-607 · Reply counts for the events list · S
 
 Event cards show "86 of 120 replied". Add `eventRepo.listByOwnerWithReplies(ownerId)`, which returns each event with `invited` and `replied` (invitations that aren't `PENDING`). Use one grouped query, not one query per event.
 
 - Tests cover the counts, an event with no invitations, and that only the owner's events come back.
 - **Files:** ~2
+- **As built:** the events and one `groupBy` on event and status run together, whatever the number of events; a test checks that. `RESCINDED` counts as replied, matching the dashboard's "total minus pending". Nothing calls it until T-608.
 
 ### T-608 · Your events page · M
 
