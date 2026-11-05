@@ -28,7 +28,6 @@ beforeEach(() => {
       const { pathname, search } = new URL(request.url);
       calls.push(`${request.method} ${pathname}${search}`);
       if (pathname.endsWith("/metrics")) return Response.json({ metrics: { totalInvitations: 0 } });
-      if (pathname.endsWith("/status")) return Response.json({ statusUpdates: [] });
       if (request.method === "GET") {
         return Response.json({
           invitations: [],
@@ -55,16 +54,14 @@ describe("eventInvitationApi", () => {
       endpoints.getEventInvitations.initiate({ eventId: "ev 1", page: 2, search: "ada" }),
     );
     await store.dispatch(endpoints.getEventMetrics.initiate("ev1"));
-    await store.dispatch(endpoints.getEventStatusUpdates.initiate("ev1"));
     await store.dispatch(
       endpoints.updateEventRsvpStatus.initiate({ eventId: "ev1", id: "inv1", status: "confirmed" }),
     );
 
     // The PATCH then refetches this event's still-subscribed queries; only check the requests made
-    expect(calls.slice(0, 4)).toEqual([
+    expect(calls.slice(0, 3)).toEqual([
       "GET /api/events/ev%201/invitations?page=2&limit=10&search=ada",
       "GET /api/events/ev1/metrics",
-      "GET /api/events/ev1/status",
       "PATCH /api/events/ev1/invitations/inv1",
     ]);
   });
@@ -75,7 +72,6 @@ describe("eventInvitationApi", () => {
     for (const eventId of ["A", "B"]) {
       store.dispatch(endpoints.getEventInvitations.initiate({ eventId }));
       store.dispatch(endpoints.getEventMetrics.initiate(eventId));
-      store.dispatch(endpoints.getEventStatusUpdates.initiate(eventId));
     }
     await settle();
     calls = [];
@@ -93,7 +89,6 @@ describe("eventInvitationApi", () => {
     expect(refetched).toEqual([
       "GET /api/events/A/invitations?page=1&limit=10",
       "GET /api/events/A/metrics",
-      "GET /api/events/A/status",
     ]);
   });
 });

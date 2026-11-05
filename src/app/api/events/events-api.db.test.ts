@@ -7,7 +7,6 @@ import * as invitations from "./[eventId]/invitations/route";
 import * as invitation from "./[eventId]/invitations/[id]/route";
 import * as bulk from "./[eventId]/invitations/bulk/route";
 import * as metrics from "./[eventId]/metrics/route";
-import * as status from "./[eventId]/status/route";
 import * as events from "./route";
 import * as eventSettings from "./[eventId]/route";
 
@@ -102,15 +101,12 @@ describe("owner workflow", () => {
     expect(body.summary).toEqual({ total: 2, createdCount: 1, failedCount: 1 });
   });
 
-  it("reports metrics and status updates for this event only", async () => {
+  it("reports metrics for this event only", async () => {
     await create("Ada");
     await create("Elsewhere", secondEvent.id);
 
     const m = await call(metrics.GET(req(hostCookie), ctx(event.id)));
     expect(m.body.metrics).toMatchObject({ totalInvitations: 1 });
-
-    const s = await call(status.GET(req(hostCookie), ctx(event.id)));
-    expect(s.body.statusUpdates.map((u: { name: string }) => u.name)).toEqual(["Ada"]);
   });
 });
 
@@ -150,14 +146,13 @@ describe("access control", () => {
       invitations.POST(req(otherCookie, "POST", { name: "Intruder" }), ctx(event.id)),
       bulk.POST(req(otherCookie, "POST", { rows: [{ name: "Intruder" }] }), ctx(event.id)),
       metrics.GET(req(otherCookie), ctx(event.id)),
-      status.GET(req(otherCookie), ctx(event.id)),
       invitation.GET(req(otherCookie), id),
       invitation.PUT(req(otherCookie, "PUT", { name: "Hacked" }), id),
       invitation.PATCH(req(otherCookie, "PATCH", { status: "declined" }), id),
       invitation.DELETE(req(otherCookie, "DELETE"), id),
     ]);
 
-    expect(responses.map((r) => r.status)).toEqual(Array(9).fill(404));
+    expect(responses.map((r) => r.status)).toEqual(Array(8).fill(404));
     expect(await prisma.invitation.count()).toBe(1);
     expect(await prisma.invitation.findUniqueOrThrow({ where: { id: ada.id } })).toMatchObject({
       name: "Ada",

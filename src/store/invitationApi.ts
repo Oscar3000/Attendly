@@ -10,13 +10,6 @@ export const invitationApi = createApi({
     baseUrl: "/api/",
   }),
   // Event* tags are per event (id = eventId), used by eventInvitationApi.ts
-  tagTypes: [
-    "Invitation",
-    "EventInvitations",
-    "EventMetrics",
-    "EventStatus",
-    "DoorLinks",
-    "CheckIns",
-  ],
+  tagTypes: ["Invitation", "EventInvitations", "EventMetrics", "DoorLinks", "CheckIns"],
   endpoints: () => ({}),
 });

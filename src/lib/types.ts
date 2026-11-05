@@ -44,12 +44,6 @@ export interface QrScanResult {
   error?: string;
 }
 
-// Component prop types
-export interface BaseComponentProps {
-  className?: string;
-  children?: React.ReactNode;
-}
-
 export interface InviteDetails extends WeddingInvitation {
   plusOne?: number;
   // The guest's ticket link (T-503), which qrCode encodes. Only in the event owner's responses
@@ -63,13 +57,6 @@ export interface DashboardMetrics {
   pendingCount: number;
   confirmedCount: number;
   rescindedCount: number;
-}
-
-export interface StatusUpdate {
-  id: string;
-  name: string;
-  status: RsvpStatus;
-  timestamp: Date;
 }
 
 export interface InvitationTableEntry {
@@ -93,10 +80,6 @@ export interface CreateInviteForm {
   name: string;
   status: RsvpStatus;
   plusOne: number;
-}
-
-export interface EditInviteForm extends CreateInviteForm {
-  id: string;
 }
 
 // Admin metrics interface
@@ -130,12 +113,5 @@ export interface Invitation {
   eventId: string;
   event: InvitationEvent;
   createdAt: Date;
-  updatedAt: Date;
-}
-
-export interface StatusUpdateSelect {
-  id: string;
-  name: string;
-  status: string;
   updatedAt: Date;
 }
