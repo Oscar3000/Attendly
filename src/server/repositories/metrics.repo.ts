@@ -1,11 +1,10 @@
 /**
  * Metrics repository
- * Dashboard aggregates and recent activity, always for one event (T-306)
+ * Dashboard aggregates, always for one event (T-306)
  */
 import "server-only";
 import { prisma } from "@/server/db/client";
-import type { AdminMetrics, StatusUpdate, PrismaRsvpStatus, StatusUpdateSelect } from "@/lib/types";
-import { convertPrismaStatus } from "@/lib/utils";
+import type { AdminMetrics } from "@/lib/types";
 
 export const metricsRepo = {
   // Get an event's metrics
@@ -29,27 +28,5 @@ export const metricsRepo = {
       declinedRsvps: declined,
       attendanceRate: total > 0 ? Math.round((confirmed / total) * 100) : 0,
     };
-  },
-
-  // Get an event's recent status updates (last 5 invitations with recent updates)
-  async getRecentStatusUpdates(eventId: string): Promise<StatusUpdate[]> {
-    const recentUpdates = await prisma.invitation.findMany({
-      where: { eventId },
-      orderBy: { updatedAt: "desc" },
-      take: 5,
-      select: {
-        id: true,
-        name: true,
-        status: true,
-        updatedAt: true,
-      },
-    });
-
-    return recentUpdates.map((invitation: StatusUpdateSelect) => ({
-      id: invitation.id,
-      name: invitation.name,
-      status: convertPrismaStatus(invitation.status as PrismaRsvpStatus),
-      timestamp: invitation.updatedAt,
-    }));
   },
 };

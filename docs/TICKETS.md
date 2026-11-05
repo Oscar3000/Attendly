@@ -748,7 +748,7 @@ A `SidePanel` with One guest and A whole list, replacing the create and bulk upl
 - **Files:** ~9
 - **As built:** Add guests in the header links to `?add=guests`, so it works from any tab and lands on Overview with `AddGuestsPanel` open, like `?guest=`. Paste and file both fill the same text box, so there's one preview. The CSV parser moved to `src/lib/guest-csv.ts` with tests, and now handles the byte order mark Excel adds, which used to turn the header into a guest named "name". It also skips a row with over 50 plus-ones, since the API rejects the whole list over one. `guest-fields.tsx` holds the plus-ones and status fields shared with `GuestPanel`. `SidePanel` only calls `onClose` for a close the user made: closing because `open` went false was clearing the URL, which lost `?guest=` when one panel handed over to the other. The old create and bulk pages are unlinked now, and T-615 deletes them.
 
-### T-615 · Remove the old pages and dashboard code · S
+### ✅ T-615 · Remove the old pages and dashboard code · S
 
 Delete what the redesign replaced:
 
@@ -756,9 +756,9 @@ Delete what the redesign replaced:
 - `invitation-counter.tsx`, `metrics-chart.tsx` and `status-updates.tsx`.
 - The Status updates feed: `GET /api/events/[eventId]/status`, `metricsRepo.getRecentStatusUpdates()`, its test, its RTK Query hook and its `ROUTE_POLICY` entry.
 - The `src/components/button.tsx` re-export (T-602).
-
 - **Depends on:** T-610, T-613, T-614
-- **Files:** ~14
+- **Files:** ~21
+- **As built:** also removes what those deletions left unused: `src/components/qr-code.tsx`, `formatTimeAgo()`, `getStatusColor()`, the `StatusUpdate`, `StatusUpdateSelect`, `EditInviteForm` and `BaseComponentProps` types, and the `EventStatus` cache tag. It's one over the ~20 file limit, and nearly all of it is deletions. Exports that were already unused before this phase, like `formatDate()`, stay out of this PR.
 
 ### T-616 · Event settings · M
 

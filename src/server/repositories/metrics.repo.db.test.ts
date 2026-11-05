@@ -53,14 +53,6 @@ describe("metricsRepo", () => {
     );
   });
 
-  it("lists only the event's recent status updates", async () => {
-    await invitationRepo.createInvitation(event, { name: "Ada", status: "pending" });
-    await invitationRepo.createInvitation(otherEvent, { name: "Elsewhere", status: "pending" });
-
-    const updates = await metricsRepo.getRecentStatusUpdates(event.id);
-    expect(updates.map((update) => update.name)).toEqual(["Ada"]);
-  });
-
   it("reports zeros for an event with no invitations", async () => {
     expect(await metricsRepo.getAdminMetrics(event.id)).toMatchObject({
       totalInvitations: 0,

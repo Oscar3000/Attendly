@@ -51,7 +51,6 @@ const ROUTE_POLICY: Record<string, Partial<Record<Method, Policy>> | "not tenant
   "/api/events/[eventId]/door-links/[linkId]": { DELETE: "victim" },
   // A door helper link for the attacker's own event, scanning the victim's guest (T-507)
   "/api/door/[token]/check-in": { POST: "victim" },
-  "/api/events/[eventId]/status": { GET: "victim" },
   // Creating an event makes the caller its owner (T-310)
   "/api/events": { POST: "own" },
   "/api/auth/[...all]": "not tenant data",

@@ -12,7 +12,6 @@ import type {
   InvitationTableEntry,
   InviteDetails,
   RsvpStatus,
-  StatusUpdate,
 } from "@/lib/types";
 import type { FamilyLine, PaletteColor } from "@/lib/event-content";
 import type { ThemeId } from "@/lib/themes";
@@ -57,11 +56,10 @@ export interface BulkCreateResult {
   summary: { total: number; createdCount: number; failedCount: number };
 }
 
-// Tags for one event's lists, metrics and status updates, plus one invitation
+// Tags for one event's lists and metrics, plus one invitation
 export const eventTags = {
   invitations: (eventId: string) => ({ type: "EventInvitations" as const, id: eventId }),
   metrics: (eventId: string) => ({ type: "EventMetrics" as const, id: eventId }),
-  status: (eventId: string) => ({ type: "EventStatus" as const, id: eventId }),
   invitation: (id: string) => ({ type: "Invitation" as const, id }),
   doorLinks: (eventId: string) => ({ type: "DoorLinks" as const, id: eventId }),
   checkIns: (eventId: string) => ({ type: "CheckIns" as const, id: eventId }),
@@ -89,14 +87,13 @@ export interface DoorLink {
   admitted: number;
 }
 
-// What a write in an event makes stale: that event's list, metrics, status updates and
-// check-in counts (a guest's plus-ones are part of who's expected), and the invitation itself
-// when there is one
+// What a write in an event makes stale: that event's list, metrics and check-in
+// counts (a guest's plus-ones are part of who's expected), and the invitation itself when
+// there is one
 export function staleAfterWrite(eventId: string, invitationId?: string) {
   return [
     eventTags.invitations(eventId),
     eventTags.metrics(eventId),
-    eventTags.status(eventId),
     eventTags.checkIns(eventId),
     ...(invitationId ? [eventTags.invitation(invitationId)] : []),
   ];
@@ -161,11 +158,6 @@ export const eventInvitationApi = invitationApi.injectEndpoints({
     getEventMetrics: builder.query<{ metrics: AdminMetrics }, string>({
       query: (eventId) => `${base(eventId)}/metrics`,
       providesTags: (_result, _error, eventId) => [eventTags.metrics(eventId)],
-    }),
-
-    getEventStatusUpdates: builder.query<{ statusUpdates: StatusUpdate[] }, string>({
-      query: (eventId) => `${base(eventId)}/status`,
-      providesTags: (_result, _error, eventId) => [eventTags.status(eventId)],
     }),
 
     getEventInvitation: builder.query<{ invitation: InviteDetails }, InvitationArg>({
@@ -278,7 +270,6 @@ export const {
   useRemoveEventCoverMutation,
   useGetEventInvitationsQuery,
   useGetEventMetricsQuery,
-  useGetEventStatusUpdatesQuery,
   useGetEventInvitationQuery,
   useCreateEventInvitationMutation,
   useBulkCreateEventInvitationsMutation,
