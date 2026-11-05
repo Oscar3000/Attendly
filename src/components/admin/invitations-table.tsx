@@ -1,7 +1,8 @@
-import { InvitationTableEntry } from "@/lib/types";
-import { QrCode } from "../qr-code";
-import { StatusChip } from "../ui/status-chip";
+import { buttonClasses } from "@/components/ui/button";
+import { StatusChip } from "@/components/ui/status-chip";
 import { downloadQRCode } from "@/lib/invitation-image";
+import type { InvitationTableEntry } from "@/lib/types";
+import { cn } from "@/lib/utils";
 import { useEventCard } from "./event-card-context";
 
 interface InvitationsTableProps {
@@ -15,10 +16,17 @@ interface InvitationsTableProps {
         totalPages: number;
       }
     | undefined;
-  onPageChange?: (page: number) => void;
-  search?: string;
-  onSearchChange?: (value: string) => void;
+  onPageChange: (page: number) => void;
+  search: string;
+  onSearchChange: (value: string) => void;
+  // The reply group the list is filtered to, like "Confirmed"
+  filterLabel?: string | undefined;
+  onClearFilter: () => void;
+  // A new page or filter is loading; the old rows stay until it arrives
+  loading?: boolean;
 }
+
+const rowAction = "min-h-11 px-2 text-[15px] font-semibold underline";
 
 export default function InvitationsTable({
   invitations,
@@ -27,6 +35,9 @@ export default function InvitationsTable({
   onPageChange,
   search,
   onSearchChange,
+  filterLabel,
+  onClearFilter,
+  loading = false,
 }: InvitationsTableProps) {
   const event = useEventCard();
   const handleDownloadQR = (invitation: InvitationTableEntry) => {
@@ -39,179 +50,135 @@ export default function InvitationsTable({
     }
   };
 
+  const narrowed = Boolean(filterLabel || search.trim());
+  const total = pagination?.total ?? invitations.length;
+
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 sm:p-6">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4 sm:mb-6">
-        <h2 className="text-base sm:text-lg font-medium text-gray-900">All Invitations</h2>
-        {onSearchChange && (
-          <div className="relative w-full sm:w-64">
-            <input
-              type="text"
-              value={search ?? ""}
-              onChange={(e) => onSearchChange(e.target.value)}
-              placeholder="Search by name..."
-              className="w-full pl-9 pr-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[rgb(192,122,84)] focus:border-transparent"
-            />
-            <svg
-              className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M21 21l-4.35-4.35M11 19a8 8 0 100-16 8 8 0 000 16z"
-              />
-            </svg>
-          </div>
-        )}
-      </div>
-
-      <div className="overflow-x-auto -mx-4 sm:mx-0">
-        <table className="w-full min-w-[480px]">
-          <thead>
-            <tr className="border-b border-gray-200">
-              <th className="text-left py-3 px-3 sm:px-4 font-medium text-gray-700 text-sm sm:text-base">
-                Name
-              </th>
-              <th className="text-left py-3 px-3 sm:px-4 font-medium text-gray-700 text-sm sm:text-base">
-                Status
-              </th>
-              <th className="text-left py-3 px-3 sm:px-4 font-medium text-gray-700 text-sm sm:text-base">
-                QR Code
-              </th>
-              <th className="text-left py-3 px-3 sm:px-4 font-medium text-gray-700 text-sm sm:text-base">
-                Actions
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {invitations.map((invitation, index) => (
-              <tr key={invitation.id} className={index % 2 === 0 ? "bg-gray-50" : "bg-white"}>
-                <td className="py-3 sm:py-4 px-3 sm:px-4">
-                  <div className="font-medium text-gray-900 text-sm sm:text-base">
-                    {invitation.name}
-                  </div>
-                </td>
-                <td className="py-3 sm:py-4 px-3 sm:px-4">
-                  <StatusChip status={invitation.status} />
-                </td>
-                <td className="py-3 sm:py-4 px-3 sm:px-4">
-                  <button
-                    onClick={() => handleDownloadQR(invitation)}
-                    className="group relative transition-transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded-lg"
-                    title="Click to download QR code"
-                    disabled={!invitation.hasQrCode}
-                  >
-                    {invitation.hasQrCode && invitation.qrCode ? (
-                      <QrCode
-                        src={invitation.qrCode}
-                        size={60}
-                        alt={`QR Code for ${invitation.name}`}
-                      />
-                    ) : (
-                      <QrCode size={60} alt={`QR Code for ${invitation.name}`} />
-                    )}
-                    {/* Download overlay on hover */}
-                    {invitation.hasQrCode && (
-                      <div className="absolute inset-0 bg-black bg-opacity-50 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center">
-                        <svg
-                          className="w-6 h-6 text-white"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                          />
-                        </svg>
-                      </div>
-                    )}
-                  </button>
-                </td>
-                <td className="py-3 sm:py-4 px-3 sm:px-4">
-                  <button
-                    onClick={() => onEdit(invitation.id)}
-                    className="text-blue-600 hover:text-blue-800 font-medium transition-colors text-sm sm:text-base"
-                  >
-                    Edit
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      {/* Pagination Controls */}
-      {pagination && pagination.totalPages > 1 && (
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-4 sm:px-6 py-4 border-t border-gray-200">
-          <div className="text-xs sm:text-sm text-gray-700">
-            Showing {(pagination.page - 1) * pagination.limit + 1} to{" "}
-            {Math.min(pagination.page * pagination.limit, pagination.total)} of {pagination.total}{" "}
-            invitations
-          </div>
-          <div className="flex items-center space-x-1 sm:space-x-2">
+    <section className="rounded-3xl bg-card p-6">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h2 className="font-display text-3xl font-extrabold tracking-tight">
+          Guests{" "}
+          <span className="ml-1 font-mono text-[15px] font-normal tracking-normal text-slate">
+            {filterLabel ? `${filterLabel} · ${total}` : total}
+          </span>
+        </h2>
+        <div className="flex flex-[1_1_100%] flex-wrap gap-2 sm:flex-[0_1_420px] sm:justify-end">
+          {filterLabel && (
             <button
-              onClick={() => onPageChange?.(pagination.page - 1)}
+              type="button"
+              onClick={onClearFilter}
+              className={buttonClasses({ variant: "outline", size: "sm" })}
+            >
+              Clear filter
+            </button>
+          )}
+          <label className="block min-w-0 flex-[1_1_220px]">
+            <span className="sr-only">Search by name</span>
+            <input
+              type="search"
+              value={search}
+              onChange={(e) => onSearchChange(e.target.value)}
+              placeholder="Search by name"
+              className="h-11 w-full rounded-full border-[1.5px] border-line bg-card px-4"
+            />
+          </label>
+        </div>
+      </div>
+
+      {invitations.length === 0 ? (
+        <p className="mx-3 my-6 text-slate">
+          {narrowed
+            ? "No guests match. Try another name or clear the filter."
+            : "No guests yet. Add your first guests to get started."}
+        </p>
+      ) : (
+        <div
+          aria-busy={loading}
+          className={cn("mt-4 overflow-x-auto transition-opacity", loading && "opacity-60")}
+        >
+          <table className="w-full min-w-[620px] border-collapse">
+            <thead>
+              <tr className="text-left font-mono text-[13px] text-slate">
+                <th scope="col" className="px-3 py-2 font-normal">
+                  Name
+                </th>
+                <th scope="col" className="px-3 py-2 font-normal">
+                  Status
+                </th>
+                <th scope="col" className="px-3 py-2 font-normal">
+                  Admits
+                </th>
+                <th scope="col" className="px-3 py-2 text-right font-normal">
+                  Actions
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {invitations.map((invitation) => (
+                <tr
+                  key={invitation.id}
+                  className="border-t border-sand transition-colors hover:bg-paper"
+                >
+                  <td className="px-3 py-1 font-semibold">{invitation.name}</td>
+                  <td className="px-3 py-1">
+                    <StatusChip status={invitation.status} />
+                  </td>
+                  <td className="px-3 py-1 font-mono text-[15px]">
+                    {(invitation.plusOne ?? 0) + 1}
+                  </td>
+                  <td className="px-3 py-1 text-right whitespace-nowrap">
+                    {/* Both move into the guest panel in T-613 */}
+                    {invitation.hasQrCode && (
+                      <button
+                        type="button"
+                        onClick={() => handleDownloadQR(invitation)}
+                        aria-label={`Download QR code for ${invitation.name}`}
+                        className={rowAction}
+                      >
+                        Download QR
+                      </button>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => onEdit(invitation.id)}
+                      aria-label={`Edit ${invitation.name}`}
+                      className={rowAction}
+                    >
+                      Edit
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {pagination && pagination.totalPages > 1 && (
+        <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
+          <span className="font-mono text-[13px] text-slate">
+            Page {pagination.page} of {pagination.totalPages}
+          </span>
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={() => onPageChange(pagination.page - 1)}
               disabled={pagination.page <= 1}
-              className="px-3 py-1 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md enabled:hover:text-[rgb(192,122,84)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className={buttonClasses({ variant: "outline", size: "sm" })}
             >
               Previous
             </button>
-
-            {/* Page numbers */}
-            {Array.from({ length: pagination.totalPages }, (_, i) => i + 1)
-              .filter((page) => {
-                // Show current page, first/last pages, and pages around current
-                return (
-                  page === 1 ||
-                  page === pagination.totalPages ||
-                  (page >= pagination.page - 1 && page <= pagination.page + 1)
-                );
-              })
-              .map((page, index, array) => {
-                // Add ellipsis if there's a gap
-                const previousPage = array[index - 1];
-                const showEllipsis =
-                  index > 0 && previousPage !== undefined && page - previousPage > 1;
-                return (
-                  <div key={page} className="flex items-center">
-                    {showEllipsis && <span className="px-2 text-gray-500">...</span>}
-                    <button
-                      onClick={() => onPageChange?.(page)}
-                      className={`px-3 py-1 text-sm font-medium rounded-md ${
-                        page === pagination.page
-                          ? "text-white"
-                          : "text-gray-700 bg-white border border-gray-300 hover:bg-gray-50"
-                      }`}
-                      style={
-                        page === pagination.page
-                          ? { backgroundColor: "rgb(192, 122, 84)" }
-                          : undefined
-                      }
-                    >
-                      {page}
-                    </button>
-                  </div>
-                );
-              })}
-
             <button
-              onClick={() => onPageChange?.(pagination.page + 1)}
+              type="button"
+              onClick={() => onPageChange(pagination.page + 1)}
               disabled={pagination.page >= pagination.totalPages}
-              className="px-3 py-1 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md enabled:hover:text-[rgb(192,122,84)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className={buttonClasses({ variant: "outline", size: "sm" })}
             >
               Next
             </button>
           </div>
         </div>
       )}
-    </div>
+    </section>
   );
 }

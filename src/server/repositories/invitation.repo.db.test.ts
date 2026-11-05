@@ -189,6 +189,7 @@ describe("invitationRepo", () => {
       const metrics = await metricsRepo.getAdminMetrics(event.id);
       expect((await list("", "confirmed")).pagination.total).toBe(metrics.confirmedRsvps);
       expect((await list("", "pending")).pagination.total).toBe(metrics.pendingRsvps);
+      expect((await list("", "declined")).pagination.total).toBe(metrics.declinedRsvps);
     });
 
     it("stays inside the event", async () => {

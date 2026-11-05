@@ -713,7 +713,7 @@ The guest list is paginated on the server, so filtering has to happen there too.
 - **Files:** ~6
 - **As built:** `status` takes the dashboard's reply groups rather than raw statuses, so `rescinded` on its own is a 400. `REPLY_GROUP_STATUSES` in `invitation.repo.ts` maps each group to its statuses. Nothing sends `status` until T-612.
 
-### T-612 · Guest table · M
+### ✅ T-612 · Guest table · M
 
 Rebuild `InvitationsTable`: name, status chip, admits and Open ticket, with debounced search, Previous / Next (10 per page) and Clear filter. Choosing a status in the Replies card (T-610) filters the table. Search or a filter that matches nobody shows a message and a way back.
 
@@ -721,11 +721,14 @@ Rebuild `InvitationsTable`: name, status chip, admits and Open ticket, with debo
 - Wide tables scroll inside their own box on phones.
 - Pass `selected` and `onSelect` to `RepliesCard`, which turns its bar and legend into filter buttons.
 - **Depends on:** T-610, T-611
-- **Files:** ~4
+- **Files:** ~6
+- **As built:** rows keep plain Download QR and Edit actions until the guest panel arrives, so merging this ticket alone doesn't lose the QR download; the code itself left the table, as planned. The filter and search both go back to page 1, choosing the selected group again clears it, and old rows stay dimmed while a new page or filter loads. `RepliesCard` now gets `selected` and `onSelect`, and its 24px bar has a 44px target.
 
 ### T-613 · Guest panel: ticket, sharing and editing · M
 
 Opening a guest shows a `SidePanel` with their ticket and QR code, and replaces the edit and success pages.
+
+- The guest's name in the table becomes the button that opens the panel, so it's in reach on phones, where the Actions column needs a sideways scroll. Open ticket replaces the row's temporary Download QR and Edit actions (T-612).
 
 - Sharing keeps everything the success page has: copy link, download image, native share, WhatsApp and email (`handleWhatsAppShare` and the `mailto:` link in `content.tsx`), with messages from `copyFor()`.
 - Editing: status chips from the prototype, plus name and plus-ones fields, which the prototype leaves out and `edit-invite` has today.
