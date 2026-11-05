@@ -6,7 +6,8 @@ import { useRouter } from "next/navigation";
 import { authClient } from "@/lib/auth-client";
 import { toAuthFormErrors, type AuthFormErrors } from "@/lib/auth-errors";
 import { AuthCard, FormError, SubmitButton } from "@/components/auth/auth-card";
-import { TextField } from "@/components/auth/text-field";
+import { TextField } from "@/components/ui/text-field";
+import { PasswordField } from "@/components/auth/password-field";
 import { GoogleButton } from "@/components/auth/google-button";
 
 interface LoginFormProps {
@@ -43,24 +44,8 @@ export function LoginForm({ googleEnabled, oauthError }: LoginFormProps) {
   };
 
   return (
-    <AuthCard
-      title="Log in"
-      footer={
-        <>
-          <p>
-            <Link href="/forgot-password" className="hover:underline">
-              Forgot your password?
-            </Link>
-          </p>
-          <p>
-            No account yet?{" "}
-            <Link href="/signup" className="font-medium text-[#C07A54] hover:underline">
-              Sign up
-            </Link>
-          </p>
-        </>
-      }
-    >
+    <AuthCard title="Welcome back" subtitle="Log in to your events." switcher="login">
+      {googleEnabled && <GoogleButton disabled={loading} />}
       <form onSubmit={handleSubmit} noValidate>
         <TextField
           id="email"
@@ -73,10 +58,9 @@ export function LoginForm({ googleEnabled, oauthError }: LoginFormProps) {
           disabled={loading}
           error={errors.fields.email}
         />
-        <TextField
+        <PasswordField
           id="password"
           label="Password"
-          type="password"
           autoComplete="current-password"
           required
           value={password}
@@ -84,10 +68,15 @@ export function LoginForm({ googleEnabled, oauthError }: LoginFormProps) {
           disabled={loading}
           error={errors.fields.password}
         />
+        <Link
+          href="/forgot-password"
+          className="-mt-2 mb-3 inline-flex min-h-11 items-center text-[15px] font-medium underline"
+        >
+          Forgot your password?
+        </Link>
         <FormError message={errors.form} />
         <SubmitButton loading={loading}>Log in</SubmitButton>
       </form>
-      {googleEnabled && <GoogleButton disabled={loading} />}
     </AuthCard>
   );
 }

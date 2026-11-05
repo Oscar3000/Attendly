@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { buttonClasses } from "@/components/ui/button";
 import { authClient } from "@/lib/auth-client";
 
 /**
@@ -26,16 +27,11 @@ export function GoogleButton({ disabled }: { disabled?: boolean | undefined }) {
 
   return (
     <>
-      <div className="font-inter my-4 flex items-center gap-3 text-xs text-[#999999]">
-        <span className="h-px flex-1 bg-[#E0E0E0]" />
-        or
-        <span className="h-px flex-1 bg-[#E0E0E0]" />
-      </div>
       <button
         type="button"
         onClick={handleClick}
         disabled={disabled || loading}
-        className="font-inter flex w-full items-center justify-center gap-2 rounded-lg border border-[#E0E0E0] bg-white px-4 py-2 text-base font-medium text-[#333333] transition-colors hover:bg-gray-50 disabled:opacity-50"
+        className={buttonClasses({ variant: "outline", className: "w-full" })}
       >
         <svg aria-hidden="true" width="18" height="18" viewBox="0 0 48 48">
           <path
@@ -58,10 +54,15 @@ export function GoogleButton({ disabled }: { disabled?: boolean | undefined }) {
         {loading ? "Opening Google..." : "Continue with Google"}
       </button>
       {failed && (
-        <p role="alert" className="font-inter mt-2 text-sm text-[#D32F2F]">
+        <p role="alert" className="mt-2 text-sm text-danger">
           Couldn&apos;t start Google sign-in. Please try again.
         </p>
       )}
+      <div className="my-4 flex items-center gap-3 font-mono text-[13px] text-slate">
+        <span className="h-px flex-1 bg-line" />
+        or
+        <span className="h-px flex-1 bg-line" />
+      </div>
     </>
   );
 }

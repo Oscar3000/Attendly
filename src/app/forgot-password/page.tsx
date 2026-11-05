@@ -5,7 +5,7 @@ import Link from "next/link";
 import { authClient } from "@/lib/auth-client";
 import { toAuthFormErrors, type AuthFormErrors } from "@/lib/auth-errors";
 import { AuthCard, FormError, SubmitButton } from "@/components/auth/auth-card";
-import { TextField } from "@/components/auth/text-field";
+import { TextField } from "@/components/ui/text-field";
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
@@ -32,7 +32,10 @@ export default function ForgotPasswordPage() {
 
   const footer = (
     <p>
-      <Link href="/login" className="font-medium text-[#C07A54] hover:underline">
+      <Link
+        href="/login"
+        className="inline-flex min-h-11 items-center font-medium text-ink underline"
+      >
         Back to log in
       </Link>
     </p>
@@ -42,11 +45,11 @@ export default function ForgotPasswordPage() {
   if (sent) {
     return (
       <AuthCard title="Check your email" footer={footer}>
-        <p className="font-inter text-sm text-[#333333]">
+        <p>
           If an account exists for <span className="font-medium">{email}</span>, we&apos;ve sent a
           link to reset its password. It expires in 1 hour.
         </p>
-        <p className="font-inter mt-3 text-sm text-[#666666]">
+        <p className="mt-3 text-slate">
           Nothing after a few minutes? Check your spam folder, or try again later.
         </p>
       </AuthCard>
@@ -54,10 +57,11 @@ export default function ForgotPasswordPage() {
   }
 
   return (
-    <AuthCard title="Reset your password" footer={footer}>
-      <p className="font-inter mb-4 text-sm text-[#666666]">
-        Enter your account&apos;s email and we&apos;ll send you a link to choose a new password.
-      </p>
+    <AuthCard
+      title="Reset your password"
+      subtitle="Enter your account's email and we'll send you a link to choose a new password."
+      footer={footer}
+    >
       <form onSubmit={handleSubmit} noValidate>
         <TextField
           id="email"

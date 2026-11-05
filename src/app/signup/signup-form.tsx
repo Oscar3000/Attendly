@@ -1,12 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { authClient } from "@/lib/auth-client";
 import { toAuthFormErrors, type AuthFormErrors } from "@/lib/auth-errors";
 import { AuthCard, FormError, SubmitButton } from "@/components/auth/auth-card";
-import { TextField } from "@/components/auth/text-field";
+import { TextField } from "@/components/ui/text-field";
+import { PasswordField } from "@/components/auth/password-field";
 import { GoogleButton } from "@/components/auth/google-button";
 
 export function SignupForm({ googleEnabled }: { googleEnabled: boolean }) {
@@ -44,17 +44,8 @@ export function SignupForm({ googleEnabled }: { googleEnabled: boolean }) {
   };
 
   return (
-    <AuthCard
-      title="Create an account"
-      footer={
-        <p>
-          Already have an account?{" "}
-          <Link href="/login" className="font-medium text-[#C07A54] hover:underline">
-            Log in
-          </Link>
-        </p>
-      }
-    >
+    <AuthCard title="Create your account" switcher="signup">
+      {googleEnabled && <GoogleButton disabled={loading} />}
       <form onSubmit={handleSubmit} noValidate>
         <TextField
           id="name"
@@ -77,12 +68,12 @@ export function SignupForm({ googleEnabled }: { googleEnabled: boolean }) {
           disabled={loading}
           error={errors.fields.email}
         />
-        <TextField
+        <PasswordField
           id="password"
           label="Password"
-          type="password"
           autoComplete="new-password"
           required
+          showProgress
           minLength={8}
           value={password}
           onChange={(e) => setPassword(e.target.value)}
@@ -92,7 +83,6 @@ export function SignupForm({ googleEnabled }: { googleEnabled: boolean }) {
         <FormError message={errors.form} />
         <SubmitButton loading={loading}>Sign up</SubmitButton>
       </form>
-      {googleEnabled && <GoogleButton disabled={loading} />}
     </AuthCard>
   );
 }

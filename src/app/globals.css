@@ -24,11 +24,18 @@
 
   --animate-pop: pop 0.28s ease;
   --animate-panel-in: panel-in 0.28s cubic-bezier(0.2, 0.8, 0.2, 1);
+  --animate-float: float 6s ease-in-out infinite;
 
   @keyframes pop {
     from {
       opacity: 0;
       transform: translateY(8px);
+    }
+  }
+
+  @keyframes float {
+    50% {
+      transform: translateY(-10px);
     }
   }
 

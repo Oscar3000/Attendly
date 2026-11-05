@@ -649,7 +649,7 @@ Rebuild `src/components/landing/` from the prototype: the dark hero, the ticket 
 - **Files:** ~9
 - **As built:** the hero is a client component, since the event type switch and the ticket sit in different columns; it's still rendered on the server. `how-it-works.tsx` holds the steps, and `sample-qr.tsx` draws the fake code. Sample ticket colours come from `THEMES`, so they follow the presets. The tilt checks `(pointer: fine)` and reduced motion when the pointer moves, and the sample reply counter doesn't run under reduced motion. Added `mist` and `graphite` tokens for text and raised surfaces on ink, and `light` and `ghost` `Button` variants for dark backgrounds. Use a variant rather than overriding colours through `className`: `cn()` only joins classes, so which one wins depends on CSS order, and an override left the Sign up button ink on ink.
 
-### T-606 · Sign-in, sign-up and password screens · M
+### ✅ T-606 · Sign-in, sign-up and password screens · M
 
 The split layout with the form on one side and the stacked tickets on the other, for `/login`, `/signup`, `/forgot-password` and `/reset-password`. These stay separate routes: the Log in / Sign up switch is links, not client state.
 
@@ -657,7 +657,8 @@ The split layout with the form on one side and the stacked tickets on the other,
 - Keep: Google sign-in hidden when it isn't configured, the reset page's `?error=` state, and the current error messages.
 - The art panel stacks below the form on phones.
 - **Depends on:** T-602
-- **Files:** ~9
+- **Files:** ~11
+- **As built:** `AuthCard` is now the split layout, keeping its name so importers didn't change, with `subtitle` and `switcher` props. `PasswordField` (`src/components/auth/password-field.tsx`) adds show/hide to any password input, and `showProgress` adds the 8-character hint. `TextField` gained `trailing` and `hint`; the hint is linked to the input for screen readers. Google moved above the form, and "Forgot your password?" moved under the password field. Headings follow the prototype ("Welcome back", "Create your account"), but the prototype's sign-up line about a verification email is left out, since it isn't true when email isn't configured. `FormError` and `SubmitButton` are shared, so the new event, settings and account pages pick up their new style.
 
 ### T-607 · Reply counts for the events list · S
 
