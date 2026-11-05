@@ -40,6 +40,19 @@ describe("metricsRepo", () => {
     });
   });
 
+  it("counts rescinded invitations as declined, so the counts add up (T-610)", async () => {
+    await invitationRepo.createInvitation(event, { name: "Ada", status: "confirmed" });
+    await invitationRepo.createInvitation(event, { name: "Bo", status: "pending" });
+    await invitationRepo.createInvitation(event, { name: "Cy", status: "declined" });
+    await invitationRepo.createInvitation(event, { name: "Di", status: "rescinded" });
+
+    const metrics = await metricsRepo.getAdminMetrics(event.id);
+    expect(metrics.declinedRsvps).toBe(2);
+    expect(metrics.confirmedRsvps + metrics.pendingRsvps + metrics.declinedRsvps).toBe(
+      metrics.totalInvitations,
+    );
+  });
+
   it("lists only the event's recent status updates", async () => {
     await invitationRepo.createInvitation(event, { name: "Ada", status: "pending" });
     await invitationRepo.createInvitation(otherEvent, { name: "Elsewhere", status: "pending" });
