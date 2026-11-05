@@ -102,6 +102,15 @@ async function update(
   }
 }
 
+// How the dashboard groups replies; its counts come from metricsRepo.getAdminMetrics
+export type ReplyGroup = "confirmed" | "pending" | "declined";
+
+const REPLY_GROUP_STATUSES: Record<ReplyGroup, PrismaRsvpStatus[]> = {
+  confirmed: ["CONFIRMED"],
+  pending: ["PENDING"],
+  declined: ["DECLINED", "RESCINDED"],
+};
+
 export const invitationRepo = {
   // Get all invitations in an event
   async getAllInvitations(eventId: string): Promise<InviteDetails[]> {
@@ -227,6 +236,7 @@ export const invitationRepo = {
     page: number = 1,
     limit: number = 10,
     search: string = "",
+    group?: ReplyGroup,
   ): Promise<{
     invitations: InvitationTableEntry[];
     pagination: {
@@ -237,9 +247,11 @@ export const invitationRepo = {
     };
   }> {
     const skip = (page - 1) * limit;
-    const where = search.trim()
-      ? { eventId, name: { contains: search.trim(), mode: "insensitive" as const } }
-      : { eventId };
+    const where = {
+      eventId,
+      ...(search.trim() && { name: { contains: search.trim(), mode: "insensitive" as const } }),
+      ...(group && { status: { in: REPLY_GROUP_STATUSES[group] } }),
+    };
 
     const [invitations, total] = await Promise.all([
       prisma.invitation.findMany({
