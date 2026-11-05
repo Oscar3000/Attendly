@@ -703,13 +703,14 @@ Rebuild the top of the event dashboard: a dark Replies card and a restyled Check
 - **Depends on:** T-604
 - **Files:** ~7
 
-### T-611 · Filter invitations by status in the API · S
+### ✅ T-611 · Filter invitations by status in the API · S
 
 The guest list is paginated on the server, so filtering has to happen there too. `GET /api/events/[eventId]/invitations` gains an optional `status`: `confirmed`, `pending` or `declined`, where `declined` includes `RESCINDED` to match the dashboard's count.
 
 - Add it to the repository function, the query schema and the RTK Query arguments, so each filter caches separately.
 - Tests cover each value, status combined with search, pagination totals, and an invalid value.
-- **Files:** ~5
+- **Files:** ~6
+- **As built:** `status` takes the dashboard's reply groups rather than raw statuses, so `rescinded` on its own is a 400. `REPLY_GROUP_STATUSES` in `invitation.repo.ts` maps each group to its statuses. Nothing sends `status` until T-612.
 
 ### T-612 · Guest table · M
 

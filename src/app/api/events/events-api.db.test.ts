@@ -114,6 +114,32 @@ describe("owner workflow", () => {
   });
 });
 
+describe("GET invitations by status (T-611)", () => {
+  const list = (query: string, cookie = hostCookie) =>
+    call(invitations.GET(req(cookie, "GET", undefined, query), ctx(event.id)));
+
+  it("filters, with rescinded under declined", async () => {
+    for (const [name, status] of [
+      ["Ada", "confirmed"],
+      ["Bo", "declined"],
+      ["Cy", "rescinded"],
+    ]) {
+      await invitations.POST(req(hostCookie, "POST", { name, status }), ctx(event.id));
+    }
+
+    const declined = await list("?status=declined");
+    expect(declined.status).toBe(200);
+    expect(declined.body.pagination.total).toBe(2);
+    expect((await list("")).body.pagination.total).toBe(3);
+  });
+
+  it("rejects a status it doesn't know", async () => {
+    const { status: code, body } = await list("?status=rescinded");
+    expect(code).toBe(400);
+    expect(body.details.fieldErrors.status).toBeDefined();
+  });
+});
+
 describe("access control", () => {
   it("answers another account with 404 on every route, changing nothing", async () => {
     const ada = await create("Ada");

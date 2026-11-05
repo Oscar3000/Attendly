@@ -1,6 +1,6 @@
 /**
  * An event's invitations (owner only)
- * GET  /api/events/[eventId]/invitations?page&limit&search - Paginated list
+ * GET  /api/events/[eventId]/invitations?page&limit&search&status - Paginated list
  * POST /api/events/[eventId]/invitations - Create an invitation in the event
  */
 import { NextResponse } from "next/server";
@@ -19,13 +19,14 @@ interface RouteParams {
 
 export const GET = handleRoute(async (request, { params }: RouteParams) => {
   const { event } = await requireEventOwner((await params).eventId, request.headers);
-  const { page, limit, search } = parseQuery(request, adminInvitationsQuerySchema);
+  const { page, limit, search, status } = parseQuery(request, adminInvitationsQuerySchema);
 
   const { invitations, pagination } = await invitationRepo.getAdminInvitations(
     event.id,
     page,
     limit,
     search,
+    status,
   );
   return NextResponse.json({ invitations, pagination }, { status: 200 });
 });

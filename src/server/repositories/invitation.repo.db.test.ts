@@ -1,7 +1,8 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import { prisma } from "@/server/db/client";
 import { eventRepo, type Event } from "./event.repo";
-import { invitationRepo } from "./invitation.repo";
+import { invitationRepo, type ReplyGroup } from "./invitation.repo";
+import { metricsRepo } from "./metrics.repo";
 import { absoluteUrl, generateQRCode } from "@/lib/utils";
 
 const eventDate = new Date("2026-05-23T10:00:00Z");
@@ -146,6 +147,54 @@ describe("invitationRepo", () => {
       "Ada Byron",
       "Ada Lovelace",
     ]);
+  });
+
+  describe("filtering by reply group (T-611)", () => {
+    const names = async (...args: Parameters<typeof list>) =>
+      (await list(...args)).invitations.map((invite) => invite.name).sort();
+    const list = (search: string, group: ReplyGroup, page = 1, limit = 10) =>
+      invitationRepo.getAdminInvitations(event.id, page, limit, search, group);
+
+    beforeEach(async () => {
+      await invitationRepo.createInvitation(event, { name: "Ada Yes", status: "confirmed" });
+      await invitationRepo.createInvitation(event, { name: "Bo Yes", status: "confirmed" });
+      await invitationRepo.createInvitation(event, { name: "Cy Maybe", status: "pending" });
+      await invitationRepo.createInvitation(event, { name: "Di No", status: "declined" });
+      await invitationRepo.createInvitation(event, { name: "Ed Cancelled", status: "rescinded" });
+    });
+
+    it("returns each group, with rescinded under declined", async () => {
+      expect(await names("", "confirmed")).toEqual(["Ada Yes", "Bo Yes"]);
+      expect(await names("", "pending")).toEqual(["Cy Maybe"]);
+      expect(await names("", "declined")).toEqual(["Di No", "Ed Cancelled"]);
+    });
+
+    it("returns everyone without a group", async () => {
+      const all = await invitationRepo.getAdminInvitations(event.id);
+      expect(all.pagination.total).toBe(5);
+    });
+
+    it("combines with search", async () => {
+      expect(await names("ada", "confirmed")).toEqual(["Ada Yes"]);
+      expect(await names("ada", "declined")).toEqual([]);
+    });
+
+    it("paginates the filtered list, not the whole one", async () => {
+      const { invitations, pagination } = await list("", "declined", 2, 1);
+      expect(invitations).toHaveLength(1);
+      expect(pagination).toEqual({ page: 2, limit: 1, total: 2, totalPages: 2 });
+    });
+
+    it("agrees with the dashboard's counts", async () => {
+      const metrics = await metricsRepo.getAdminMetrics(event.id);
+      expect((await list("", "confirmed")).pagination.total).toBe(metrics.confirmedRsvps);
+      expect((await list("", "pending")).pagination.total).toBe(metrics.pendingRsvps);
+    });
+
+    it("stays inside the event", async () => {
+      await invitationRepo.createInvitation(otherEvent, { name: "Other", status: "confirmed" });
+      expect(await names("", "confirmed")).toEqual(["Ada Yes", "Bo Yes"]);
+    });
   });
 });
 
