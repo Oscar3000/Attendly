@@ -788,7 +788,7 @@ Three cards on `/account`: name, email and password, with the existing behaviour
 - **Files:** ~2
 - **As built:** the same three forms in a dark-headed page, three columns on wide screens. Password fields use `PasswordField`, so they gain show/hide, and the new password gets the 8-character hint. A field's error clears as it's edited. Saves use the ink button, keeping one ember action to a screen elsewhere.
 
-### T-619 · Door scanner · M
+### T-619 · Door scanner · M ✅
 
 Restyle `CheckInFlow` and `QrCamera`, which serve both the host's scanner and `/door/[token]`: a dark full-screen page, a viewfinder with a sweeping line, the how-many step with large plus and minus buttons, and full-screen results that stamp in. Lime with ink text lets people in; red `#C4281C` with white text stops them.
 
@@ -798,6 +798,8 @@ Restyle `CheckInFlow` and `QrCamera`, which serve both the host's scanner and `/
 - The prototype's sample ticket buttons aren't built.
 - **Depends on:** T-602
 - **Files:** ~5
+
+**As built:** `CheckInFlow` now renders the whole page, with `label`, `title`, `back` and `footer` props, and `CheckInResult` is the full-screen answer, also used for a link that no longer works. The host's scanner hides the dashboard headers (`HideOnScanner`), so it's full-screen too; "← Dashboard" goes back. The count is in `sessionStorage` per device and tab (`useLetInCount`). The camera keeps its 240px scan area and the video keeps its shape, so the frame sits exactly over what's read; a landscape video shows as a band inside the viewfinder. Wording stays as it was, so the button says "Admit 3" rather than the prototype's "Admit 3 people".
 
 ### T-620 · Public event page · M ✅
 
