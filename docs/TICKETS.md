@@ -637,7 +637,7 @@ The dark header for signed-in pages: the logo, Account and Log out. The event la
 - **Files:** ~16
 - **As built:** `src/app/dashboard/layout.tsx` now owns the sign-in check, `VerifyEmailBanner` and `AppHeader` for every dashboard page, so the new event form gets them too; `/account` renders `AppHeader` itself. `AppHeader` is a server component that logs out with a server action, and its logo goes to `/dashboard`. `EventHeader` (`src/components/admin/event-header.tsx`) replaces `DashboardHeader` and `EventPageLink`, keeping the View page link and the copy failure message. It also has a temporary Upload a list link, since `DashboardHeader` held the only link to bulk upload. Pages without a tab, like adding a guest, highlight Overview. `daysUntil()` compares calendar days on the event's clock, and the header shows "Today" on the day and "3 days ago" afterwards. `EVENT_TYPE_LABELS` moved to `event-copy.ts`, shared with `/dashboard`. Pages under the tabs lost their cream background so the active tab joins the page.
 
-### T-605 · Landing page · M
+### ✅ T-605 · Landing page · M
 
 Rebuild `src/components/landing/` from the prototype: the dark hero, the ticket that restyles by event type and tilts with the pointer, four feature tiles, the interactive "How it works" and the closing call to action.
 
@@ -646,7 +646,8 @@ Rebuild `src/components/landing/` from the prototype: the dark hero, the ticket 
 - The tilt only runs on devices with a fine pointer. The sample QR code stays fake, so nobody scans it.
 - No new claims, numbers or testimonials. "Track replies" labels its counter as sample data.
 - **Depends on:** T-602
-- **Files:** ~6
+- **Files:** ~9
+- **As built:** the hero is a client component, since the event type switch and the ticket sit in different columns; it's still rendered on the server. `how-it-works.tsx` holds the steps, and `sample-qr.tsx` draws the fake code. Sample ticket colours come from `THEMES`, so they follow the presets. The tilt checks `(pointer: fine)` and reduced motion when the pointer moves, and the sample reply counter doesn't run under reduced motion. Added `mist` and `graphite` tokens for text and raised surfaces on ink, and `light` and `ghost` `Button` variants for dark backgrounds. Use a variant rather than overriding colours through `className`: `cn()` only joins classes, so which one wins depends on CSS order, and an override left the Sign up button ink on ink.
 
 ### T-606 · Sign-in, sign-up and password screens · M
 
