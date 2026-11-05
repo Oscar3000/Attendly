@@ -6,6 +6,14 @@
 
 export type EventType = "WEDDING" | "BIRTHDAY" | "CORPORATE" | "OTHER";
 
+// What the host's dashboard calls each type
+export const EVENT_TYPE_LABELS: Record<EventType, string> = {
+  WEDDING: "Wedding",
+  BIRTHDAY: "Birthday",
+  CORPORATE: "Corporate",
+  OTHER: "Event",
+};
+
 export interface EventCopy {
   // The line above the host names on the event page, when the event has no headline
   headline: string;

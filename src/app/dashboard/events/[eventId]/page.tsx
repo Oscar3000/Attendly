@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import DashboardHeader from "@/components/admin/dashboard-header";
 import InvitationCounter from "@/components/admin/invitation-counter";
 import StatusUpdates from "@/components/admin/status-updates";
 import MetricsChart from "@/components/admin/metrics-chart";
@@ -72,20 +71,13 @@ export default function EventDashboard() {
       }))
     : [];
 
-  const handleCreateInvite = () => {
-    router.push(`/dashboard/events/${eventId}/create-invite`);
-  };
-
   const handleEditInvitation = (id: string) => {
     router.push(`/dashboard/events/${eventId}/edit-invite/${id}`);
   };
 
   if (loading) {
     return (
-      <div
-        className="min-h-screen flex items-center justify-center"
-        style={{ backgroundColor: "#FFF9F4" }}
-      >
+      <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto mb-4"></div>
           <p className="text-gray-600">Loading admin dashboard...</p>
@@ -96,10 +88,7 @@ export default function EventDashboard() {
 
   if (isError) {
     return (
-      <div
-        className="min-h-screen flex items-center justify-center"
-        style={{ backgroundColor: "#FFF9F4" }}
-      >
+      <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <p className="text-red-600 mb-4">Failed to load admin data</p>
           <button
@@ -114,11 +103,8 @@ export default function EventDashboard() {
   }
 
   return (
-    <div className="min-h-screen px-4 py-4 sm:p-6" style={{ backgroundColor: "#FFF9F4" }}>
+    <div className="min-h-screen px-4 py-4 sm:p-6">
       <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        <DashboardHeader eventId={eventId} onCreateInvite={handleCreateInvite} />
-
         {/* Top Row - Counter and Status Updates */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
           {/* Left Column - Counter */}

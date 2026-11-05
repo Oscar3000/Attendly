@@ -21,19 +21,19 @@ export function VerifyEmailBanner({ email }: { email: string }) {
   return (
     <div
       role="status"
-      className="font-inter flex flex-col gap-2 border-b border-[#F0D9CB] bg-[#FDF1E9] px-4 py-3 text-sm text-[#333333] sm:flex-row sm:items-center sm:justify-between"
+      className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1 bg-lime px-6 py-2.5 text-[15px] text-ink"
     >
       <p>
         Please verify <span className="font-medium">{email}</span>. Check your inbox for the link.
       </p>
       {status === "sent" ? (
-        <p className="text-[#666666]">Sent. It can take a minute to arrive.</p>
+        <p>Sent. It can take a minute to arrive.</p>
       ) : (
         <button
           type="button"
           onClick={resend}
           disabled={status === "sending"}
-          className="self-start font-medium text-[#C07A54] hover:underline disabled:opacity-50 sm:self-auto"
+          className="min-h-11 font-semibold text-ink underline disabled:opacity-50"
         >
           {status === "failed" ? "Couldn't send. Try again" : "Resend email"}
         </button>

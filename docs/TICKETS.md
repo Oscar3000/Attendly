@@ -626,7 +626,7 @@ White text on two theme accents falls short of 4.5:1. Change terracotta's accent
 - **Files:** ~4
 - **As built:** white on the accent goes from 3.41 to 4.80 for terracotta and from 4.49 to 5.14 for sage; navy and blush already passed. `themes.test.ts` checks all four, both under white text and as text on the page background, so a new preset can't fall below 4.5:1. The event page test's expected accent changed with it.
 
-### T-604 · App header and event navigation · M
+### ✅ T-604 · App header and event navigation · M
 
 The dark header for signed-in pages: the logo, Account and Log out. The event layout adds the event's type, date and venue, its title, days to go, Copy event link, Add guests, and tabs for Overview, Scanner, Door helpers and Settings. Each tab is its own route, as today.
 
@@ -634,7 +634,8 @@ The dark header for signed-in pages: the logo, Account and Log out. The event la
 - Replaces `DashboardHeader` and `EventPageLink`. Add guests can link to the existing create page until T-614.
 - `VerifyEmailBanner` becomes the lime bar, shown under the same conditions as now.
 - **Depends on:** T-602
-- **Files:** ~8
+- **Files:** ~16
+- **As built:** `src/app/dashboard/layout.tsx` now owns the sign-in check, `VerifyEmailBanner` and `AppHeader` for every dashboard page, so the new event form gets them too; `/account` renders `AppHeader` itself. `AppHeader` is a server component that logs out with a server action, and its logo goes to `/dashboard`. `EventHeader` (`src/components/admin/event-header.tsx`) replaces `DashboardHeader` and `EventPageLink`, keeping the View page link and the copy failure message. It also has a temporary Upload a list link, since `DashboardHeader` held the only link to bulk upload. Pages without a tab, like adding a guest, highlight Overview. `daysUntil()` compares calendar days on the event's clock, and the header shows "Today" on the day and "3 days ago" afterwards. `EVENT_TYPE_LABELS` moved to `event-copy.ts`, shared with `/dashboard`. Pages under the tabs lost their cream background so the active tab joins the page.
 
 ### T-605 · Landing page · M
 
@@ -681,6 +682,7 @@ Turn `/dashboard/events/new` into three steps (kind, details, look) beside a liv
 - `POST /api/events` gains an optional `theme`, defaulting to terracotta, and `createEventSchema` validates it. Add an API test.
 - Keep the RSVP deadline field, which the prototype leaves out, and the time zone default.
 - A server error on a field returns the host to the step holding that field.
+- After creating, the event page starts at the top. Since T-604 both pages share the dashboard layout, so Next keeps the form's scroll position and the header starts off-screen.
 - **Depends on:** T-602, T-603
 - **Files:** ~6
 
@@ -730,7 +732,7 @@ A `SidePanel` with One guest and A whole list, replacing the create and bulk upl
 
 - One guest: name, plus-ones and status. Status isn't in the prototype, but the create page has it today. On success, open the new guest in the T-613 panel.
 - A whole list: paste CSV or choose a file, then preview the rows. Keep from the bulk upload page: initial status, the CSV format help, the warning for rows that can't be read, and the results for rows that succeeded or failed.
-- Add guests in the header (T-604) opens this panel.
+- Add guests in the header (T-604) opens this panel, and the temporary Upload a list link goes.
 - **Depends on:** T-613
 - **Files:** ~6
 
@@ -739,7 +741,7 @@ A `SidePanel` with One guest and A whole list, replacing the create and bulk upl
 Delete what the redesign replaced:
 
 - The `create-invite` (and `success`), `edit-invite` and `bulk-upload` pages.
-- `invitation-counter.tsx`, `metrics-chart.tsx`, `status-updates.tsx` and `dashboard-header.tsx`.
+- `invitation-counter.tsx`, `metrics-chart.tsx` and `status-updates.tsx`.
 - The Status updates feed: `GET /api/events/[eventId]/status`, `metricsRepo.getRecentStatusUpdates()`, its test, its RTK Query hook and its `ROUTE_POLICY` entry.
 - The `src/components/button.tsx` re-export (T-602).
 

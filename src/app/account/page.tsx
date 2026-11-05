@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { getAuth } from "@/server/auth/auth";
 import { getCurrentUser } from "@/server/auth/current-user";
 import { canSendEmail } from "@/server/email/send-email";
+import { AppHeader } from "@/components/admin/app-header";
 import { AccountSettings, type EmailChange } from "./account-settings";
 
 // Account settings for any signed-in user
@@ -17,12 +18,15 @@ export default async function AccountPage() {
   const emailChange: EmailChange = canSendEmail() ? "allowed" : "unavailable";
 
   return (
-    <AccountSettings
-      name={user.name}
-      email={user.email}
-      emailVerified={user.emailVerified}
-      hasPassword={hasPassword}
-      emailChange={emailChange}
-    />
+    <>
+      <AppHeader />
+      <AccountSettings
+        name={user.name}
+        email={user.email}
+        emailVerified={user.emailVerified}
+        hasPassword={hasPassword}
+        emailChange={emailChange}
+      />
+    </>
   );
 }

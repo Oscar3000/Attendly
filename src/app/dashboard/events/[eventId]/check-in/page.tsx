@@ -17,7 +17,7 @@ export default function CheckInPage() {
   const dispatch = useDispatch();
 
   return (
-    <main className="min-h-screen bg-[#FFF9F4] px-4 py-6">
+    <main className="min-h-screen bg-paper px-4 py-6">
       <div className="mx-auto max-w-md">
         <Link
           href={`/dashboard/events/${eventId}`}

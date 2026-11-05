@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  daysUntil,
   formatEventDate,
   formatEventDateTime,
   formatEventTime,
@@ -97,5 +98,29 @@ describe("formatEventDate / formatEventTime", () => {
     expect(formatEventTime(lateEvening, "Africa/Lagos")).toBe("12:30 AM");
     expect(formatEventDate(lateEvening, "America/New_York")).toBe("Saturday, May 23, 2026");
     expect(formatEventTime(lateEvening, "America/New_York")).toBe("7:30 PM");
+  });
+});
+
+describe("daysUntil", () => {
+  const event = new Date("2027-05-24T15:00:00Z");
+
+  it("counts calendar days, not 24-hour periods", () => {
+    expect(daysUntil(event, "UTC", new Date("2027-05-23T23:59:00Z"))).toBe(1);
+    expect(daysUntil(event, "UTC", new Date("2027-05-14T00:00:00Z"))).toBe(10);
+  });
+
+  it("is 0 on the day and negative once it's past", () => {
+    expect(daysUntil(event, "UTC", new Date("2027-05-24T00:01:00Z"))).toBe(0);
+    expect(daysUntil(event, "UTC", new Date("2027-05-26T12:00:00Z"))).toBe(-2);
+  });
+
+  it("reads today on the event's clock", () => {
+    // 23:30 UTC on the 23rd is already the 24th in Lagos, which is UTC+1
+    expect(daysUntil(event, "Africa/Lagos", new Date("2027-05-23T23:30:00Z"))).toBe(0);
+  });
+
+  it("isn't thrown off by a clock change", () => {
+    const afterChange = new Date("2027-03-30T12:00:00Z");
+    expect(daysUntil(afterChange, "Europe/London", new Date("2027-03-27T12:00:00Z"))).toBe(3);
   });
 });
