@@ -307,6 +307,12 @@ function stringsIn(node: unknown, seen = new WeakSet<object>()): string {
     .join("");
 }
 
+// next/font only works under Next's compiler
+vi.mock("next/font/google", () => ({
+  Playfair_Display: () => ({ variable: "font-playfair" }),
+  Montserrat: () => ({ variable: "font-montserrat" }),
+}));
+
 // The dashboard layout reads the session through next/headers
 let requestCookie = "";
 vi.mock("next/headers", () => ({

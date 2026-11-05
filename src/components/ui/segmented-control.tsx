@@ -3,7 +3,7 @@ import { cn } from "@/lib/utils";
 interface SegmentedControlProps<T extends string> {
   // Names the group for screen readers
   label: string;
-  options: readonly { value: T; label: string }[];
+  options: readonly { value: T; label: string; invalid?: boolean }[];
   value: T;
   onChange: (value: T) => void;
   className?: string;
@@ -32,11 +32,20 @@ export function SegmentedControl<T extends string>({
           aria-pressed={option.value === value}
           onClick={() => onChange(option.value)}
           className={cn(
-            "min-h-11 flex-1 rounded-full px-4.5 font-semibold whitespace-nowrap text-ink",
+            "min-h-11 flex-1 rounded-full px-3 font-semibold whitespace-nowrap text-ink sm:px-4.5",
             option.value === value && "bg-card",
           )}
         >
           {option.label}
+          {option.invalid && (
+            <>
+              <span
+                aria-hidden="true"
+                className="ml-1.5 inline-block size-2 rounded-full bg-danger align-middle"
+              />
+              <span className="sr-only"> (has errors)</span>
+            </>
+          )}
         </button>
       ))}
     </div>

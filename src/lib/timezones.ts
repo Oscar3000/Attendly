@@ -99,6 +99,16 @@ export function formatEventDate(date: Date, timeZone: string): string {
   }).format(date);
 }
 
+// "May 23, 2026" on the event's own calendar
+export function formatEventDateShort(date: Date, timeZone: string): string {
+  return new Intl.DateTimeFormat("en-US", {
+    timeZone,
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  }).format(date);
+}
+
 // "3:00 PM" on the event's own clock
 export function formatEventTime(date: Date, timeZone: string): string {
   return new Intl.DateTimeFormat("en-US", {

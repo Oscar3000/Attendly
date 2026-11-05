@@ -760,7 +760,7 @@ Delete what the redesign replaced:
 - **Files:** ~21
 - **As built:** also removes what those deletions left unused: `src/components/qr-code.tsx`, `formatTimeAgo()`, `getStatusColor()`, the `StatusUpdate`, `StatusUpdateSelect`, `EditInviteForm` and `BaseComponentProps` types, and the `EventStatus` cache tag. It's one over the ~20 file limit, and nearly all of it is deletions. Exports that were already unused before this phase, like `formatDate()`, stay out of this PR.
 
-### T-616 · Event settings · M
+### ✅ T-616 · Event settings · M
 
 Split the 445-line settings form into Details, Invitation page and Theme tabs, with one Save.
 
@@ -768,7 +768,8 @@ Split the 445-line settings form into Details, Invitation page and Theme tabs, w
 - Theme cards show each preset's real colours and heading font.
 - Unsaved changes survive switching tabs. Validation errors mark the tab they're on.
 - **Depends on:** T-604
-- **Files:** ~6
+- **Files:** ~13
+- **As built:** the form is split into `details-tab.tsx`, `invitation-page-tab.tsx`, `theme-tab.tsx` and `cover-image-field.tsx`, with the state kept in `settings-form.tsx`. Hidden tabs stay mounted, so the cover image, which saves on its own, survives switching. After a rejected save, `firstTabWithError()` picks the tab, it gets a red dot (`invalid` on `SegmentedControl`), and focus moves to the first invalid field, which may be below the fold. Each field's error clears as it's edited. Theme cards use the event's title and date in each preset's real colours and font, which needed `eventFontVariables` on this page. `formatEventDateShort()` is shared with the wizard's preview. The family placeholder no longer uses a real name, and new colours default to the current terracotta.
 
 ### T-617 · Door helpers page · S
 
@@ -826,6 +827,7 @@ Add `not-found.tsx` and `error.tsx` in the new style; the app has neither, and a
 - Remove the `.font-inter` alias (T-601) and any uses left.
 - Remove the `src/components/auth/text-field.tsx` re-export (T-602), importing from `src/components/ui/` instead.
 - Check every screen at phone width, by keyboard and with reduced motion on.
+- On phones the event tabs scroll sideways, so the current tab can be off-screen (Settings, for example). Scroll it into view.
 - Update `CLAUDE.md`: stack, brand colours, project structure and the components list.
 - **Depends on:** T-605, T-606, T-608, T-609, T-615, T-616, T-617, T-618, T-619, T-620, T-621
 - **Files:** ~6
