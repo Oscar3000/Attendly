@@ -21,9 +21,10 @@ Goal: turn Attendly from a single hard-coded wedding into a product any host can
 | 3     | Events & multi-tenancy                               | T-301 – T-312 | ✅ Done     |
 | 4     | Remove hard-coded content / theming                  | T-401 – T-410 | ✅ Done     |
 | 5     | Guest tickets & door check-in                        | T-501 – T-510 | ✅ Done     |
-| 6     | Product features                                     | T-601 – T-610 | Not started |
-| 7     | Ops, compliance, launch                              | T-701 – T-710 | Not started |
-| 8     | Billing                                              | T-801 – T-805 | Not started |
+| 6     | App redesign                                         | T-601 – T-622 | Not started |
+| 7     | Product features                                     | T-701 – T-711 | Not started |
+| 8     | Ops, compliance, launch                              | T-801 – T-810 | Not started |
+| 9     | Billing                                              | T-901 – T-905 | Not started |
 
 Phases 0 and 1 can happen while the current wedding site is still live. Phase 2 onwards changes the data model.
 
@@ -174,7 +175,7 @@ Cover: forged cookie → 401, guest calling an admin route → 401/403, guest `P
 
 **Decision:** use **Better Auth** (`better-auth`) with its Prisma adapter. Users, sessions, and accounts live in our own Postgres database.
 
-**What Better Auth gives us (so we don't build it):** email + password sign-up and login, password hashing, database sessions, email verification, password reset, rate limiting on auth endpoints, social login, and an `organization` plugin we can use for co-hosts (T-608).
+**What Better Auth gives us (so we don't build it):** email + password sign-up and login, password hashing, database sessions, email verification, password reset, rate limiting on auth endpoints, social login, and an `organization` plugin we can use for co-hosts (T-708).
 
 **Design notes:**
 
@@ -277,7 +278,7 @@ Change name (`authClient.updateUser`), password (`authClient.changePassword`, cu
 
 Add an `Event` model: `id`, `ownerId → User`, `slug` (unique), `type` (enum: WEDDING, BIRTHDAY, CORPORATE, OTHER), `title`, `date`, `timezone`, `venueName`, `venueAddress`, `rsvpDeadline`, timestamps. Add `event.repo.ts`.
 
-- **As built:** `venueName`, `venueAddress` and `rsvpDeadline` are optional; deleting a user cascades to their events (T-706). `eventRepo` has `create`, `findById`, `findBySlug`, `listByOwner` (soonest first), `update` (undefined leaves a field unchanged, null clears it) and `delete`; only Prisma's not-found error maps to `undefined`/`false`, other errors are rethrown. A taken slug throws Prisma's unique-constraint error (`P2002`) for T-310 to handle.
+- **As built:** `venueName`, `venueAddress` and `rsvpDeadline` are optional; deleting a user cascades to their events (T-806). `eventRepo` has `create`, `findById`, `findBySlug`, `listByOwner` (soonest first), `update` (undefined leaves a field unchanged, null clears it) and `delete`; only Prisma's not-found error maps to `undefined`/`false`, other errors are rethrown. A taken slug throws Prisma's unique-constraint error (`P2002`) for T-310 to handle.
 
 - **Depends on:** T-201
 - **Files:** ~4
@@ -459,7 +460,7 @@ Update the image generation in `utils.ts` (names, date, venue, colors) to read f
 Marketing page: what it is, how it works, sign-up CTA.
 
 - **Files:** ~6
-- **As built:** `/` is a landing page (it redirected to `/dashboard`): a hero with a sample invitation drawn in HTML (a made-up couple and a fake QR pattern, so there's no image to keep up to date), what the product does today, four "how it works" steps, a closing call to action and a footer, in `src/components/landing/`. Visitors get "Create your event" (`/signup`) and "Log in"; signed-in hosts get "Go to your events" (`/dashboard`) instead. Like middleware, it only checks that the session cookie is present, and `/dashboard` sends a stale cookie to `/login`. It makes no pricing claims, since billing is Phase 8.
+- **As built:** `/` is a landing page (it redirected to `/dashboard`): a hero with a sample invitation drawn in HTML (a made-up couple and a fake QR pattern, so there's no image to keep up to date), what the product does today, four "how it works" steps, a closing call to action and a footer, in `src/components/landing/`. Visitors get "Create your event" (`/signup`) and "Log in"; signed-in hosts get "Go to your events" (`/dashboard`) instead. Like middleware, it only checks that the session cookie is present, and `/dashboard` sends a stale cookie to `/login`. It makes no pricing claims, since billing is Phase 9.
 
 ### ✅ T-410 · Link to the public event page from the dashboard · S
 
@@ -474,7 +475,7 @@ Hosts had no way to find or share their event page (`/e/[slug]`, T-403): nothing
 
 An invitation is a ticket. The guest's link and QR code only show their invitation; they can't confirm or check themselves in. At the venue, the host or a door helper scans the QR code and admits the guest, and each invitation admits at most its number of people (the guest plus their plus-ones). If a guest sends their QR code to a friend outside after going in, the scan shows "Already checked in" with the time and who admitted them. Door helpers get a check-in link that does nothing else, so the host never shares their password or the dashboard.
 
-Online RSVP (guests confirming or declining before the event) is out of scope for now; see T-611.
+Online RSVP (guests confirming or declining before the event) is out of scope for now; see T-711.
 
 The original wedding has passed, so no live event depends on the shared PIN flow while these tickets land. Until T-508 removes it, the PIN flow keeps working for QR codes made before T-503.
 
@@ -508,7 +509,7 @@ Add `admittedCount` (default 0) to `Invitation` and a `CheckIn` table (invitatio
 
 - One conditional update, so two helpers scanning the same code at the same moment can't admit more than allowed: admit only if the invitation is in this event, isn't `DECLINED`/`RESCINDED`, and `admittedCount + count <= plusOne + 1`.
 - Results: admitted (name, now X of N), already full (when and by whom, from the last `CheckIn`), not valid (cancelled or declined), not found (unknown token or another event's).
-- Checking in sets the status to `CONFIRMED`, so the dashboard's "confirmed" keeps meaning "arrived", as it did with the PIN flow. Revisit when online RSVP lands (T-611).
+- Checking in sets the status to `CONFIRMED`, so the dashboard's "confirmed" keeps meaning "arrived", as it did with the PIN flow. Revisit when online RSVP lands (T-711).
 - **Depends on:** T-501
 - **Files:** ~7
 - **As built:** `checkInRepo.checkIn(eventId, token, count, by)` (`src/server/repositories/check-in.repo.ts`) reads the invitation for the result message, then admits with one raw SQL `UPDATE … WHERE "admittedCount" + n <= "plusOne" + 1 AND status NOT IN (DECLINED, RESCINDED)`. If a simultaneous scan got there first, the update matches nothing, nothing is written, and it reads again (up to 3 times), so the result reflects the other scan. The `CheckIn` row is written in the same transaction. Without `count`, everyone left on the invitation is admitted. The route takes `{ code, count? }`, where `code` is whatever the QR code held: `ticketTokenFrom()` in `utils.ts` accepts a ticket URL on any host or the bare token, and anything else is `not_found`. Responses always carry a `result`: `admitted` 200, `full` / `too_many` / `not_valid` 409, `not_found` 404. `CheckIn.checkedInByUserId` is set null if the account is deleted; T-506 adds the door link column. Tests cover concurrent scans (10 at once admit once; they fail if the SQL guard is removed), and the tenant isolation test also scans a victim's ticket through the attacker's own event.
@@ -573,71 +574,310 @@ On the event dashboard: people admitted vs expected, invitations checked in, the
 
 ---
 
-## Phase 6 — Product features
+## Phase 6 — App redesign
 
-### T-601 · CSV export of guest list · S
+Replace the plain look with the "Admit One" design: the ticket is the main visual idea, with notched cards, tear lines and mono labels, on ink and paper with ember and lime accents. Hosts get a more interactive app, and the door scanner gets a clearer full-screen answer. Guest pages keep each host's theme.
 
-### T-602 · Email invitations to guests (single + bulk) · M — needs `email` on `Invitation`, uses T-206
+**Design reference:** the [Attendly Redesign canvas](https://claude.ai/artifact/CvNvBPaDHDmbCG8esViPUX), a clickable prototype of every screen. It's private until shared from its Share menu. Its guests and numbers are samples.
 
-### T-603 · RSVP reminder emails (manual trigger) · S — needs T-611
+These rules apply to every ticket in this phase:
 
-### T-604 · Scheduled reminders (cron / job queue) · M
+- **No feature is lost.** The prototype leaves out some things the app does today. Where a ticket lists one, keep it and style it to match.
+- **Wording stays unless a ticket changes it.** Door results stay in `src/lib/check-in.ts`, and event-type wording stays in `copyFor()`.
+- **Motion is CSS only**, with no animation library, and every animation stops under `prefers-reduced-motion`.
+- **App screens use the tokens from T-601. Guest pages use `var(--event-*)`**, as they do today.
+- **Controls are real elements**, at least 44px tall, and text meets 4.5:1 contrast.
+- Pages change one at a time, so old and new screens sit side by side until the phase finishes. `main` stays deployable throughout.
 
-### T-605 · Notify host on new RSVP (email) · S — needs T-611
+Order: T-601 to T-604 come first. After that, the screens can land in any order their dependencies allow. T-615 removes the old pages once their replacements are in, and T-622 closes the phase.
 
-### T-606 · ~~Check-in mode~~ · moved to Phase 5 (T-504, T-505)
+### T-601 · Design tokens, fonts and brand assets · M
 
-### T-607 · ~~Check-in dashboard~~ · moved to Phase 5 (T-509)
+Add the design's tokens to `globals.css` with Tailwind 4's `@theme`: Ink `#16141D`, Paper `#F6F4EF`, Card `#FFFFFF`, Line `#E3DFD6`, Slate `#5F5B68`, Ember `#FF6A3D` (ink text on it, never white), Lime `#CDF25C` and Danger `#B3261E`. Load Bricolage Grotesque, Instrument Sans and DM Mono with `next/font`, which self-hosts them, so the CSP doesn't change.
 
-### T-608 · Co-hosts: invite another user to manage an event (consider Better Auth `organization` plugin vs own `EventMember` + roles) · L → split into model/API and UI tickets when started
+- Inter goes: the app's body font becomes Instrument Sans, and so does the `inter` body font in `themes.ts`.
+- Set the body background from the token, not the inline `#FFF9F4` in `layout.tsx`. Remove the unused legacy colour variables from `globals.css`, including the blue focus ring.
+- Add a global `prefers-reduced-motion` rule.
+- New favicons in `public/`, and the auth email link in `auth-emails.ts` moves off `#C07A54`. Ember fails contrast as link text on white, so use Ink.
+- **Files:** ~10
+
+### T-602 · Shared UI components · M
+
+Build the pieces every screen reuses, in `src/components/ui/`:
+
+- `Button`: primary (ember), secondary (ink), outline and danger, replacing the blue and `attendly` variants in `src/components/button.tsx` and updating its callers.
+- `TextField`, moved from `src/components/auth/` and restyled.
+- `StatusChip`: colour, icon and label for each RSVP status, replacing `getTableStatusColor()`. Status is never shown by colour alone.
+- `TicketCard`: the notches and dashed tear line, horizontal or vertical. The notch colour comes from a prop, since it has to match what's behind the card.
+- `SegmentedControl`, used for tabs and switches.
+- `SidePanel`: built on `<dialog>`, so it traps focus, closes on Escape and returns focus when it closes.
+- `Toast`: announced with `role="status"`.
+
+- **Depends on:** T-601
+- **Files:** ~14
+
+### T-603 · Fix theme accent contrast · S
+
+White text on two theme accents falls short of 4.5:1. Change terracotta's accent from `#C07A54` to `#A5613D` and sage's from `#5E7F5E` to `#56755A` in `themes.ts`, and update the two assertions in `event-page.db.test.ts`.
+
+- Events store a preset id, so existing events change with no migration. Link previews and invitation images follow, since both read the theme.
+- **Files:** ~2
+
+### T-604 · App header and event navigation · M
+
+The dark header for signed-in pages: the logo, Account and Log out. The event layout adds the event's type, date and venue, its title, days to go, Copy event link, Add guests, and tabs for Overview, Scanner, Door helpers and Settings. Each tab is its own route, as today.
+
+- Add `daysUntil(date, timezone)` to `src/lib/timezones.ts`, counting on the event's clock, with unit tests. T-608 uses it too.
+- Replaces `DashboardHeader` and `EventPageLink`. Add guests can link to the existing create page until T-614.
+- `VerifyEmailBanner` becomes the lime bar, shown under the same conditions as now.
+- **Depends on:** T-602
+- **Files:** ~8
+
+### T-605 · Landing page · M
+
+Rebuild `src/components/landing/` from the prototype: the dark hero, the ticket that restyles by event type and tilts with the pointer, four feature tiles, the interactive "How it works" and the closing call to action.
+
+- Add "Check-in at the door" as the fourth feature tile, in place of "Any kind of event", which the hero's event type switch now shows.
+- Signed-in hosts keep "Your events" and "Go to your events".
+- The tilt only runs on devices with a fine pointer. The sample QR code stays fake, so nobody scans it.
+- No new claims, numbers or testimonials. "Track replies" labels its counter as sample data.
+- **Depends on:** T-602
+- **Files:** ~6
+
+### T-606 · Sign-in, sign-up and password screens · M
+
+The split layout with the form on one side and the stacked tickets on the other, for `/login`, `/signup`, `/forgot-password` and `/reset-password`. These stay separate routes: the Log in / Sign up switch is links, not client state.
+
+- Add show/hide password, and an 8-character progress hint on sign-up and reset.
+- Keep: Google sign-in hidden when it isn't configured, the reset page's `?error=` state, and the current error messages.
+- The art panel stacks below the form on phones.
+- **Depends on:** T-602
+- **Files:** ~9
+
+### T-607 · Reply counts for the events list · S
+
+Event cards show "86 of 120 replied". Add `eventRepo.listByOwnerWithReplies(ownerId)`, which returns each event with `invited` and `replied` (invitations that aren't `PENDING`). Use one grouped query, not one query per event.
+
+- Tests cover the counts, an event with no invitations, and that only the owner's events come back.
+- **Files:** ~2
+
+### T-608 · Your events page · M
+
+Ticket cards with a tear-off stub showing days to go, on `/dashboard`: the type, title, date, venue and reply progress. Search and an Upcoming / Past switch run in the browser, since a host's events are already all loaded. Past events show "days ago".
+
+- The card's colour strip is the event's theme accent, not a colour per event type.
+- An event with no invitations shows no progress bar.
+- Keep the empty state for hosts with no events. Add one for a search with no matches.
+- **Depends on:** T-604, T-607
+- **Files:** ~5
+
+### T-609 · New event wizard · M
+
+Turn `/dashboard/events/new` into three steps (kind, details, look) beside a live phone preview built from `themes.ts` and `copyFor()`. The preview shows the page address that will be generated from the title.
+
+- `POST /api/events` gains an optional `theme`, defaulting to terracotta, and `createEventSchema` validates it. Add an API test.
+- Keep the RSVP deadline field, which the prototype leaves out, and the time zone default.
+- A server error on a field returns the host to the step holding that field.
+- **Depends on:** T-602, T-603
+- **Files:** ~6
+
+### T-610 · Dashboard replies and check-ins · M
+
+Rebuild the top of the event dashboard: a dark Replies card and a restyled Check-ins panel.
+
+- Replies: the replied count, invitations, guests, and a stacked bar of confirmed, pending and declined (rescinded counts as declined) with a legend. Segments and legend items are buttons; hovering or focusing one shows its count and share. Colours follow the prototype, and every segment has a text label.
+- Check-ins: keep the 30-second refresh, the "invitations checked in" line and the existing API. Show the latest check-ins and Undo.
+- Undo happens straight away with a toast, instead of `window.confirm`.
+- Remove the Status updates card, the counter and the old chart from the page. T-615 deletes the code.
+- Replace the page's loading and error screens with ones in the new style, without the blue Retry button.
+- **Depends on:** T-604
+- **Files:** ~7
+
+### T-611 · Filter invitations by status in the API · S
+
+The guest list is paginated on the server, so filtering has to happen there too. `GET /api/events/[eventId]/invitations` gains an optional `status`: `confirmed`, `pending` or `declined`, where `declined` includes `RESCINDED` to match the dashboard's count.
+
+- Add it to the repository function, the query schema and the RTK Query arguments, so each filter caches separately.
+- Tests cover each value, status combined with search, pagination totals, and an invalid value.
+- **Files:** ~5
+
+### T-612 · Guest table · M
+
+Rebuild `InvitationsTable`: name, status chip, admits and Open ticket, with debounced search, Previous / Next (10 per page) and Clear filter. Choosing a status in the Replies card (T-610) filters the table. Search or a filter that matches nobody shows a message and a way back.
+
+- The QR code column goes. The code and its download move to the guest panel (T-613).
+- Wide tables scroll inside their own box on phones.
+- **Depends on:** T-610, T-611
+- **Files:** ~4
+
+### T-613 · Guest panel: ticket, sharing and editing · M
+
+Opening a guest shows a `SidePanel` with their ticket and QR code, and replaces the edit and success pages.
+
+- Sharing keeps everything the success page has: copy link, download image, native share, WhatsApp and email (`handleWhatsAppShare` and the `mailto:` link in `content.tsx`), with messages from `copyFor()`.
+- Editing: status chips from the prototype, plus name and plus-ones fields, which the prototype leaves out and `edit-invite` has today.
+- Saving goes through the existing update mutation, so the counts and table refresh themselves.
+- The open guest is in the URL (`?guest=<id>`), so a refresh or a shared link keeps it open.
+- **Depends on:** T-612
+- **Files:** ~6
+
+### T-614 · Add guests panel · M
+
+A `SidePanel` with One guest and A whole list, replacing the create and bulk upload pages.
+
+- One guest: name, plus-ones and status. Status isn't in the prototype, but the create page has it today. On success, open the new guest in the T-613 panel.
+- A whole list: paste CSV or choose a file, then preview the rows. Keep from the bulk upload page: initial status, the CSV format help, the warning for rows that can't be read, and the results for rows that succeeded or failed.
+- Add guests in the header (T-604) opens this panel.
+- **Depends on:** T-613
+- **Files:** ~6
+
+### T-615 · Remove the old pages and dashboard code · S
+
+Delete what the redesign replaced:
+
+- The `create-invite` (and `success`), `edit-invite` and `bulk-upload` pages.
+- `invitation-counter.tsx`, `metrics-chart.tsx`, `status-updates.tsx` and `dashboard-header.tsx`.
+- The Status updates feed: `GET /api/events/[eventId]/status`, `metricsRepo.getRecentStatusUpdates()`, its test, its RTK Query hook and its `ROUTE_POLICY` entry.
+- `getTableStatusColor()` and the old `Button` file if T-602 left a re-export.
+
+- **Depends on:** T-610, T-613, T-614
+- **Files:** ~14
+
+### T-616 · Event settings · M
+
+Split the 445-line settings form into Details, Invitation page and Theme tabs, with one Save.
+
+- Keep the fields the prototype leaves out: headline, families, cover image upload and removal.
+- Theme cards show each preset's real colours and heading font.
+- Unsaved changes survive switching tabs. Validation errors mark the tab they're on.
+- **Depends on:** T-604
+- **Files:** ~6
+
+### T-617 · Door helpers page · S
+
+Restyle `/dashboard/events/[eventId]/door-helpers`: the create form, the lime "copy it now" card with the link shown once, and the list with Revoke. It stays its own route under the event tabs, not a tab inside Settings as the prototype shows.
+
+- Keep each link's count of people checked in, which the prototype leaves out, and its expiry.
+- **Depends on:** T-604
+- **Files:** ~2
+
+### T-618 · Account page · S
+
+Three cards on `/account`: name, email and password, with the existing behaviour and messages.
+
+- **Depends on:** T-604
+- **Files:** ~3
+
+### T-619 · Door scanner · M
+
+Restyle `CheckInFlow` and `QrCamera`, which serve both the host's scanner and `/door/[token]`: a dark full-screen page, a viewfinder with a sweeping line, the how-many step with large plus and minus buttons, and full-screen results that stamp in. Lime with ink text lets people in; red `#C4281C` with white text stops them.
+
+- Keep the vibration, the typed-code fallback and every message in `src/lib/check-in.ts`.
+- The "18 let in" count is kept in the browser and counts this device's session only. Door helpers must not get any event data from the server (T-507).
+- Style the "This check-in link no longer works" screen to match.
+- The prototype's sample ticket buttons aren't built.
+- **Depends on:** T-602
+- **Files:** ~5
+
+### T-620 · Public event page · M
+
+Rebuild `src/components/home/` for phones first: a dark hero with the cover image, large names, a live countdown in seconds, details cards, and colours of the day that show their name when tapped. Everything uses `var(--event-*)`, across all four themes and all event types.
+
+- Handle what the prototype doesn't show: no cover image, names that `splitCouple()` can't split, non-wedding events, and a countdown that has finished.
+- Keep family lines, notes, dress code and the custom headline. Hide any section with no content.
+- Small text uses `--event-text`, since `--event-muted` fails contrast on these backgrounds.
+- The "See a sample ticket" button is a prototype link and isn't built. Guests reach tickets through their personal links.
+- **Depends on:** T-601, T-603
+- **Files:** ~7
+
+### T-621 · Guest ticket page · M
+
+The ticket on `/e/[slug]/i/[token]` shows the guest, admits line and QR code on the front, and flips to the date, venue, Add to calendar and the event page link.
+
+- The QR code is on the front, so a guest never has to flip it at the door. It always sits on white, whatever the theme.
+- The hidden side is `inert`. Under reduced motion it swaps without the flip.
+- Declined and cancelled invitations show their message in place of the QR code, and Add to calendar stays hidden for them.
+- `noindex` and `no-referrer` stay.
+- **Depends on:** T-602, T-603
+- **Files:** ~4
+
+### T-622 · Error pages and final pass · S
+
+Add `not-found.tsx` and `error.tsx` in the new style; the app has neither, and a 404 is what other accounts see for an event they don't own. Then close the phase:
+
+- No leftover `#C07A54`, `#FFF9F4`, blue or gray classes outside `themes.ts` and test fixtures.
+- Check every screen at phone width, by keyboard and with reduced motion on.
+- Update `CLAUDE.md`: stack, brand colours, project structure and the components list.
+- **Depends on:** T-605, T-606, T-608, T-609, T-615, T-616, T-617, T-618, T-619, T-620, T-621
+- **Files:** ~6
+
+---
+
+## Phase 7 — Product features
+
+### T-701 · CSV export of guest list · S
+
+### T-702 · Email invitations to guests (single + bulk) · M — needs `email` on `Invitation`, uses T-206
+
+### T-703 · RSVP reminder emails (manual trigger) · S — needs T-711
+
+### T-704 · Scheduled reminders (cron / job queue) · M
+
+### T-705 · Notify host on new RSVP (email) · S — needs T-711
+
+### T-706 · ~~Check-in mode~~ · moved to Phase 5 (T-504, T-505)
+
+### T-707 · ~~Check-in dashboard~~ · moved to Phase 5 (T-509)
+
+### T-708 · Co-hosts: invite another user to manage an event (consider Better Auth `organization` plugin vs own `EventMember` + roles) · L → split into model/API and UI tickets when started
 
 Door helpers who only check guests in use T-506 links, not co-host accounts.
 
-### T-609 · WhatsApp share link per guest · S
+### T-709 · WhatsApp share link per guest · S
 
-### T-610 · Duplicate event / archive event · S
+### T-710 · Duplicate event / archive event · S
 
-### T-611 · Online RSVP from the ticket page · L → split when started
+### T-711 · Online RSVP from the ticket page · L → split when started
 
 Guests confirm or decline before the event from their ticket page (`PATCH /api/rsvp/[token]`), optionally with how many are coming, meal choice and dietary notes, and the form turns read-only after `rsvpDeadline`. Check-in (T-504) currently sets `CONFIRMED` to mean "arrived"; with online RSVP, "confirmed" (intends to come) and "checked in" (arrived) become separate counts in the dashboard and metrics.
 
 ---
 
-## Phase 7 — Ops, compliance, launch
+## Phase 8 — Ops, compliance, launch
 
-### T-701 · Managed Postgres + hosting setup (Neon/Supabase + Vercel/Fly) · M
+### T-801 · Managed Postgres + hosting setup (Neon/Supabase + Vercel/Fly) · M
 
-### T-702 · Sentry error tracking (client + server) · S
+### T-802 · Sentry error tracking (client + server) · S
 
-### T-703 · Structured logging (pino), remove `console.error` · S
+### T-803 · Structured logging (pino), remove `console.error` · S
 
-### T-704 · Automated DB backups + restore runbook · S
+### T-804 · Automated DB backups + restore runbook · S
 
-### T-705 · Privacy policy + terms pages · S
+### T-805 · Privacy policy + terms pages · S
 
-### T-706 · Account deletion (cascades events/invitations) · S
+### T-806 · Account deletion (cascades events/invitations) · S
 
-### T-707 · Guest data deletion on request / event auto-purge after N months · M
+### T-807 · Guest data deletion on request / event auto-purge after N months · M
 
-### T-708 · Basic analytics (PostHog/Plausible) · S
+### T-808 · Basic analytics (PostHog/Plausible) · S
 
-### T-709 · Health check includes DB + migrations status · S
+### T-809 · Health check includes DB + migrations status · S
 
-### T-710 · Update README, DEPLOYMENT.md, CLAUDE.md for new architecture · S
+### T-810 · Update README, DEPLOYMENT.md, CLAUDE.md for new architecture · S
 
 ---
 
-## Phase 8 — Billing
+## Phase 9 — Billing
 
-### T-801 · Decide pricing model (per-event vs subscription, free tier limits) · decision doc
+### T-901 · Decide pricing model (per-event vs subscription, free tier limits) · decision doc
 
-### T-802 · `Plan`/`Subscription` fields + plan limits helper (`assertCanAddGuests`) · M
+### T-902 · `Plan`/`Subscription` fields + plan limits helper (`assertCanAddGuests`) · M
 
-### T-803 · Stripe Checkout + webhook · M
+### T-903 · Stripe Checkout + webhook · M
 
-### T-804 · Enforce limits in create/bulk-create invitation and create event · S
+### T-904 · Enforce limits in create/bulk-create invitation and create event · S
 
-### T-805 · Billing page (current plan, upgrade, Stripe portal link) · S
+### T-905 · Billing page (current plan, upgrade, Stripe portal link) · S
 
 ---
 
