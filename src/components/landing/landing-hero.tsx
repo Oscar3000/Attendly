@@ -1,121 +1,200 @@
+"use client";
+
 import Link from "next/link";
+import { useState } from "react";
+import { buttonClasses } from "@/components/ui/button";
+import { TicketCard } from "@/components/ui/ticket-card";
+import { THEMES } from "@/lib/themes";
+import { cn } from "@/lib/utils";
+import { SampleQr } from "./sample-qr";
+
+// Made-up events; the ticket shows how the wording and theme follow the kind of event
+const SAMPLES = {
+  wedding: {
+    label: "Wedding",
+    kind: "Wedding celebration",
+    title: "Amara & Chike",
+    color: THEMES.terracotta.colors.accent,
+    date: "May 24, 2027",
+    time: "4:00 PM",
+    venue: "The Glasshouse",
+    seed: 3,
+  },
+  birthday: {
+    label: "Birthday",
+    kind: "Birthday celebration",
+    title: "Zelda turns 30",
+    color: THEMES.blush.colors.accent,
+    date: "Aug 7, 2027",
+    time: "7:30 PM",
+    venue: "Rooftop 9",
+    seed: 5,
+  },
+  corporate: {
+    label: "Company event",
+    kind: "Event invitation",
+    title: "Northlight Summit",
+    color: THEMES.navy.colors.accent,
+    date: "Oct 12, 2027",
+    time: "9:00 AM",
+    venue: "Harbour Hall",
+    seed: 7,
+  },
+} as const;
+
+type SampleId = keyof typeof SAMPLES;
 
 /**
- * Landing page header and hero: what Attendly is, the main call to action, and a sample
- * invitation. Signed-in hosts get a link to their events instead of log in / sign up
+ * Landing page header and hero: what Attendly is, the main call to action, and a sample ticket
+ * to play with. Signed-in hosts get a link to their events instead of log in / sign up
  */
 export function LandingHero({ signedIn }: { signedIn: boolean }) {
+  const [sample, setSample] = useState<SampleId>("wedding");
+
   return (
-    <>
-      <header className="mx-auto flex max-w-6xl items-center justify-between px-4 py-5 sm:px-6">
-        <Link href="/" className="text-xl font-semibold text-black">
-          Attendly
+    <section className="bg-ink px-6 pb-24 text-paper">
+      <header className="mx-auto flex max-w-[1200px] items-center justify-between gap-4 py-6">
+        <Link
+          href="/"
+          className="inline-flex min-h-11 items-center font-display text-[26px] font-extrabold tracking-tight"
+        >
+          attendly
         </Link>
-        <nav className="flex items-center gap-4 text-sm font-medium">
+        <nav aria-label="Main" className="flex items-center gap-2 text-[15px] font-medium">
+          <a href="#how-it-works" className="hidden min-h-11 items-center px-3.5 sm:inline-flex">
+            How it works
+          </a>
           {signedIn ? (
-            <PrimaryLink href="/dashboard">Your events</PrimaryLink>
+            <Link href="/dashboard" className={buttonClasses({ variant: "light", size: "sm" })}>
+              Your events
+            </Link>
           ) : (
             <>
-              <Link href="/login" className="text-[#333333] hover:text-[#C07A54]">
+              <Link href="/login" className="inline-flex min-h-11 items-center px-3.5">
                 Log in
               </Link>
-              <PrimaryLink href="/signup">Sign up</PrimaryLink>
+              <Link href="/signup" className={buttonClasses({ variant: "light", size: "sm" })}>
+                Sign up
+              </Link>
             </>
           )}
         </nav>
       </header>
 
-      <section className="mx-auto grid max-w-6xl items-center gap-12 px-4 pt-10 pb-20 sm:px-6 lg:grid-cols-2 lg:pt-16">
+      <div className="mx-auto grid max-w-[1200px] items-center gap-14 pt-14 lg:grid-cols-2">
         <div>
-          <h1 className="text-4xl leading-tight font-bold text-black sm:text-5xl">
-            Invitations and RSVPs, without the spreadsheet
+          <h1 className="font-display text-[clamp(3rem,7vw,5.75rem)] leading-[0.98] font-extrabold tracking-tight text-balance">
+            From first invite to last guest through the door.
           </h1>
-          <p className="mt-5 max-w-xl text-lg leading-relaxed text-[#555555]">
-            Give your wedding, birthday or company event its own page, send every guest a personal
-            invitation with a QR code, and watch the replies come in as they happen.
+          <p className="mt-7 max-w-[520px] text-[19px] leading-relaxed text-mist">
+            Give your event its own page, send every guest a personal ticket with a QR code, and
+            check them in from your phone.
           </p>
-          <div className="mt-8 flex flex-wrap items-center gap-4">
-            <PrimaryLink href={signedIn ? "/dashboard" : "/signup"} large>
+          <div className="mt-9 flex flex-wrap items-center gap-4">
+            <Link
+              href={signedIn ? "/dashboard" : "/signup"}
+              className={buttonClasses({ size: "lg" })}
+            >
               {signedIn ? "Go to your events" : "Create your event"}
-            </PrimaryLink>
-            <a href="#how-it-works" className="font-medium text-[#C07A54] hover:underline">
+            </Link>
+            <a
+              href="#how-it-works"
+              className="inline-flex min-h-14 items-center px-2 font-medium underline"
+            >
               See how it works
             </a>
           </div>
-        </div>
 
-        <SampleInvitation />
-      </section>
-    </>
-  );
-}
-
-function PrimaryLink({
-  href,
-  large = false,
-  children,
-}: {
-  href: string;
-  large?: boolean;
-  children: React.ReactNode;
-}) {
-  return (
-    <Link
-      href={href}
-      className={`inline-block rounded-lg bg-[#C07A54] font-medium text-white transition-opacity hover:opacity-90 ${
-        large ? "px-6 py-3 text-base" : "px-4 py-2 text-sm"
-      }`}
-    >
-      {children}
-    </Link>
-  );
-}
-
-// A made-up invitation in the style of the ones guests download, drawn with HTML so it stays
-// sharp and needs no image; hidden from screen readers since it only illustrates the copy
-function SampleInvitation() {
-  return (
-    <div aria-hidden="true" className="mx-auto w-full max-w-sm">
-      <div className="rounded-2xl border-2 border-[#C07A54] bg-white p-2 shadow-[0_12px_40px_rgba(192,122,84,0.18)]">
-        <div className="rounded-xl border border-[#E8C9B5] px-8 py-10 text-center">
-          <p className="text-5xl font-semibold text-[#C07A54]">A &amp; C</p>
-          <p className="mt-4 text-sm font-medium tracking-wide text-[#333333]">
-            May 24, 2027 • 4:00 PM
-          </p>
-          <p className="mt-1 text-xs tracking-[0.2em] text-[#888888] uppercase">Admits 2</p>
-          <p className="mt-6 text-sm text-[#555555]">Dear Zelda,</p>
-          <p className="mt-2 text-sm leading-relaxed text-[#555555]">
-            You have been specially invited to witness and celebrate this beautiful union.
-          </p>
-          <QrPattern />
-          <p className="text-sm font-semibold text-black">The Glasshouse</p>
-          <p className="text-xs text-[#888888]">12 Garden Row</p>
-          <div className="mt-4 flex justify-center gap-2">
-            {["#D4AF37", "#8B4513", "#F5E6D3"].map((color) => (
-              <span
-                key={color}
-                className="h-4 w-4 rounded-full border border-[#E0E0E0]"
-                style={{ backgroundColor: color }}
-              />
-            ))}
+          <div className="mt-14">
+            <p className="mb-3 font-mono text-[13px] text-mist">Try it: what are you hosting?</p>
+            <div role="group" aria-label="Kind of event" className="flex flex-wrap gap-2">
+              {(Object.keys(SAMPLES) as SampleId[]).map((id) => (
+                <button
+                  key={id}
+                  type="button"
+                  aria-pressed={sample === id}
+                  onClick={() => setSample(id)}
+                  className={cn(
+                    "min-h-11 rounded-full border-[1.5px] px-4.5 text-[15px] font-semibold transition-transform hover:-translate-y-0.5",
+                    sample === id ? "border-paper bg-paper text-ink" : "border-slate text-paper",
+                  )}
+                >
+                  {SAMPLES[id].label}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
+
+        <SampleTicket id={sample} />
       </div>
-    </div>
+    </section>
   );
 }
 
-// Looks like a QR code without being one, so nobody scans the sample
-const QR_CELLS = ["1110101", "1010010", "1110111", "0011010", "1101001", "0100111", "1011101"];
+// The ticket leans towards the pointer. Only with a mouse, and not under reduced motion
+const CAN_TILT = "(pointer: fine) and (prefers-reduced-motion: no-preference)";
 
-function QrPattern() {
+function SampleTicket({ id }: { id: SampleId }) {
+  const [tilt, setTilt] = useState({ x: 0, y: 0 });
+  const sample = SAMPLES[id];
+
+  const lean = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!window.matchMedia(CAN_TILT).matches) return;
+    const box = e.currentTarget.getBoundingClientRect();
+    setTilt({
+      x: -((e.clientY - box.top) / box.height - 0.5) * 12,
+      y: ((e.clientX - box.left) / box.width - 0.5) * 16,
+    });
+  };
+
   return (
-    <div className="mx-auto my-6 grid w-28 grid-cols-7 gap-0.5 rounded-md border border-[#E0E0E0] p-2">
-      {QR_CELLS.join("")
-        .split("")
-        .map((cell, i) => (
-          <span key={i} className={`aspect-square ${cell === "1" ? "bg-black" : "bg-white"}`} />
-        ))}
+    <div
+      aria-hidden="true"
+      onPointerMove={lean}
+      onPointerLeave={() => setTilt({ x: 0, y: 0 })}
+      className="flex justify-center py-3 [perspective:1100px]"
+    >
+      <div
+        className="w-full max-w-[400px] transition-transform duration-150 ease-out"
+        style={{ transform: `rotateX(${tilt.x}deg) rotateY(${tilt.y}deg) rotate(-2deg)` }}
+      >
+        <TicketCard
+          notchColor="var(--color-ink)"
+          className="rounded-[28px] text-ink shadow-[0_40px_80px_rgba(0,0,0,0.45)]"
+          stub={
+            <div className="flex items-center gap-5 px-7 py-6">
+              <SampleQr seed={sample.seed} size={112} />
+              <p className="text-[15px] leading-snug text-slate">
+                Show this at the entrance. It&apos;s only for the people on this invitation.
+              </p>
+            </div>
+          }
+        >
+          <div
+            className="px-7 pt-7 pb-6 text-white transition-colors duration-300"
+            style={{ backgroundColor: sample.color }}
+          >
+            <p className="font-mono text-[13px]">{sample.kind}</p>
+            <p className="mt-2.5 font-display text-[42px] leading-[1.02] font-extrabold tracking-tight">
+              {sample.title}
+            </p>
+          </div>
+          <dl className="grid grid-cols-2 gap-3.5 px-7 py-5.5">
+            {[
+              ["Date", sample.date],
+              ["Time", sample.time],
+              ["Venue", sample.venue],
+              ["Guest", "Zelda, admits 2"],
+            ].map(([label, value]) => (
+              <div key={label}>
+                <dt className="font-mono text-xs text-slate">{label}</dt>
+                <dd className="mt-0.5 text-[15px] font-semibold">{value}</dd>
+              </div>
+            ))}
+          </dl>
+        </TicketCard>
+      </div>
     </div>
   );
 }

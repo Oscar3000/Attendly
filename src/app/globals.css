@@ -12,6 +12,8 @@
   --color-line: #e3dfd6; /* Borders */
   --color-sand: #e9e5db; /* Tracks, switches and the pending chip */
   --color-slate: #5f5b68; /* Secondary text */
+  --color-mist: #c9c6d1; /* Secondary text on ink */
+  --color-graphite: #24212e; /* Raised surfaces on ink */
   --color-ember: #ff6a3d; /* Primary action; ink text on it, never white */
   --color-lime: #cdf25c; /* Confirmed and admitted; ink text on it */
   --color-danger: #b3261e; /* Destructive actions */

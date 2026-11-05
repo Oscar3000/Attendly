@@ -5,6 +5,9 @@ const buttonVariants = {
   secondary: "bg-ink text-paper",
   outline: "border-[1.5px] border-ink bg-transparent text-ink",
   danger: "border-[1.5px] border-danger bg-transparent text-danger",
+  // For ink backgrounds
+  light: "bg-paper text-ink",
+  ghost: "border-[1.5px] border-slate bg-transparent text-paper",
 } as const;
 
 const buttonSizes = {

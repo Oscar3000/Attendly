@@ -43,8 +43,6 @@ export function EventHeader({ eventId, slug, title, details, countdown }: EventH
     }
   };
 
-  const onDark = "border-slate text-paper";
-
   return (
     <div className="bg-ink px-6 text-paper">
       <div className="mx-auto max-w-[1200px] pt-2">
@@ -53,7 +51,7 @@ export function EventHeader({ eventId, slug, title, details, countdown }: EventH
             Your events
           </Link>
           <div className="flex flex-wrap items-center gap-2">
-            <span role="status" className="text-sm text-[#C9C6D1]">
+            <span role="status" className="text-sm text-mist">
               {copy === "copied" && "Link copied"}
               {copy === "failed" && "Couldn't copy; open the page and copy its address"}
             </span>
@@ -61,21 +59,21 @@ export function EventHeader({ eventId, slug, title, details, countdown }: EventH
               href={eventPage}
               target="_blank"
               rel="noopener"
-              className={buttonClasses({ variant: "outline", size: "sm", className: onDark })}
+              className={buttonClasses({ variant: "ghost", size: "sm" })}
             >
               View page
             </a>
             <button
               type="button"
               onClick={copyLink}
-              className={buttonClasses({ variant: "outline", size: "sm", className: onDark })}
+              className={buttonClasses({ variant: "ghost", size: "sm" })}
             >
               Copy event link
             </button>
             {/* Both become one panel on the dashboard in T-614 */}
             <Link
               href={`${base}/bulk-upload`}
-              className={buttonClasses({ variant: "outline", size: "sm", className: onDark })}
+              className={buttonClasses({ variant: "ghost", size: "sm" })}
             >
               Upload a list
             </Link>
@@ -87,7 +85,7 @@ export function EventHeader({ eventId, slug, title, details, countdown }: EventH
 
         <div className="flex flex-wrap items-end justify-between gap-4 pt-7 pb-5">
           <div className="min-w-0">
-            <p className="font-mono text-[13px] text-[#C9C6D1]">{details}</p>
+            <p className="font-mono text-[13px] text-mist">{details}</p>
             <h1 className="mt-1.5 font-display text-[clamp(2.75rem,6vw,4.5rem)] leading-none font-extrabold tracking-tight break-words">
               {title}
             </h1>

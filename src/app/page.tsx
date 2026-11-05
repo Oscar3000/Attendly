@@ -17,7 +17,7 @@ export default async function HomePage() {
   const signedIn = getSessionCookie(await headers()) !== null;
 
   return (
-    <main className="font-inter bg-[#FFF9F4] text-[#333333]">
+    <main>
       <LandingHero signedIn={signedIn} />
       <LandingSections signedIn={signedIn} />
     </main>
