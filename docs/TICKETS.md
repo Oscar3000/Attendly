@@ -679,7 +679,7 @@ Ticket cards with a tear-off stub showing days to go, on `/dashboard`: the type,
 - **Files:** ~4
 - **As built:** the page prepares each card on the server and `EventsList` (`src/components/admin/events-list.tsx`) handles the switch and search. An event happening today counts as upcoming and its stub says "Today". The list opens on Past when nothing is coming up, and past events run most recent first. Dates use the existing long format, not the prototype's short one.
 
-### T-609 · New event wizard · M
+### ✅ T-609 · New event wizard · M
 
 Turn `/dashboard/events/new` into three steps (kind, details, look) beside a live phone preview built from `themes.ts` and `copyFor()`. The preview shows the page address that will be generated from the title.
 
@@ -688,7 +688,8 @@ Turn `/dashboard/events/new` into three steps (kind, details, look) beside a liv
 - A server error on a field returns the host to the step holding that field.
 - After creating, the event page starts at the top. Since T-604 both pages share the dashboard layout, so Next keeps the form's scroll position and the header starts off-screen.
 - **Depends on:** T-602, T-603
-- **Files:** ~6
+- **Files:** ~10
+- **As built:** `EventPreview` uses the real `themeStyle()`, theme fonts and `copyFor()`, so it shows what guests will get. `slugify()` moved from `create-event.ts` to `src/lib/slug.ts` so the preview can use it in the browser. Continue is the submit button until the last step, so Enter in a field moves on and can't create the event early. Title and date are checked before leaving the details step, a field's error clears as soon as it's edited, and focus moves to each step's heading. `firstStepWithError()` picks the step to return to after a server error. The preview has one days-to-go tile rather than the prototype's days, hours and minutes; the real countdown is T-620. `selectClass` is shared, so the settings page picks up the new select style.
 
 ### T-610 · Dashboard replies and check-ins · M
 

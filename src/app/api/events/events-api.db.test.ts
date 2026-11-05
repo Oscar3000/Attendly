@@ -186,6 +186,25 @@ describe("POST /api/events", () => {
     rsvpDeadline: "2027-06-15T23:59",
   };
 
+  it("saves the chosen theme, and defaults to terracotta (T-609)", async () => {
+    const chosen = await call(
+      events.POST(req(otherCookie, "POST", { ...valid, theme: "navy" }), {}),
+    );
+    expect(chosen.status).toBe(201);
+    expect(chosen.body.event.theme).toBe("navy");
+
+    const fallback = await call(events.POST(req(otherCookie, "POST", valid), {}));
+    expect(fallback.body.event.theme).toBe("terracotta");
+  });
+
+  it("rejects a theme that doesn't exist (T-609)", async () => {
+    const { status: code, body } = await call(
+      events.POST(req(otherCookie, "POST", { ...valid, theme: "neon" }), {}),
+    );
+    expect(code).toBe(400);
+    expect(body.details.fieldErrors.theme).toBeDefined();
+  });
+
   it("creates an event owned by any signed-in account, converting times from its zone", async () => {
     const { status: code, body } = await call(events.POST(req(otherCookie, "POST", valid), {}));
 

@@ -37,6 +37,7 @@ export interface CreateEventForm {
   venueName: string;
   venueAddress: string;
   rsvpDeadline: string;
+  theme: ThemeId;
 }
 
 // Everything on the settings page; blank text clears a field
@@ -48,7 +49,6 @@ export interface EventSettingsForm extends CreateEventForm {
   notes: string;
   familyLines: FamilyLine[];
   colorPalette: PaletteColor[];
-  theme: ThemeId;
 }
 
 export interface BulkCreateResult {
