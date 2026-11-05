@@ -75,7 +75,20 @@ describe("/e/[slug]/i/[token]", () => {
 
     const html = await render(base.slug, token);
 
-    expect(html).not.toMatch(/<button|<form|confirm|decline|check in/i);
+    expect(html).not.toMatch(/<form|confirm|decline|check in/i);
+    // The only button turns the ticket over
+    expect(html.match(/<button/g)).toHaveLength(1);
+    expect(html).toContain("Date, venue and calendar");
+  });
+
+  it("opens on the side with the QR code, with the back out of reach (T-621)", async () => {
+    const { token } = await guest("Zelda Fitzgerald");
+
+    const html = await render(base.slug, token);
+
+    expect(html.match(/ inert=""/g)).toHaveLength(1);
+    expect(html.indexOf("Your entry QR code")).toBeLessThan(html.indexOf(' inert=""'));
+    expect(html.indexOf(' inert=""')).toBeLessThan(html.indexOf("Monday, May 24, 2027"));
   });
 
   it("is a 404 for an unknown token, a malformed one, or another event's", async () => {
@@ -103,6 +116,8 @@ describe("/e/[slug]/i/[token]", () => {
     const cancelledHtml = await render(base.slug, cancelled.token);
     expect(cancelledHtml).toContain("This invitation has been cancelled");
     expect(cancelledHtml).not.toContain("<img");
+    expect(cancelledHtml).toContain("Date and venue");
+    expect(cancelledHtml).not.toContain("calendar");
 
     const declinedHtml = await render(base.slug, declined.token);
     expect(declinedHtml).toContain("This invitation was declined");

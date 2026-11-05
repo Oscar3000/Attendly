@@ -9,6 +9,8 @@ interface TicketCardProps {
   // Must match what's behind the card, so the notches look cut out
   notchColor: string;
   lineColor?: string;
+  // Instead of the app's card colour
+  cardColor?: string;
   className?: string;
 }
 
@@ -22,6 +24,7 @@ export function TicketCard({
   tear = "horizontal",
   notchColor,
   lineColor = "var(--color-line)",
+  cardColor = "var(--color-card)",
   className,
 }: TicketCardProps) {
   const vertical = tear === "vertical";
@@ -30,10 +33,11 @@ export function TicketCard({
   return (
     <div
       className={cn(
-        "flex overflow-hidden rounded-3xl bg-card",
+        "flex overflow-hidden rounded-3xl",
         vertical ? "flex-row" : "flex-col",
         className,
       )}
+      style={{ backgroundColor: cardColor }}
     >
       <div className="min-w-0 flex-1">{children}</div>
       <div aria-hidden="true" className={cn("relative shrink-0", vertical ? "w-0" : "h-0")}>
