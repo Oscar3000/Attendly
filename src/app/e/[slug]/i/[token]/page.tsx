@@ -64,7 +64,7 @@ export default async function TicketPage({ params }: TicketPageProps) {
         <div className="text-center">
           <p className="text-sm">{copyFor(event.type).invitationSubtitle}</p>
           <h1
-            className="mt-0.5 text-[34px] leading-[1.1] font-bold break-words"
+            className="mt-0.5 text-[clamp(1.75rem,8.5vw,2.125rem)] leading-[1.1] font-bold [overflow-wrap:anywhere]"
             style={{ fontFamily: "var(--event-heading-font)" }}
           >
             {eventDisplayName(event)}
@@ -86,7 +86,7 @@ export default async function TicketPage({ params }: TicketPageProps) {
                   This invitation is for
                 </p>
                 <h2
-                  className="mt-0.5 text-[32px] leading-[1.15] font-bold break-words"
+                  className="mt-0.5 text-[clamp(1.5rem,7.5vw,2rem)] leading-[1.15] font-bold [overflow-wrap:anywhere]"
                   style={headingStyle}
                 >
                   {invitation.name}

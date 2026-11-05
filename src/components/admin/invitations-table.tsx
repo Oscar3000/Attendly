@@ -108,7 +108,7 @@ export default function InvitationsTable({
                     <button
                       type="button"
                       onClick={() => onOpen(invitation.id)}
-                      className="min-h-11 text-left font-semibold"
+                      className="min-h-11 max-w-56 text-left font-semibold break-words sm:max-w-none"
                     >
                       {invitation.name}
                     </button>

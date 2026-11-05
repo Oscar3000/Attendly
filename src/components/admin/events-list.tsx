@@ -125,7 +125,7 @@ function EventCard({ event }: { event: EventListItem }) {
           <span className="w-3.5 shrink-0" style={{ backgroundColor: color }} />
           <div className="min-w-0 flex-1 px-5 py-6 sm:px-7">
             <p className="font-mono text-[13px] text-slate">{type}</p>
-            <h2 className="mt-1 font-display text-[clamp(1.5rem,4vw,2.125rem)] leading-tight font-extrabold tracking-tight break-words">
+            <h2 className="mt-1 font-display text-[clamp(1.25rem,6.2vw,2.125rem)] leading-tight font-extrabold tracking-tight break-words">
               {title}
             </h2>
             <p className="mt-1.5 text-slate">

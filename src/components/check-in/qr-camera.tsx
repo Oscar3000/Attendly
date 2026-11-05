@@ -58,7 +58,7 @@ export function QrCamera({
         </div>
       </div>
       <p className="absolute inset-x-3 bottom-4 text-center text-sm">
-        <span className="rounded-full bg-ink/75 px-3 py-1.5 text-paper">
+        <span className="inline-block rounded-2xl bg-ink/75 px-3 py-1.5 text-paper">
           Scan each guest&apos;s QR code at the entrance
         </span>
       </p>

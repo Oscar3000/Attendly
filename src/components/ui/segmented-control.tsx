@@ -32,7 +32,7 @@ export function SegmentedControl<T extends string>({
           aria-pressed={option.value === value}
           onClick={() => onChange(option.value)}
           className={cn(
-            "min-h-11 min-w-0 flex-1 rounded-full px-3 leading-tight font-semibold text-ink sm:px-4.5",
+            "min-h-11 flex-auto rounded-full px-3 leading-tight font-semibold text-ink sm:px-4.5",
             option.value === value && "bg-card",
           )}
         >

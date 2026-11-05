@@ -16,21 +16,24 @@ interface TicketFlipProps {
  */
 export function TicketFlip({ front, back, backLabel }: TicketFlipProps) {
   const [flipped, setFlipped] = useState(false);
-  const side = "backface-hidden [grid-area:1/1]";
+  // WebKit can leave the far side showing, mirrored, over the QR code, so it's hidden outright too.
+  // The swap waits for the card to be edge-on, about 100ms into the flip
+  const side =
+    "backface-hidden transition-[visibility] delay-100 duration-0 [grid-area:1/1] motion-reduce:delay-0";
 
   return (
     <>
       <div className="my-auto perspective-[1400px]">
         <div
           className={cn(
-            "grid transition-transform duration-600 ease-[cubic-bezier(0.2,0.8,0.2,1)] transform-3d",
+            "grid grid-cols-[minmax(0,1fr)] transition-transform duration-600 ease-[cubic-bezier(0.2,0.8,0.2,1)] transform-3d",
             flipped && "rotate-y-180",
           )}
         >
-          <div className={side} inert={flipped}>
+          <div className={cn(side, flipped && "invisible")} inert={flipped}>
             {front}
           </div>
-          <div className={cn(side, "rotate-y-180")} inert={!flipped}>
+          <div className={cn(side, "rotate-y-180", !flipped && "invisible")} inert={!flipped}>
             {back}
           </div>
         </div>

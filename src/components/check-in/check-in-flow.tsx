@@ -219,7 +219,7 @@ function ChooseCount({
           Admits {guest.admits}
           {guest.admitted > 0 && ` · ${guest.admitted} already in`}
         </p>
-        <h2 className="mt-1 font-display text-[40px] leading-[1.05] font-extrabold tracking-tight break-words">
+        <h2 className="mt-1 font-display text-[clamp(1.75rem,8vw,2.5rem)] leading-[1.05] font-extrabold tracking-tight [overflow-wrap:anywhere]">
           {guest.name}
         </h2>
         <p className="mt-2 text-lg text-mist">How many are coming in now?</p>
