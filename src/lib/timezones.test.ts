@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   daysUntil,
   formatEventDate,
+  formatEventDateShort,
   formatEventDateTime,
   formatEventTime,
   isValidTimeZone,
@@ -98,6 +99,14 @@ describe("formatEventDate / formatEventTime", () => {
     expect(formatEventTime(lateEvening, "Africa/Lagos")).toBe("12:30 AM");
     expect(formatEventDate(lateEvening, "America/New_York")).toBe("Saturday, May 23, 2026");
     expect(formatEventTime(lateEvening, "America/New_York")).toBe("7:30 PM");
+  });
+});
+
+describe("formatEventDateShort", () => {
+  it("reads the date on the event's calendar", () => {
+    const lateEvening = new Date("2027-05-23T23:30:00Z");
+    expect(formatEventDateShort(lateEvening, "UTC")).toBe("May 23, 2027");
+    expect(formatEventDateShort(lateEvening, "Africa/Lagos")).toBe("May 24, 2027");
   });
 });
 

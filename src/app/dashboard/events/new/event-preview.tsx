@@ -1,7 +1,7 @@
 import { eventFontVariables } from "@/app/e/[slug]/fonts";
 import { copyFor } from "@/lib/event-copy";
 import { themeStyle, type ThemeId } from "@/lib/themes";
-import { daysUntil, zonedTimeToUtc } from "@/lib/timezones";
+import { daysUntil, formatEventDateShort, zonedTimeToUtc } from "@/lib/timezones";
 
 interface EventPreviewProps {
   type: string;
@@ -45,12 +45,7 @@ export function EventPreview({ type, title, date, timezone, venueName, theme }: 
             className="rounded-full px-5.5 py-2.5 text-[15px] font-semibold text-white"
             style={{ backgroundColor: "var(--event-accent)" }}
           >
-            {new Intl.DateTimeFormat("en-US", {
-              timeZone: timezone,
-              year: "numeric",
-              month: "short",
-              day: "numeric",
-            }).format(start)}
+            {formatEventDateShort(start, timezone)}
           </span>
         )}
         {venueName.trim() && <p className="text-[15px] font-semibold">{venueName.trim()}</p>}
