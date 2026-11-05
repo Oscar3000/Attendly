@@ -3,6 +3,7 @@ import { getCurrentUser } from "@/server/auth/current-user";
 import { eventRepo } from "@/server/repositories/event.repo";
 import { EventCardProvider } from "@/components/admin/event-card-context";
 import { EventHeader } from "@/components/admin/event-header";
+import { HideOnScanner } from "@/components/admin/hide-on-scanner";
 import { EVENT_TYPE_LABELS } from "@/lib/event-copy";
 import { daysUntil, formatEventDateTime } from "@/lib/timezones";
 
@@ -34,13 +35,15 @@ export default async function EventDashboardLayout({
 
   return (
     <>
-      <EventHeader
-        eventId={event.id}
-        slug={event.slug}
-        title={event.title}
-        details={details}
-        countdown={countdownLabel(daysUntil(event.date, event.timezone))}
-      />
+      <HideOnScanner>
+        <EventHeader
+          eventId={event.id}
+          slug={event.slug}
+          title={event.title}
+          details={details}
+          countdown={countdownLabel(daysUntil(event.date, event.timezone))}
+        />
+      </HideOnScanner>
       <EventCardProvider
         event={{
           type: event.type,

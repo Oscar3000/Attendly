@@ -26,7 +26,7 @@ export type CheckInResponse =
   | { result: "link_inactive" };
 
 export interface CheckInMessage {
-  // Green lets people in; red stops them
+  // Lime lets people in; red stops them
   tone: "ok" | "stop";
   title: string;
   detail: string;

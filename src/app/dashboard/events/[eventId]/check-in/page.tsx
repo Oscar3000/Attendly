@@ -17,38 +17,32 @@ export default function CheckInPage() {
   const dispatch = useDispatch();
 
   return (
-    <main className="min-h-screen bg-paper px-4 py-6">
-      <div className="mx-auto max-w-md">
+    <CheckInFlow
+      endpoint={`/api/events/${encodeURIComponent(eventId)}/check-in`}
+      timezone={event?.timezone ?? "UTC"}
+      label="Check in guests"
+      title={event?.title ?? "Check in guests"}
+      back={
         <Link
           href={`/dashboard/events/${eventId}`}
-          className="text-sm text-gray-600 hover:text-gray-900"
+          className="inline-flex min-h-11 items-center self-start text-sm text-mist hover:text-paper"
         >
           ← Dashboard
         </Link>
-        <h1 className="mt-1 text-2xl font-bold text-gray-900">Check in guests</h1>
-        <p className="mb-6 text-sm text-gray-600">
-          {event?.title ? `${event.title} · ` : ""}Scan each guest&apos;s QR code at the entrance
-        </p>
-
-        <CheckInFlow
-          endpoint={`/api/events/${encodeURIComponent(eventId)}/check-in`}
-          timezone={event?.timezone ?? "UTC"}
-          // The dashboard's counts and list change with every admission
-          onAdmitted={() =>
-            dispatch(eventInvitationApi.util.invalidateTags(staleAfterWrite(eventId)))
-          }
-        />
-
-        <p className="mt-8 text-center text-sm text-gray-600">
+      }
+      footer={
+        <p className="text-center text-sm text-mist">
           Someone else scanning?{" "}
           <Link
             href={`/dashboard/events/${eventId}/door-helpers`}
-            className="font-medium text-[#C07A54] hover:underline"
+            className="inline-flex min-h-11 items-center font-medium text-paper underline"
           >
             Give them a door helper link
           </Link>
         </p>
-      </div>
-    </main>
+      }
+      // The dashboard's counts and list change with every admission
+      onAdmitted={() => dispatch(eventInvitationApi.util.invalidateTags(staleAfterWrite(eventId)))}
+    />
   );
 }
