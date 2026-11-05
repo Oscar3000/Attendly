@@ -617,12 +617,13 @@ Build the pieces every screen reuses, in `src/components/ui/`:
 - **Depends on:** T-601
 - **Files:** ~14
 
-### T-603 · Fix theme accent contrast · S
+### ✅ T-603 · Fix theme accent contrast · S
 
 White text on two theme accents falls short of 4.5:1. Change terracotta's accent from `#C07A54` to `#A5613D` and sage's from `#5E7F5E` to `#56755A` in `themes.ts`, and update the two assertions in `event-page.db.test.ts`.
 
 - Events store a preset id, so existing events change with no migration. Link previews and invitation images follow, since both read the theme.
-- **Files:** ~2
+- **Files:** ~4
+- **As built:** white on the accent goes from 3.41 to 4.80 for terracotta and from 4.49 to 5.14 for sage; navy and blush already passed. `themes.test.ts` checks all four, both under white text and as text on the page background, so a new preset can't fall below 4.5:1. The event page test's expected accent changed with it.
 
 ### T-604 · App header and event navigation · M
 
