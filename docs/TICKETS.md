@@ -779,12 +779,13 @@ Restyle `/dashboard/events/[eventId]/door-helpers`: the create form, the lime "c
 - **Depends on:** T-604
 - **Files:** ~2
 
-### T-618 · Account page · S
+### ✅ T-618 · Account page · S
 
 Three cards on `/account`: name, email and password, with the existing behaviour and messages.
 
 - **Depends on:** T-604
-- **Files:** ~3
+- **Files:** ~2
+- **As built:** the same three forms in a dark-headed page, three columns on wide screens. Password fields use `PasswordField`, so they gain show/hide, and the new password gets the 8-character hint. A field's error clears as it's edited. Saves use the ink button, keeping one ember action to a screen elsewhere.
 
 ### T-619 · Door scanner · M
 
