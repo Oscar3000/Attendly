@@ -1,10 +1,10 @@
 import { notFound, redirect } from "next/navigation";
 import { getCurrentUser } from "@/server/auth/current-user";
-import { canSendEmail } from "@/server/email/send-email";
 import { eventRepo } from "@/server/repositories/event.repo";
-import { VerifyEmailBanner } from "@/components/admin/verify-email-banner";
 import { EventCardProvider } from "@/components/admin/event-card-context";
-import { EventPageLink } from "@/components/admin/event-page-link";
+import { EventHeader } from "@/components/admin/event-header";
+import { EVENT_TYPE_LABELS } from "@/lib/event-copy";
+import { daysUntil, formatEventDateTime } from "@/lib/timezones";
 
 /**
  * Server-side gate for every page of one event's dashboard (middleware only checks a session
@@ -24,11 +24,23 @@ export default async function EventDashboardLayout({
   const event = await eventRepo.findById((await params).eventId);
   if (!event || event.ownerId !== user.id) notFound();
 
+  const details = [
+    EVENT_TYPE_LABELS[event.type],
+    formatEventDateTime(event.date, event.timezone),
+    event.venueName ?? event.venueAddress,
+  ]
+    .filter(Boolean)
+    .join(" · ");
+
   return (
     <>
-      {/* Hidden when email isn't configured: the resend button could never succeed */}
-      {!user.emailVerified && canSendEmail() && <VerifyEmailBanner email={user.email} />}
-      <EventPageLink slug={event.slug} />
+      <EventHeader
+        eventId={event.id}
+        slug={event.slug}
+        title={event.title}
+        details={details}
+        countdown={countdownLabel(daysUntil(event.date, event.timezone))}
+      />
       <EventCardProvider
         event={{
           type: event.type,
@@ -47,4 +59,11 @@ export default async function EventDashboardLayout({
       </EventCardProvider>
     </>
   );
+}
+
+// "200 days to go", "Today", "3 days ago"
+function countdownLabel(days: number): string {
+  if (days === 0) return "Today";
+  const count = `${Math.abs(days)} ${Math.abs(days) === 1 ? "day" : "days"}`;
+  return days > 0 ? `${count} to go` : `${count} ago`;
 }

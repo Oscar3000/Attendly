@@ -174,7 +174,7 @@ export default function SettingsForm({
   };
 
   return (
-    <main className="min-h-screen bg-[#FFF9F4] px-4 py-6 sm:p-8">
+    <main className="min-h-screen bg-paper px-4 py-6 sm:p-8">
       <div className="mx-auto max-w-2xl">
         <div className="mb-6 flex items-center justify-between">
           <h1 className="font-inter text-2xl font-bold text-gray-900 sm:text-3xl">

@@ -107,3 +107,20 @@ export function formatEventTime(date: Date, timeZone: string): string {
     minute: "2-digit",
   }).format(date);
 }
+
+// Whole days from today to the event on its own calendar: 0 on the day, negative once it's past
+export function daysUntil(date: Date, timeZone: string, now: Date = new Date()): number {
+  const calendarDay = (moment: Date) => {
+    const [year, month, day] = new Intl.DateTimeFormat("en-CA", {
+      timeZone,
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    })
+      .format(moment)
+      .split("-")
+      .map(Number);
+    return Date.UTC(year ?? 0, (month ?? 1) - 1, day ?? 1);
+  };
+  return Math.round((calendarDay(date) - calendarDay(now)) / 86_400_000);
+}
