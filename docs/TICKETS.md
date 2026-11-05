@@ -704,13 +704,14 @@ Rebuild the top of the event dashboard: a dark Replies card and a restyled Check
 - **Files:** ~7
 - **As built:** `RepliesCard` (`src/components/admin/replies-card.tsx`) takes optional `selected` and `onSelect`. Without them, as here, the bar and legend are plain text with hover detail, so nothing looks clickable before T-612 connects the filter. `metricsRepo` now counts `RESCINDED` in `declinedRsvps`, because those invitations were in no count and the bar didn't add up to the total. `CheckInPanel` scrolls past a few check-ins, keeping all 10, and tells the host if an undo fails. The page no longer rewrites `declined` to `rescinded`, so declined guests show as Declined. The hover detail is `min-h-6`, so the card doesn't jump.
 
-### T-611 · Filter invitations by status in the API · S
+### ✅ T-611 · Filter invitations by status in the API · S
 
 The guest list is paginated on the server, so filtering has to happen there too. `GET /api/events/[eventId]/invitations` gains an optional `status`: `confirmed`, `pending` or `declined`, where `declined` includes `RESCINDED` to match the dashboard's count.
 
 - Add it to the repository function, the query schema and the RTK Query arguments, so each filter caches separately.
 - Tests cover each value, status combined with search, pagination totals, and an invalid value.
-- **Files:** ~5
+- **Files:** ~6
+- **As built:** `status` takes the dashboard's reply groups rather than raw statuses, so `rescinded` on its own is a 400. `REPLY_GROUP_STATUSES` in `invitation.repo.ts` maps each group to its statuses. Nothing sends `status` until T-612.
 
 ### T-612 · Guest table · M
 

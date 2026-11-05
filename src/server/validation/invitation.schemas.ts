@@ -46,6 +46,8 @@ export const adminInvitationsQuerySchema = z.object({
   page: z.coerce.number().int().min(1).default(1),
   limit: z.coerce.number().int().min(1).max(100).default(10),
   search: z.string().trim().max(200).default(""),
+  // The dashboard's reply groups (T-611), not raw statuses: declined includes rescinded
+  status: z.enum(["confirmed", "pending", "declined"]).optional(),
 });
 
 // A scan at the door (T-504): what the QR code contained (the ticket URL or its token) and how

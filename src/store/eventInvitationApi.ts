@@ -139,11 +139,17 @@ export const eventInvitationApi = invitationApi.injectEndpoints({
     // Paginated invitation list for the dashboard table
     getEventInvitations: builder.query<
       { invitations: InvitationTableEntry[]; pagination: Pagination },
-      EventArg & { page?: number; limit?: number; search?: string }
+      EventArg & {
+        page?: number;
+        limit?: number;
+        search?: string;
+        status?: "confirmed" | "pending" | "declined" | undefined;
+      }
     >({
-      query: ({ eventId, page = 1, limit = 10, search = "" }) => {
+      query: ({ eventId, page = 1, limit = 10, search = "", status }) => {
         const params = new URLSearchParams({ page: String(page), limit: String(limit) });
         if (search) params.set("search", search);
+        if (status) params.set("status", status);
         return `${base(eventId)}/invitations?${params.toString()}`;
       },
       providesTags: (result, _error, { eventId }) => [
