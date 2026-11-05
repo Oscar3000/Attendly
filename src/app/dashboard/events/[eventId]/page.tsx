@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import InvitationsTable from "@/components/admin/invitations-table";
+import AddGuestsPanel from "@/components/admin/add-guests-panel";
 import CheckInPanel from "@/components/admin/check-in-panel";
 import GuestPanel from "@/components/admin/guest-panel";
 import RepliesCard, { type ReplyGroup } from "@/components/admin/replies-card";
@@ -81,12 +82,16 @@ export default function EventDashboard() {
 
   const invitations: InvitationTableEntry[] = listData?.invitations ?? [];
 
-  // The open guest is in the URL, so a refresh keeps it open and Back closes it
+  // The open panel is in the URL, so a refresh keeps it open and Back closes it
   const base = `/dashboard/events/${eventId}`;
-  const guestId = useSearchParams().get("guest");
+  const searchParams = useSearchParams();
+  const guestId = searchParams.get("guest");
+  const addingGuests = searchParams.has("add");
   const openGuest = (id: string) =>
     router.push(`${base}?guest=${encodeURIComponent(id)}`, { scroll: false });
-  const closeGuest = () => router.replace(base, { scroll: false });
+  const closePanel = () => router.replace(base, { scroll: false });
+  const showNewGuest = (id: string) =>
+    router.replace(`${base}?guest=${encodeURIComponent(id)}`, { scroll: false });
 
   if (loading) {
     return (
@@ -130,7 +135,13 @@ export default function EventDashboard() {
           onClearFilter={() => handleSelectGroup(null)}
           loading={listFetching}
         />
-        <GuestPanel eventId={eventId} guestId={guestId} onClose={closeGuest} />
+        <GuestPanel eventId={eventId} guestId={guestId} onClose={closePanel} />
+        <AddGuestsPanel
+          eventId={eventId}
+          open={addingGuests}
+          onClose={closePanel}
+          onCreated={showNewGuest}
+        />
       </div>
     </div>
   );

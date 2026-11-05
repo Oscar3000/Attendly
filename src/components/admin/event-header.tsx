@@ -70,14 +70,12 @@ export function EventHeader({ eventId, slug, title, details, countdown }: EventH
             >
               Copy event link
             </button>
-            {/* Both become one panel on the dashboard in T-614 */}
+            {/* Opens the panel on Overview, from any tab */}
             <Link
-              href={`${base}/bulk-upload`}
-              className={buttonClasses({ variant: "ghost", size: "sm" })}
+              href={`${base}?add=guests`}
+              scroll={false}
+              className={buttonClasses({ size: "sm" })}
             >
-              Upload a list
-            </Link>
-            <Link href={`${base}/create-invite`} className={buttonClasses({ size: "sm" })}>
               Add guests
             </Link>
           </div>
