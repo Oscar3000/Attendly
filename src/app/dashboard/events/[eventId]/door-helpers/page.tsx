@@ -1,9 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useEventCard } from "@/components/admin/event-card-context";
+import { Button } from "@/components/ui/button";
 import { formatEventDateTime } from "@/lib/timezones";
 import {
   useCreateDoorLinkMutation,
@@ -40,44 +40,34 @@ export default function DoorHelpersPage() {
   };
 
   return (
-    <main className="min-h-screen bg-paper px-4 py-6">
-      <div className="mx-auto max-w-2xl">
-        <Link
-          href={`/dashboard/events/${eventId}/check-in`}
-          className="text-sm text-gray-600 hover:text-gray-900"
-        >
-          ← Check in guests
-        </Link>
-        <h1 className="mt-1 text-2xl font-bold text-gray-900">Door helpers</h1>
-        <p className="mb-6 text-sm text-gray-600">
+    <main className="px-6 pt-6 pb-18">
+      <div className="mx-auto flex max-w-[760px] flex-col gap-4">
+        <p className="text-slate">
           Give each helper their own link. It opens a scanner that can only check guests in: no
           guest list, no dashboard, no sign-in. Revoke it any time; it stops working a day after the
           event.
         </p>
 
-        <form onSubmit={create} className="rounded-2xl bg-white p-5 shadow-sm">
-          <label htmlFor="helper-name" className="text-sm font-medium text-gray-700">
+        <form onSubmit={(e) => void create(e)} className="rounded-3xl bg-card p-6">
+          <label htmlFor="helper-name" className="mb-1.5 block text-[15px] font-semibold">
             Who is it for?
           </label>
-          <div className="mt-2 flex flex-col gap-2 sm:flex-row">
+          <div className="flex flex-wrap gap-3">
             <input
               id="helper-name"
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="Ben, front gate"
               maxLength={80}
-              className="min-w-0 flex-1 rounded-lg border border-gray-300 px-3 py-2"
+              aria-describedby={error ? "helper-error" : undefined}
+              className="h-13 min-w-0 flex-[1_1_260px] rounded-[14px] border-[1.5px] border-line bg-card px-4"
             />
-            <button
-              type="submit"
-              disabled={creating || !name.trim()}
-              className="rounded-lg bg-[#C07A54] px-4 py-2 font-medium text-white disabled:opacity-50"
-            >
+            <Button type="submit" loading={creating} disabled={!name.trim()}>
               {creating ? "Creating…" : "Create link"}
-            </button>
+            </Button>
           </div>
           {error && (
-            <p role="alert" className="mt-2 text-sm text-[#D32F2F]">
+            <p id="helper-error" role="alert" className="mt-2 text-sm text-danger">
               {error}
             </p>
           )}
@@ -85,20 +75,22 @@ export default function DoorHelpersPage() {
 
         {created && <NewLink {...created} onDone={() => setCreated(undefined)} />}
 
-        <h2 className="mt-8 mb-3 text-lg font-semibold text-gray-900">Links</h2>
-        {isLoading ? (
-          <p className="text-gray-600">Loading…</p>
-        ) : isError ? (
-          <p className="text-[#D32F2F]">Couldn&apos;t load the links. Please reload.</p>
-        ) : data?.doorLinks.length ? (
-          <ul className="space-y-3">
-            {data.doorLinks.map((link) => (
-              <DoorLinkRow key={link.id} eventId={eventId} link={link} timezone={timezone} />
-            ))}
-          </ul>
-        ) : (
-          <p className="text-gray-600">No links yet.</p>
-        )}
+        <section className="rounded-3xl bg-card px-6 py-2">
+          <h2 className="sr-only">Links</h2>
+          {isLoading ? (
+            <p className="py-4 text-slate">Loading…</p>
+          ) : isError ? (
+            <p className="py-4 text-danger">Couldn&apos;t load the links. Please reload.</p>
+          ) : data?.doorLinks.length ? (
+            <ul>
+              {data.doorLinks.map((link) => (
+                <DoorLinkRow key={link.id} eventId={eventId} link={link} timezone={timezone} />
+              ))}
+            </ul>
+          ) : (
+            <p className="py-4 text-slate">No links yet.</p>
+          )}
+        </section>
       </div>
     </main>
   );
@@ -117,9 +109,9 @@ function NewLink({ name, url, onDone }: { name: string; url: string; onDone: () 
   };
 
   return (
-    <div className="mt-4 rounded-2xl border-2 border-green-600 bg-white p-5">
-      <p className="font-semibold text-gray-900">Link for {name}</p>
-      <p className="mt-1 text-sm text-gray-600">
+    <div className="animate-pop rounded-3xl bg-lime p-6">
+      <p className="font-semibold">Link for {name}</p>
+      <p className="mt-1">
         Copy it now and send it to them. For security it won&apos;t be shown again; if it gets lost,
         revoke it and create a new one.
       </p>
@@ -128,16 +120,16 @@ function NewLink({ name, url, onDone }: { name: string; url: string; onDone: () 
         value={url}
         onFocus={(e) => e.target.select()}
         aria-label="Door helper link"
-        className="mt-3 w-full rounded-lg border border-gray-300 bg-gray-50 px-3 py-2 font-mono text-sm"
+        className="mt-3 h-12 w-full rounded-xl bg-card px-3.5 font-mono text-sm"
       />
-      <div className="mt-3 flex items-center gap-3">
-        <button onClick={copy} className="rounded-lg bg-green-600 px-4 py-2 font-medium text-white">
+      <div className="mt-3 flex flex-wrap items-center gap-3">
+        <Button variant="secondary" onClick={() => void copy()}>
           Copy link
-        </button>
-        <button onClick={onDone} className="px-2 py-2 text-gray-600">
+        </Button>
+        <button type="button" onClick={onDone} className="min-h-11 px-2 font-semibold underline">
           Done
         </button>
-        <span role="status" className="text-sm text-gray-600">
+        <span role="status" className="font-medium">
           {copied === "copied" && "Copied"}
           {copied === "failed" && "Couldn't copy; select the link and copy it"}
         </span>
@@ -156,6 +148,7 @@ function DoorLinkRow({
   timezone: string;
 }) {
   const [revoke, { isLoading }] = useRevokeDoorLinkMutation();
+  const [failed, setFailed] = useState(false);
   // Read the clock once, not on every render
   const [now] = useState(() => Date.now());
   const expired = new Date(link.expiresAt).getTime() <= now;
@@ -165,28 +158,40 @@ function DoorLinkRow({
       ? "Expired"
       : `Works until ${formatEventDateTime(new Date(link.expiresAt), timezone)}`;
 
-  const confirmRevoke = () => {
-    if (window.confirm(`Revoke ${link.name}'s link? It stops working immediately.`)) {
-      void revoke({ eventId, id: link.id });
+  // Unlike undoing a check-in, this can't be reversed, and the helper may be mid-shift
+  const confirmRevoke = async () => {
+    if (!window.confirm(`Revoke ${link.name}'s link? It stops working immediately.`)) return;
+    setFailed(false);
+    try {
+      await revoke({ eventId, id: link.id }).unwrap();
+    } catch {
+      setFailed(true);
     }
   };
 
   return (
-    <li className="flex flex-col gap-2 rounded-xl bg-white p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between">
+    <li className="flex flex-wrap items-center justify-between gap-2 border-b border-sand py-3 last:border-b-0">
       <div className="min-w-0">
-        <p className="font-medium text-gray-900">{link.name}</p>
-        <p className="text-sm text-gray-600">
+        <p className="font-semibold break-words">{link.name}</p>
+        <p className="font-mono text-[13px] text-slate">
           {state} · {link.admitted} {link.admitted === 1 ? "person" : "people"} checked in
         </p>
+        {failed && (
+          <p role="alert" className="mt-1 text-sm text-danger">
+            Couldn&apos;t revoke the link. It still works. Please try again.
+          </p>
+        )}
       </div>
       {!link.revokedAt && !expired && (
-        <button
-          onClick={confirmRevoke}
+        <Button
+          variant="danger"
+          size="sm"
           disabled={isLoading}
-          className="self-start rounded-lg border border-red-300 px-3 py-1.5 text-sm font-medium text-red-700 hover:bg-red-50 disabled:opacity-50 sm:self-auto"
+          aria-label={`Revoke ${link.name}'s link`}
+          onClick={() => void confirmRevoke()}
         >
           {isLoading ? "Revoking…" : "Revoke"}
-        </button>
+        </Button>
       )}
     </li>
   );
