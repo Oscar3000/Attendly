@@ -21,7 +21,7 @@ Goal: turn Attendly from a single hard-coded wedding into a product any host can
 | 3     | Events & multi-tenancy                               | T-301 – T-312 | ✅ Done     |
 | 4     | Remove hard-coded content / theming                  | T-401 – T-410 | ✅ Done     |
 | 5     | Guest tickets & door check-in                        | T-501 – T-510 | ✅ Done     |
-| 6     | App redesign                                         | T-601 – T-622 | Not started |
+| 6     | App redesign                                         | T-601 – T-622 | ✅ Done     |
 | 7     | Product features                                     | T-701 – T-711 | Not started |
 | 8     | Ops, compliance, launch                              | T-801 – T-810 | Not started |
 | 9     | Billing                                              | T-901 – T-905 | Not started |
@@ -827,7 +827,7 @@ The ticket on `/e/[slug]/i/[token]` shows the guest, admits line and QR code on 
 
 **As built:** `TicketFlip` holds both sides in one grid cell, so the card is as tall as its taller side, however long the address. The flip button sits below the card; for declined and cancelled invitations it says "Date and venue", as there's no calendar to add. The date and venue only show on the back, so guests need JavaScript to reach them. `TicketCard` gained `cardColor` for theme colours. The QR code is drawn at twice its display size so it stays sharp on phone screens.
 
-### T-622 · Error pages and final pass · S
+### T-622 · Error pages and final pass · S ✅
 
 Add `not-found.tsx` and `error.tsx` in the new style; the app has neither, and a 404 is what other accounts see for an event they don't own. Then close the phase:
 
@@ -839,6 +839,8 @@ Add `not-found.tsx` and `error.tsx` in the new style; the app has neither, and a
 - Update `CLAUDE.md`: stack, brand colours, project structure and the components list.
 - **Depends on:** T-605, T-606, T-608, T-609, T-615, T-616, T-617, T-618, T-619, T-620, T-621
 - **Files:** ~6
+
+**As built:** `ErrorScreen` is a ticket card on ink, used by `not-found.tsx` and `error.tsx`; it names no event, so a 404 reads the same for a missing event and someone else's. An error in the root layout itself isn't covered, as that needs `global-error.tsx`. Every screen was checked at 320 and 390 wide, by keyboard and with reduced motion. That found three problems, now fixed: `SegmentedControl` overflowed at 320, so its labels wrap; the colour name field in Settings shrank to two letters, so Remove drops to its own line; and "Log in" and "Sign up" wrapped on the landing page. The unused `.attendly-scan-button` and the duplicate `.font-*` rules went from `globals.css` too. The replies bar's segments measure 24px but have a larger hit area.
 
 ---
 
