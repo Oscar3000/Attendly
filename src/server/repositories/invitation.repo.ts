@@ -88,10 +88,16 @@ async function update(
   where: Prisma.InvitationWhereUniqueInput,
   updates: InvitationUpdates,
 ): Promise<InviteDetails | undefined> {
-  const data: Partial<{ name: string; plusOne: number; status: PrismaRsvpStatus }> = {};
+  const data: Prisma.InvitationUpdateInput = {};
   if (updates.name !== undefined) data.name = updates.name;
   if (updates.plusOne !== undefined) data.plusOne = updates.plusOne;
   if (updates.status !== undefined) data.status = convertToPrismaStatus(updates.status);
+  // Pending means nobody has arrived, and checking in confirms: a host setting it is starting
+  // over, so the ticket admits everyone on it again, whoever scanned it before
+  if (updates.status === "pending") {
+    data.admittedCount = 0;
+    data.checkIns = { deleteMany: {} };
+  }
 
   try {
     const updated = await prisma.invitation.update({ where, data, include: withEvent });
