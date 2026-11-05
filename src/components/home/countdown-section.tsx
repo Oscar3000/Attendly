@@ -1,79 +1,77 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useSyncExternalStore } from "react";
+import { countdownAt } from "@/lib/countdown";
 
-function useCountdown(startsAt: string) {
-  const [timeLeft, setTimeLeft] = useState({
-    days: 0,
-    hours: 0,
-    minutes: 0,
-    seconds: 0,
-  });
-
-  useEffect(() => {
-    const target = new Date(startsAt).getTime();
-    const calculate = () => {
-      const diff = target - Date.now();
-      if (diff <= 0) {
-        setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0 });
-        return;
-      }
-      setTimeLeft({
-        days: Math.floor(diff / (1000 * 60 * 60 * 24)),
-        hours: Math.floor((diff / (1000 * 60 * 60)) % 24),
-        minutes: Math.floor((diff / 1000 / 60) % 60),
-        seconds: Math.floor((diff / 1000) % 60),
-      });
-    };
-    calculate();
-    const id = setInterval(calculate, 1000);
-    return () => clearInterval(id);
-  }, [startsAt]);
-
-  return timeLeft;
+function subscribe(onTick: () => void) {
+  const id = setInterval(onTick, 1000);
+  return () => clearInterval(id);
 }
 
-// startsAt is an ISO string: it crosses from the server page to this client component.
-// label is the event type's wording (src/lib/event-copy.ts)
-export default function CountdownSection({ startsAt, label }: { startsAt: string; label: string }) {
-  const countdown = useCountdown(startsAt);
+const currentSecond = () => Math.floor(Date.now() / 1000) * 1000;
+
+interface CountdownSectionProps {
+  // ISO string and epoch ms: they cross from the server page to this client component.
+  startsAt: string;
+  timezone: string;
+  // When the server rendered the page, so the first paint already shows the real time left
+  renderedAt: number;
+  // The event type's wording (src/lib/event-copy.ts)
+  label: string;
+  todayLabel: string;
+}
+
+/**
+ * Ticks down to the start, says so on the day, and goes away once the day has passed
+ */
+export default function CountdownSection({
+  startsAt,
+  timezone,
+  renderedAt,
+  label,
+  todayLabel,
+}: CountdownSectionProps) {
+  const now = useSyncExternalStore(subscribe, currentSecond, () => renderedAt);
+  const countdown = countdownAt(new Date(startsAt), timezone, new Date(now));
+  if (countdown.state === "over") return null;
 
   return (
-    <section className="px-4 py-12 text-center" style={{ backgroundColor: "var(--event-ink)" }}>
-      <p
-        className="text-xs uppercase tracking-[0.35em] mb-7"
-        style={{ color: "var(--event-ornament)" }}
-      >
-        {label}
-      </p>
-      <div className="flex justify-center gap-3 sm:gap-8">
-        {[
-          { label: "Days", value: countdown.days },
-          { label: "Hours", value: countdown.hours },
-          { label: "Mins", value: countdown.minutes },
-          { label: "Secs", value: countdown.seconds },
-        ].map(({ label, value }) => (
-          <div key={label} className="flex flex-col items-center">
-            <div
-              className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl flex items-center justify-center text-2xl sm:text-3xl font-bold mb-2 leading-none"
-              style={{
-                backgroundColor: "var(--event-accent)",
-                color: "#FFFFFF",
-                fontFamily: "var(--event-heading-font)",
-                fontVariantNumeric: "lining-nums tabular-nums",
-                boxShadow: "0 4px 14px color-mix(in srgb, var(--event-accent) 40%, transparent)",
-              }}
-            >
-              {String(value).padStart(2, "0")}
+    <section
+      className="px-6 py-8"
+      style={{ backgroundColor: "var(--event-bg-alt)", color: "var(--event-text)" }}
+    >
+      <div className="mx-auto max-w-2xl text-center">
+        {countdown.state === "today" ? (
+          <p
+            className="text-[26px] leading-tight font-bold"
+            style={{ color: "var(--event-ink)", fontFamily: "var(--event-heading-font)" }}
+          >
+            {todayLabel}
+          </p>
+        ) : (
+          <>
+            <p className="text-sm">{label}</p>
+            <div role="timer" className="mt-3.5 grid grid-cols-4 gap-2">
+              {[
+                { unit: "Days", value: countdown.days },
+                { unit: "Hours", value: countdown.hours },
+                { unit: "Mins", value: countdown.minutes },
+                { unit: "Secs", value: countdown.seconds },
+              ].map(({ unit, value }) => (
+                <div
+                  key={unit}
+                  className="rounded-2xl py-3.5"
+                  style={{ backgroundColor: "var(--event-ink)", color: "var(--event-bg)" }}
+                >
+                  <p className="text-[30px] leading-none font-bold tabular-nums">
+                    {String(value).padStart(2, "0")}
+                  </p>
+                  <p className="mt-1 text-xs">{unit}</p>
+                </div>
+              ))}
             </div>
-            <span
-              className="text-xs uppercase tracking-wider"
-              style={{ color: "var(--event-muted)" }}
-            >
-              {label}
-            </span>
-          </div>
-        ))}
+          </>
+        )}
       </div>
     </section>
   );

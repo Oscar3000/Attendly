@@ -799,7 +799,7 @@ Restyle `CheckInFlow` and `QrCamera`, which serve both the host's scanner and `/
 - **Depends on:** T-602
 - **Files:** ~5
 
-### T-620 · Public event page · M
+### T-620 · Public event page · M ✅
 
 Rebuild `src/components/home/` for phones first: a dark hero with the cover image, large names, a live countdown in seconds, details cards, and colours of the day that show their name when tapped. Everything uses `var(--event-*)`, across all four themes and all event types.
 
@@ -809,6 +809,8 @@ Rebuild `src/components/home/` for phones first: a dark hero with the cover imag
 - The "See a sample ticket" button is a prototype link and isn't built. Guests reach tickets through their personal links.
 - **Depends on:** T-601, T-603
 - **Files:** ~7
+
+**As built:** The words sit on solid ink below the cover, so any photo stays readable; with no cover the hero is the theme's accent glowing on ink. The heading shrinks until the longest word fits. The countdown renders on the server, shows `countdownToday` from `copyFor()` once the event starts, and goes away the day after, on the event's own calendar (`src/lib/countdown.ts`). The swatches list every name until one is tapped. The date stays in the hero, and the monogram and family lines stay though the prototype leaves them out; family lines are now a card. "Have your ticket?" stays without its button.
 
 ### T-621 · Guest ticket page · M
 
