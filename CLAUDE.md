@@ -11,9 +11,9 @@ Attendly is a wedding invitation management system with QR codes, RSVP tracking,
 - **Language**: TypeScript 5 (strict mode)
 - **Database**: PostgreSQL 16 + Prisma 5.19
 - **State**: Redux Toolkit + RTK Query
-- **Styling**: Tailwind CSS 4 (brand color: #C07A54, background: #FFF9F4)
-- **QR Codes**: `qrcode` library
-- **Auth**: Custom cookie-based tokens (HTTP-only, 24h expiry)
+- **Styling**: Tailwind CSS 4, with design tokens in the `@theme` block of `src/app/globals.css` (ink #16141D, paper #F6F4EF, ember #FF6A3D, lime #CDF25C). Fonts: Instrument Sans, Bricolage Grotesque (`font-display`), DM Mono (`font-mono`)
+- **QR Codes**: `qrcode` to generate, `html5-qrcode` to scan at the door
+- **Auth**: Better Auth (email + password, optional Google)
 - **Deployment**: Docker multi-stage build + Docker Compose
 
 ## Commands
@@ -56,17 +56,20 @@ src/
     e/[slug]/                 # Public event page (no sign-in, noindex) + generated link preview image (opengraph-image.tsx)
     door/[token]/             # A door helper's scanner (T-507): no sign-in, the link is the credential; check-in only
     e/[slug]/i/[token]/       # A guest's ticket (T-502): the token is the credential; read-only, QR code to show at the entrance; calendar.ics/ for Add to calendar (T-510)
+    error.tsx, not-found.tsx  # Error pages; a 404 reads the same for a missing event and someone else's
     login/                    # Email + password login
     signup/                   # Account sign-up (sends a verification email)
     forgot-password/          # Request a password reset email
     reset-password/           # Set a new password from the emailed link (?token= or ?error=)
     account/                  # Account settings: name, email (confirmed by email), password
   components/
-    admin/                    # Dashboard components (header, table, metrics, status, check-in panel)
-    check-in/                 # Door check-in: QrCamera and CheckInFlow (scan, how many, green/red result); wording in src/lib/check-in.ts
+    ui/                       # Shared pieces: Button, TextField, StatusChip, TicketCard, SegmentedControl, SidePanel, Toast, ErrorScreen
+    admin/                    # Dashboard: app and event headers, events list, guest table, guest and add-guests panels, replies and check-in cards
+    auth/                     # AuthCard, PasswordField, Google button
+    check-in/                 # Door check-in: QrCamera, CheckInFlow (scan, how many) and the full-screen CheckInResult; wording in src/lib/check-in.ts
+    events/                   # The event form's values and validation
+    home/                     # The public event page: hero, countdown, details cards, colour swatches
     landing/                  # The product landing page at / (sign-up CTA, or "Your events" when signed in)
-    button.tsx                # Reusable button (variants: primary, secondary, danger, attendly)
-    qr-code.tsx               # QR code display
   lib/
     types.ts                  # TypeScript interfaces
     utils.ts                  # Formatting, QR generation, status helpers
@@ -82,7 +85,7 @@ src/
     ReduxProvider.tsx          # Provider wrapper
 prisma/
   schema.prisma               # DB schema (Invitation model, RsvpStatus enum)
-middleware.ts                  # Account route protection (session cookie present)
+src/middleware.ts              # Account route protection (session cookie present)
 ```
 
 ## Database Schema
@@ -120,8 +123,7 @@ All required variables are validated at startup (`src/instrumentation.ts` -> `sr
 
 - Event-scoped code calls `requireEventOwner(eventId, headers?)` (`src/server/events/require-event-owner.ts`): 401 when signed out, the same 404 for a missing event and someone else's event, and returns `{ user, event }`. Ownership is the only permission; every account has the same powers
 
-- New invitations go to the admin's only event via `requireCurrentEvent()` (`src/server/events/current-event.ts`, 409 if there are none or several) until routes are scoped by event id (T-307)
-
+- App screens use the design tokens (`bg-ink`, `text-slate`, `font-display`) and the components in `src/components/ui/`; add a `Button` variant rather than overriding its colours with `className`. Ember and lime take ink text, never white. Motion is CSS only and stops under `prefers-reduced-motion` (a global rule in `globals.css`). Controls are at least 44px tall
 - Server Components by default; `'use client'` for interactive UI
 - RTK Query for data fetching with tag-based cache invalidation. Event-scoped hooks (`useGetEventInvitationsQuery`, `useCreateEventInvitationMutation`, ...) live in `src/store/eventInvitationApi.ts`; their tags carry the event id, so a write only refetches that event's data
 - Repositories in `src/server/repositories/` hold all Prisma operations; route handlers stay thin

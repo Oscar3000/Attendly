@@ -18,7 +18,7 @@ export const familyLineSchema = z.object({
 // One of the colours of the day, e.g. { name: "Gold", hex: "#D4AF37" }
 export const paletteColorSchema = z.object({
   name: z.string().trim().min(1).max(50),
-  hex: z.string().regex(/^#[0-9A-Fa-f]{6}$/, "Use a colour like #C07A54"),
+  hex: z.string().regex(/^#[0-9A-Fa-f]{6}$/, "Use a colour like #D4AF37"),
 });
 
 export const familyLinesSchema = z.array(familyLineSchema).max(10);

@@ -107,7 +107,7 @@ export function InvitationPageTab({
       <fieldset className="mb-4" aria-describedby="colorPalette-error">
         <legend className={labelClass}>Colours of the day</legend>
         {form.colorPalette.map((color, index) => (
-          <div key={index} className="mb-2 flex items-center gap-2">
+          <div key={index} className="mb-2 flex flex-wrap items-center gap-2">
             <input
               type="color"
               aria-label={`Colour ${index + 1}`}
@@ -122,7 +122,7 @@ export function InvitationPageTab({
               value={color.name}
               onChange={(e) => setColor(index, { name: e.target.value })}
               disabled={disabled}
-              className={`${inputClass} min-w-0`}
+              className={`${inputClass} min-w-32 flex-1`}
             />
             <button
               type="button"

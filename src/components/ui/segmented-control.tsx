@@ -23,7 +23,7 @@ export function SegmentedControl<T extends string>({
     <div
       role="group"
       aria-label={label}
-      className={cn("inline-flex gap-1 rounded-full bg-sand p-1", className)}
+      className={cn("inline-flex max-w-full gap-1 rounded-full bg-sand p-1", className)}
     >
       {options.map((option) => (
         <button
@@ -32,7 +32,7 @@ export function SegmentedControl<T extends string>({
           aria-pressed={option.value === value}
           onClick={() => onChange(option.value)}
           className={cn(
-            "min-h-11 flex-1 rounded-full px-3 font-semibold whitespace-nowrap text-ink sm:px-4.5",
+            "min-h-11 min-w-0 flex-1 rounded-full px-3 leading-tight font-semibold text-ink sm:px-4.5",
             option.value === value && "bg-card",
           )}
         >

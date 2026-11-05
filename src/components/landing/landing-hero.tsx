@@ -70,10 +70,20 @@ export function LandingHero({ signedIn }: { signedIn: boolean }) {
             </Link>
           ) : (
             <>
-              <Link href="/login" className="inline-flex min-h-11 items-center px-3.5">
+              <Link
+                href="/login"
+                className="inline-flex min-h-11 items-center px-3.5 whitespace-nowrap"
+              >
                 Log in
               </Link>
-              <Link href="/signup" className={buttonClasses({ variant: "light", size: "sm" })}>
+              <Link
+                href="/signup"
+                className={buttonClasses({
+                  variant: "light",
+                  size: "sm",
+                  className: "whitespace-nowrap",
+                })}
+              >
                 Sign up
               </Link>
             </>

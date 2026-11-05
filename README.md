@@ -22,7 +22,7 @@ A modern wedding invitation management system built with Next.js, TypeScript, an
 ### 🎨 Modern UI/UX
 
 - **Responsive Design**: Mobile-first approach with Tailwind CSS
-- **Brand Consistency**: Custom color scheme (rgb(192, 122, 84))
+- **Brand Consistency**: Design tokens in `src/app/globals.css`; guest pages follow the event's theme
 - **Accessible Interface**: WCAG compliant components and interactions
 - **Real-time Updates**: Live data synchronization across all views
 

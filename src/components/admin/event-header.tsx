@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { buttonClasses } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -32,6 +32,16 @@ export function EventHeader({ eventId, slug, title, details, countdown }: EventH
   ];
   // Pages without a tab of their own, like adding a guest, belong to Overview
   const current = tabs.find((tab) => pathname.startsWith(tab.href))?.href ?? base;
+
+  // The tabs scroll sideways on phones: keep the current one in view. Only the tab strip moves
+  const nav = useRef<HTMLElement>(null);
+  useEffect(() => {
+    const strip = nav.current;
+    const tab = strip?.querySelector('[aria-current="page"]');
+    if (!strip || !tab) return;
+    const offset = tab.getBoundingClientRect().left - strip.getBoundingClientRect().left;
+    strip.scrollLeft += offset - (strip.clientWidth - tab.clientWidth) / 2;
+  }, [current]);
 
   const copyLink = async () => {
     try {
@@ -91,7 +101,11 @@ export function EventHeader({ eventId, slug, title, details, countdown }: EventH
           <p className="font-mono text-[15px] text-lime">{countdown}</p>
         </div>
 
-        <nav aria-label="Event" className="flex gap-1 overflow-x-auto text-[15px] font-semibold">
+        <nav
+          ref={nav}
+          aria-label="Event"
+          className="flex gap-1 overflow-x-auto text-[15px] font-semibold"
+        >
           {[{ href: base, label: "Overview" }, ...tabs].map((tab) => (
             <Link
               key={tab.href}
