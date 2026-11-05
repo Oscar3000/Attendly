@@ -39,7 +39,7 @@ export const THEMES: Record<ThemeId, Theme> = {
     colors: {
       background: "#FFF9F4",
       backgroundAlt: "#FDF0E6",
-      accent: "#C07A54",
+      accent: "#A5613D",
       ornament: "#D4AF37",
       ink: "#2C1810",
       text: "#6B4A3A",
@@ -54,7 +54,7 @@ export const THEMES: Record<ThemeId, Theme> = {
     colors: {
       background: "#F7FAF5",
       backgroundAlt: "#E9F0E4",
-      accent: "#5E7F5E",
+      accent: "#56755A",
       ornament: "#B8A25E",
       ink: "#1F2D1F",
       text: "#41553F",

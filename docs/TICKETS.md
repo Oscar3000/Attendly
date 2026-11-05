@@ -618,12 +618,13 @@ Build the pieces every screen reuses, in `src/components/ui/`:
 - **Files:** ~20
 - **As built:** all in `src/components/ui/`, with tests in `ui.test.ts`. `buttonClasses()` gives a link the button's look. The old custom-style `Button` props are gone; the gray `secondary` callers became `outline`, and `attendly` became `primary`. To stay under the file limit, `src/components/button.tsx` and `src/components/auth/text-field.tsx` re-export the new ones, so importers didn't have to change. `TicketCard` takes CSS colours, so guest pages can pass `var(--event-*)`. `SidePanel` unmounts its children when closed, so each opening starts fresh; its focus trap, Escape, focus return and backdrop click were tested in Chrome, since `<dialog>` doesn't run in the Node test setup. `Toast` stays mounted so its live region exists before a message arrives, and clears itself after 6 seconds. Added a `sand` colour token (`#E9E5DB`) for tracks, switches and the pending chip, and `animate-pop` and `animate-panel-in`.
 
-### T-603 · Fix theme accent contrast · S
+### ✅ T-603 · Fix theme accent contrast · S
 
 White text on two theme accents falls short of 4.5:1. Change terracotta's accent from `#C07A54` to `#A5613D` and sage's from `#5E7F5E` to `#56755A` in `themes.ts`, and update the two assertions in `event-page.db.test.ts`.
 
 - Events store a preset id, so existing events change with no migration. Link previews and invitation images follow, since both read the theme.
-- **Files:** ~2
+- **Files:** ~4
+- **As built:** white on the accent goes from 3.41 to 4.80 for terracotta and from 4.49 to 5.14 for sage; navy and blush already passed. `themes.test.ts` checks all four, both under white text and as text on the page background, so a new preset can't fall below 4.5:1. The event page test's expected accent changed with it.
 
 ### T-604 · App header and event navigation · M
 

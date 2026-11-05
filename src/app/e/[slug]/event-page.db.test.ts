@@ -103,7 +103,7 @@ describe("/e/[slug]", () => {
 
   it("sets the event's theme as CSS variables, defaulting to terracotta (T-405)", async () => {
     const event = await eventRepo.create(ownerId, base);
-    expect(await render("ada-and-charles")).toContain("--event-accent:#C07A54");
+    expect(await render("ada-and-charles")).toContain("--event-accent:#A5613D");
 
     await eventRepo.update(event.id, { theme: "navy" });
     const html = await render("ada-and-charles");
@@ -112,7 +112,7 @@ describe("/e/[slug]", () => {
 
     // A preset that no longer exists falls back to the default
     await prisma.event.update({ where: { id: event.id }, data: { theme: "retired" } });
-    expect(await render("ada-and-charles")).toContain("--event-accent:#C07A54");
+    expect(await render("ada-and-charles")).toContain("--event-accent:#A5613D");
   });
 
   it("shows the cover image above the hero when there is one (T-406)", async () => {
