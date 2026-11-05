@@ -1,13 +1,27 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Bricolage_Grotesque, DM_Mono, Instrument_Sans } from "next/font/google";
 import "./globals.css";
 import { ReduxProvider } from "@/store/ReduxProvider";
 
-// Font optimization with Inter font family
-const inter = Inter({
+// The app's fonts, self-hosted at build time. Only the body font is preloaded: guest pages use
+// their theme's heading font, so they shouldn't download these two
+const instrument = Instrument_Sans({
   subsets: ["latin"],
-  variable: "--font-inter",
+  variable: "--font-instrument",
   display: "swap",
+});
+const bricolage = Bricolage_Grotesque({
+  subsets: ["latin"],
+  variable: "--font-bricolage",
+  display: "swap",
+  preload: false,
+});
+const dmMono = DM_Mono({
+  subsets: ["latin"],
+  weight: ["400", "500"],
+  variable: "--font-dm-mono",
+  display: "swap",
+  preload: false,
 });
 
 export const metadata: Metadata = {
@@ -53,8 +67,8 @@ interface RootLayoutProps {
  */
 export default function RootLayout({ children }: RootLayoutProps) {
   return (
-    <html lang="en" className={inter.variable}>
-      <body className="min-h-screen font-sans antialiased" style={{ backgroundColor: "#FFF9F4" }}>
+    <html lang="en" className={`${instrument.variable} ${bricolage.variable} ${dmMono.variable}`}>
+      <body className="min-h-screen bg-paper font-sans text-ink antialiased">
         <ReduxProvider>{children}</ReduxProvider>
       </body>
     </html>

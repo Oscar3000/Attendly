@@ -1,6 +1,6 @@
 import { Montserrat, Playfair_Display } from "next/font/google";
 
-// Fonts the theme presets use (src/lib/themes.ts), self-hosted at build time like Inter. Not
+// Fonts the theme presets use (src/lib/themes.ts), self-hosted at build time like the app fonts. Not
 // preloaded: the browser then downloads only the ones the event's theme actually names.
 // Shared by the event page and guest tickets; put the class names on the page's root element
 const playfair = Playfair_Display({

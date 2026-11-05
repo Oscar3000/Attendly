@@ -1,33 +1,23 @@
 @import "tailwindcss";
 
-/* CSS Custom Properties for Attendly theme */
-:root {
-  /* Attendly Brand Colors */
-  --color-cream-bg: #fff9f4; /* Soft cream background */
-  --color-warm-brown: #c07a54; /* Warm brown for buttons */
-  --color-black: #000000; /* Pure black for headers */
-  --color-dark-gray: #333333; /* Dark gray for body text */
+/*
+ * Attendly design tokens (T-601). @theme turns these into utilities: bg-ink, text-slate,
+ * border-line, font-display and so on. Guest pages don't use them: their colours and fonts come
+ * from the event's theme (src/lib/themes.ts)
+ */
+@theme {
+  --color-ink: #16141d; /* Text and dark surfaces */
+  --color-paper: #f6f4ef; /* App background */
+  --color-card: #ffffff; /* Cards and tickets */
+  --color-line: #e3dfd6; /* Borders */
+  --color-slate: #5f5b68; /* Secondary text */
+  --color-ember: #ff6a3d; /* Primary action; ink text on it, never white */
+  --color-lime: #cdf25c; /* Confirmed and admitted; ink text on it */
+  --color-danger: #b3261e; /* Destructive actions */
 
-  /* Legacy colors for compatibility */
-  --color-primary: 37 99 235; /* Blue-600 */
-  --color-primary-dark: 29 78 216; /* Blue-700 */
-  --color-background: 255 255 255; /* White */
-  --color-foreground: 17 24 39; /* Gray-900 */
-  --color-muted: 107 114 128; /* Gray-500 */
-  --color-success: 34 197 94; /* Green-500 */
-  --color-warning: 245 158 11; /* Amber-500 */
-  --color-error: 239 68 68; /* Red-500 */
-
-  /* Typography */
-  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --color-background: 3 7 18; /* Slate-950 */
-    --color-foreground: 241 245 249; /* Slate-100 */
-    --color-muted: 148 163 184; /* Slate-400 */
-  }
+  --font-sans: var(--font-instrument), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-bricolage), Georgia, serif;
+  --font-mono: var(--font-dm-mono), ui-monospace, Menlo, monospace;
 }
 
 /*
@@ -37,13 +27,14 @@
  */
 @layer base {
   * {
-    border-color: rgb(229 231 235); /* Gray-200 */
+    border-color: var(--color-line);
   }
 
-  /* Focus styles for accessibility */
+  /* Focus styles for accessibility: the ink ring shows on light surfaces, the paper halo on dark */
   *:focus-visible {
-    outline: 2px solid rgb(var(--color-primary));
+    outline: 2px solid var(--color-ink);
     outline-offset: 2px;
+    box-shadow: 0 0 0 2px var(--color-paper);
   }
 
   /* Smooth scrolling */
@@ -57,11 +48,25 @@
     border: none;
     cursor: pointer;
   }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+
+    html {
+      scroll-behavior: auto;
+    }
+  }
 }
 
-/* Custom font weight classes for Inter */
+/* Pages not yet redesigned still use this class; removed in T-622 */
 .font-inter {
-  font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  font-family: var(--font-sans);
 }
 
 .font-semibold {

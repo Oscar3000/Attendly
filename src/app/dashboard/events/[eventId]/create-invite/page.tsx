@@ -71,7 +71,6 @@ export default function CreateInvitePage() {
               placeholder="Enter name"
               className="w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               style={{
-                fontFamily: "Inter",
                 fontSize: "16px",
               }}
               required
@@ -96,7 +95,6 @@ export default function CreateInvitePage() {
               max="10"
               className="w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               style={{
-                fontFamily: "Inter",
                 fontSize: "16px",
               }}
             />
@@ -117,7 +115,6 @@ export default function CreateInvitePage() {
                 onChange={(e) => handleInputChange("status", e.target.value as RsvpStatus)}
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none"
                 style={{
-                  fontFamily: "Inter",
                   fontSize: "16px",
                 }}
               >
