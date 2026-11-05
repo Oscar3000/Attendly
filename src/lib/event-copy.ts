@@ -19,6 +19,8 @@ export interface EventCopy {
   headline: string;
   // Above the countdown on the event page
   countdown: string;
+  // In its place once the event has started, for the rest of the day
+  countdownToday: string;
   // Under "You're invited!" on a guest's invitation
   invitationSubtitle: string;
   // The email subject and message a host sends with an invitation link
@@ -33,6 +35,7 @@ export const EVENT_COPY: Record<EventType, EventCopy> = {
   WEDDING: {
     headline: "Solemnly request your presence at their wedding celebration",
     countdown: "Counting down to the big day",
+    countdownToday: "Today's the big day",
     invitationSubtitle: "Wedding celebration",
     shareSubject: "Wedding invitation",
     shareMessage: "You're invited to our wedding! We can't wait to celebrate with you.",
@@ -43,6 +46,7 @@ export const EVENT_COPY: Record<EventType, EventCopy> = {
   BIRTHDAY: {
     headline: "You're invited to celebrate the birthday of",
     countdown: "Counting down to the party",
+    countdownToday: "Today's the party",
     invitationSubtitle: "Birthday celebration",
     shareSubject: "Birthday invitation",
     shareMessage:
@@ -54,6 +58,7 @@ export const EVENT_COPY: Record<EventType, EventCopy> = {
   CORPORATE: {
     headline: "You're invited to join us at",
     countdown: "Counting down to the event",
+    countdownToday: "The event is today",
     invitationSubtitle: "Event invitation",
     shareSubject: "Event invitation",
     shareMessage: "You're invited to our event. We look forward to seeing you there.",
@@ -63,6 +68,7 @@ export const EVENT_COPY: Record<EventType, EventCopy> = {
   OTHER: {
     headline: "You're invited to",
     countdown: "Counting down",
+    countdownToday: "It's today",
     invitationSubtitle: "Event invitation",
     shareSubject: "Invitation",
     shareMessage: "You're invited! We look forward to seeing you there.",

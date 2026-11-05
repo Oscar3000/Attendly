@@ -9,16 +9,28 @@ export default function HomeFooter({ event }: { event: Event }) {
   }).format(event.date);
 
   return (
-    <footer className="py-8 text-center px-4" style={{ backgroundColor: "var(--event-ink)" }}>
-      <p
-        className="text-sm font-medium mb-1"
-        style={{ color: "var(--event-ornament)", fontFamily: "var(--event-heading-font)" }}
+    <footer>
+      <div className="px-6 pt-4 pb-10 text-center" style={{ color: "var(--event-text)" }}>
+        <h2
+          className="text-[26px] leading-tight font-bold"
+          style={{ color: "var(--event-ink)", fontFamily: "var(--event-heading-font)" }}
+        >
+          Have your ticket?
+        </h2>
+        <p className="mt-1.5">Your personal link from the hosts has your QR code.</p>
+      </div>
+      <div
+        className="px-6 py-8 text-center"
+        style={{ backgroundColor: "var(--event-ink)", color: "var(--event-bg)" }}
       >
-        {event.hostNames ?? event.title} · {date}
-      </p>
-      <p className="text-xs" style={{ color: "var(--event-text)" }}>
-        Powered by Attendly
-      </p>
+        <p
+          className="mb-1 text-sm font-medium break-words"
+          style={{ color: "var(--event-ornament)", fontFamily: "var(--event-heading-font)" }}
+        >
+          {event.hostNames ?? event.title} · {date}
+        </p>
+        <p className="text-[13px]">Powered by Attendly</p>
+      </div>
     </footer>
   );
 }

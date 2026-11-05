@@ -1,4 +1,4 @@
-import { beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import { prisma } from "@/server/db/client";
 import { eventRepo, type EventInput } from "@/server/repositories/event.repo";
@@ -17,6 +17,12 @@ let ownerId = "";
 // generateMetadata reads BETTER_AUTH_URL for absolute preview image URLs
 beforeAll(() => {
   stubAuthEnv();
+  // Before the events below, so the countdown shows
+  vi.useFakeTimers({ toFake: ["Date"], now: new Date("2027-01-01T00:00:00Z") });
+});
+
+afterAll(() => {
+  vi.useRealTimers();
 });
 
 // Users and events are truncated before each test
@@ -96,7 +102,7 @@ describe("/e/[slug]", () => {
     // A birthday with no headline gets the birthday wording (T-407)
     expect(html).toContain("You&#x27;re invited to celebrate the birthday of");
     expect(html).toContain("Counting down to the party");
-    for (const absent of ["📍", "Colours of the Day", "Dress Code", "Good to Know", "RSVP by"]) {
+    for (const absent of ["Colours of the Day", "Dress Code", "Good to Know", "RSVP by"]) {
       expect(html).not.toContain(absent);
     }
   });
@@ -134,6 +140,22 @@ describe("/e/[slug]", () => {
     html = await render("ada-and-charles");
     expect(html).toContain("Join us under the stars");
     expect(html).not.toContain("Solemnly request");
+  });
+
+  it("says so on the day, and drops the countdown once the day has passed", async () => {
+    await eventRepo.create(ownerId, base);
+
+    vi.setSystemTime(new Date("2027-05-24T08:00:00Z"));
+    let html = await render("ada-and-charles");
+    expect(html).toContain("Today&#x27;s the big day");
+    expect(html).not.toContain("Counting down");
+
+    vi.setSystemTime(new Date("2027-05-26T08:00:00Z"));
+    html = await render("ada-and-charles");
+    expect(html).not.toContain("Today&#x27;s the big day");
+    expect(html).not.toContain("Counting down");
+
+    vi.setSystemTime(new Date("2027-01-01T00:00:00Z"));
   });
 
   it("is a 404 for an unknown slug", async () => {

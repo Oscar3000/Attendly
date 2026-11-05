@@ -801,7 +801,7 @@ Restyle `CheckInFlow` and `QrCamera`, which serve both the host's scanner and `/
 
 **As built:** `CheckInFlow` now renders the whole page, with `label`, `title`, `back` and `footer` props, and `CheckInResult` is the full-screen answer, also used for a link that no longer works. The host's scanner hides the dashboard headers (`HideOnScanner`), so it's full-screen too; "← Dashboard" goes back. The count is in `sessionStorage` per device and tab (`useLetInCount`). The camera keeps its 240px scan area and the video keeps its shape, so the frame sits exactly over what's read; a landscape video shows as a band inside the viewfinder. Wording stays as it was, so the button says "Admit 3" rather than the prototype's "Admit 3 people".
 
-### T-620 · Public event page · M
+### T-620 · Public event page · M ✅
 
 Rebuild `src/components/home/` for phones first: a dark hero with the cover image, large names, a live countdown in seconds, details cards, and colours of the day that show their name when tapped. Everything uses `var(--event-*)`, across all four themes and all event types.
 
@@ -811,6 +811,8 @@ Rebuild `src/components/home/` for phones first: a dark hero with the cover imag
 - The "See a sample ticket" button is a prototype link and isn't built. Guests reach tickets through their personal links.
 - **Depends on:** T-601, T-603
 - **Files:** ~7
+
+**As built:** The words sit on solid ink below the cover, so any photo stays readable; with no cover the hero is the theme's accent glowing on ink. The heading shrinks until the longest word fits. The countdown renders on the server, shows `countdownToday` from `copyFor()` once the event starts, and goes away the day after, on the event's own calendar (`src/lib/countdown.ts`). The swatches list every name until one is tapped. The date stays in the hero, and the monogram and family lines stay though the prototype leaves them out; family lines are now a card. "Have your ticket?" stays without its button.
 
 ### T-621 · Guest ticket page · M
 

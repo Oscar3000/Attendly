@@ -2,141 +2,92 @@ import type { Event } from "@/server/repositories/event.repo";
 import { copyFor } from "@/lib/event-copy";
 import { splitCouple } from "@/lib/event-content";
 import { formatEventDate } from "@/lib/timezones";
+import { cn } from "@/lib/utils";
 
+/**
+ * The top of the event page. The words sit on solid ink below the photo, not on it, so they stay
+ * readable whatever the host uploads
+ */
 export default function HeroSection({ event }: { event: Event }) {
   const names = event.hostNames ?? event.title;
   const couple = splitCouple(event.type, names);
+  const nameStyle = { fontFamily: "var(--event-heading-font)" };
+  // Small enough for the longest word to fit on a line, so a long name doesn't break mid-word
+  const longestWord = Math.max(...names.split(/[\s-]+/).map((word) => word.length));
+  const fontSize = couple ? "clamp(3.5rem,17vw,6.5rem)" : "clamp(2.75rem,12vw,5rem)";
 
   return (
     <section
-      className="relative flex flex-col items-center justify-center px-4 pt-16 pb-20 text-center overflow-hidden"
-      style={{
-        background:
-          "linear-gradient(160deg, var(--event-bg) 0%, var(--event-bg-alt) 55%, var(--event-bg) 100%)",
-      }}
+      className="relative overflow-hidden"
+      style={{ backgroundColor: "var(--event-ink)", color: "var(--event-bg)" }}
     >
-      {/* Gold top border */}
-      <div
-        className="absolute top-0 left-0 right-0 h-1"
-        style={{
-          background:
-            "linear-gradient(90deg, transparent, var(--event-accent), var(--event-ornament), var(--event-accent), transparent)",
-        }}
-      />
-
-      {/* Monogram */}
-      {couple && (
+      {event.coverImageUrl ? (
+        <div className="relative h-[50svh] min-h-72">
+          {/* Decorative: the words below say what the event is */}
+          {/* eslint-disable-next-line @next/next/no-img-element -- already resized server-side */}
+          <img src={event.coverImageUrl} alt="" className="block h-full w-full object-cover" />
+          <div
+            className="absolute inset-0"
+            style={{ background: "linear-gradient(to top, var(--event-ink), transparent 60%)" }}
+          />
+        </div>
+      ) : (
         <div
-          className="mb-5 text-5xl sm:text-6xl font-bold tracking-widest select-none"
+          className="absolute inset-0"
           style={{
-            color: "var(--event-accent)",
-            fontFamily: "var(--event-heading-font)",
-            textShadow: "0 2px 6px color-mix(in srgb, var(--event-accent) 25%, transparent)",
+            background: "radial-gradient(circle at 80% 0%, var(--event-accent), transparent 65%)",
+          }}
+        />
+      )}
+
+      <div
+        className={cn(
+          "relative mx-auto flex max-w-2xl flex-col justify-end px-6 pb-9",
+          event.coverImageUrl ? "-mt-6" : "min-h-[56svh] pt-16",
+        )}
+      >
+        {couple && (
+          <p
+            aria-hidden="true"
+            className="mb-5 animate-rise text-3xl font-bold tracking-widest select-none"
+            style={{ ...nameStyle, color: "var(--event-ornament)" }}
+          >
+            {couple[0].charAt(0)} &amp; {couple[1].charAt(0)}
+          </p>
+        )}
+
+        <p className="animate-rise text-sm [animation-delay:50ms]">
+          {event.headline ?? copyFor(event.type).headline}
+        </p>
+
+        <h1
+          className="mt-2.5 animate-rise leading-[0.98] font-bold [overflow-wrap:anywhere] [animation-delay:150ms]"
+          style={{
+            ...nameStyle,
+            fontSize: `min(${fontSize}, calc(min(100vw - 3rem, 39rem) / ${longestWord * 0.7}))`,
           }}
         >
-          {couple[0].charAt(0)} &amp; {couple[1].charAt(0)}
-        </div>
-      )}
-
-      {/* Headline */}
-      <p
-        className="text-xs uppercase tracking-[0.35em] mb-6"
-        style={{ color: "var(--event-muted)" }}
-      >
-        {event.headline ?? copyFor(event.type).headline}
-      </p>
-
-      {/* Host names */}
-      {couple ? (
-        <>
-          <h1
-            className="text-6xl sm:text-8xl font-bold mb-2 leading-tight break-words"
-            style={{ color: "var(--event-ink)", fontFamily: "var(--event-heading-font)" }}
-          >
-            {couple[0]}
-          </h1>
-          <div
-            className="text-3xl sm:text-4xl my-1"
-            style={{ color: "var(--event-accent)", fontFamily: "var(--event-heading-font)" }}
-          >
-            &amp;
-          </div>
-          <p
-            className="text-6xl sm:text-8xl font-bold mb-8 leading-tight break-words"
-            style={{ color: "var(--event-ink)", fontFamily: "var(--event-heading-font)" }}
-          >
-            {couple[1]}
-          </p>
-        </>
-      ) : (
-        <h1
-          className="text-5xl sm:text-7xl font-bold mb-8 leading-tight break-words"
-          style={{ color: "var(--event-ink)", fontFamily: "var(--event-heading-font)" }}
-        >
-          {names}
+          {couple ? (
+            <>
+              <span className="block">{couple[0]}</span>
+              <span className="block">
+                <span style={{ color: "var(--event-ornament)" }}>&amp;</span>{" "}
+                <span>{couple[1]}</span>
+              </span>
+            </>
+          ) : (
+            names
+          )}
         </h1>
-      )}
 
-      {event.tagline && (
-        <p
-          className="text-base sm:text-lg italic mb-8 max-w-md"
-          style={{ color: "var(--event-text)" }}
-        >
-          {event.tagline}
+        {event.tagline && (
+          <p className="mt-3.5 animate-rise break-words [animation-delay:250ms]">{event.tagline}</p>
+        )}
+
+        <p className="mt-3.5 animate-rise font-semibold [animation-delay:250ms]">
+          {formatEventDate(event.date, event.timezone)}
         </p>
-      )}
-
-      {/* Date pill */}
-      <div
-        className="px-8 py-3 rounded-full text-base sm:text-lg font-semibold mb-10 tracking-wide"
-        style={{ backgroundColor: "var(--event-accent)", color: "#FFFFFF" }}
-      >
-        {formatEventDate(event.date, event.timezone)}
       </div>
-
-      {event.familyLines.length > 0 && (
-        <>
-          {/* Ornamental divider */}
-          <div className="flex items-center gap-3 mb-8 w-full max-w-xs">
-            <div className="flex-1 h-px" style={{ backgroundColor: "var(--event-ornament)" }} />
-            <span className="text-xl" style={{ color: "var(--event-ornament)" }}>
-              ❧
-            </span>
-            <div className="flex-1 h-px" style={{ backgroundColor: "var(--event-ornament)" }} />
-          </div>
-
-          {/* Families */}
-          <div
-            className="text-center text-sm sm:text-base max-w-sm leading-relaxed"
-            style={{ color: "var(--event-text)" }}
-          >
-            {event.familyLines.map((family, index) => (
-              <div key={index}>
-                {index > 0 && (
-                  <p className="my-3 text-sm" style={{ color: "var(--event-muted)" }}>
-                    and
-                  </p>
-                )}
-                <p className="font-semibold">{family.name}</p>
-                {family.detail && (
-                  <p className="italic text-xs" style={{ color: "var(--event-muted)" }}>
-                    {family.detail}
-                  </p>
-                )}
-              </div>
-            ))}
-          </div>
-        </>
-      )}
-
-      {/* Gold bottom border */}
-      <div
-        className="absolute bottom-0 left-0 right-0 h-1"
-        style={{
-          background:
-            "linear-gradient(90deg, transparent, var(--event-accent), var(--event-ornament), var(--event-accent), transparent)",
-        }}
-      />
     </section>
   );
 }

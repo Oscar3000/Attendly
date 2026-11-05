@@ -35,22 +35,27 @@ export async function generateMetadata({ params }: EventPageProps): Promise<Meta
   };
 }
 
+// A server component renders once per request, so reading the clock here is safe
+const renderTime = () => Date.now();
+
 /**
  * An event's public page (T-403): anyone with the link can see it, no sign-in
  */
 export default async function EventPage({ params }: EventPageProps) {
   const event = await getPublicEvent((await params).slug);
   if (!event) notFound();
+  const copy = copyFor(event.type);
 
   return (
     <main className={`min-h-screen ${eventFontVariables}`} style={themeStyle(event.theme)}>
-      {event.coverImageUrl && (
-        // Decorative: the hero below says what the event is
-        // eslint-disable-next-line @next/next/no-img-element -- already resized server-side
-        <img src={event.coverImageUrl} alt="" className="block max-h-[60vh] w-full object-cover" />
-      )}
       <HeroSection event={event} />
-      <CountdownSection startsAt={event.date.toISOString()} label={copyFor(event.type).countdown} />
+      <CountdownSection
+        startsAt={event.date.toISOString()}
+        timezone={event.timezone}
+        renderedAt={renderTime()}
+        label={copy.countdown}
+        todayLabel={copy.countdownToday}
+      />
       <EventDetails event={event} />
       <HomeFooter event={event} />
     </main>
