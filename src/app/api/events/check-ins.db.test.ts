@@ -138,6 +138,43 @@ describe("DELETE /api/events/[eventId]/check-ins/[checkInId]", () => {
     expect((await overview()).body.recent).toEqual([]);
   });
 
+  it("starts the ticket over when the host sets it back to pending", async () => {
+    const { id, token } = await guest("Emmanuel");
+    const door = await doorLinkRepo.create(event, "John");
+    const scan = () => checkInRepo.checkIn(event.id, token, 1, { doorLinkId: door.link.id });
+    await scan();
+    expect(await scan()).toMatchObject({ result: "full" });
+
+    await invitationRepo.updateRsvpStatus(event.id, id, "pending");
+
+    expect((await overview()).body.recent).toEqual([]);
+    expect((await overview()).body.summary.admitted).toBe(0);
+    // The same helper can let them in again
+    expect(await scan()).toMatchObject({ result: "admitted", guest: { admitted: 1 } });
+  });
+
+  it("does the same when the guest's details are saved as pending", async () => {
+    const { id, token } = await guest("Zelda", 2);
+    await admit(token, 3);
+
+    await invitationRepo.updateInvitation(event.id, id, { name: "Zelda F", status: "pending" });
+
+    expect(await admit(token, 3)).toMatchObject({ result: "admitted", count: 3 });
+  });
+
+  it("keeps check-ins through any other change to the invitation", async () => {
+    const { id, token } = await guest("Zelda", 1);
+    await admit(token, 1);
+
+    await invitationRepo.updateInvitation(event.id, id, { name: "Zelda F" });
+    await invitationRepo.updateRsvpStatus(event.id, id, "confirmed");
+    await invitationRepo.updateRsvpStatus(event.id, id, "declined");
+    await invitationRepo.updateRsvpStatus(event.id, id, "confirmed");
+
+    expect((await overview()).body.recent).toHaveLength(1);
+    expect(await admit(token, 2)).toMatchObject({ result: "too_many" });
+  });
+
   it("can't undo another event's check-in, even the same host's", async () => {
     const elsewhere = await guest("Elsewhere", 0, otherEvent);
     await admit(elsewhere.token, undefined, otherEvent);

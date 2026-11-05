@@ -153,6 +153,7 @@ function GuestForm({ eventId, invitation }: { eventId: string; invitation: Invit
   });
   const [errors, setErrors] = useState<{ name?: string; form?: string }>({});
   const [saved, setSaved] = useState(false);
+  const [statusChanged, setStatusChanged] = useState(false);
   const [update, { isLoading }] = useUpdateEventInvitationMutation();
 
   const set = (changes: Partial<CreateInviteForm>) => {
@@ -168,7 +169,11 @@ function GuestForm({ eventId, invitation }: { eventId: string; invitation: Invit
       return;
     }
     try {
-      await update({ eventId, id: invitation.id, data: form }).unwrap();
+      // Only a status the host chose: the guest may have checked in since this form opened, and
+      // saving a stale "pending" would wipe that check-in
+      const { status, ...details } = form;
+      const data = statusChanged ? { ...details, status } : details;
+      await update({ eventId, id: invitation.id, data }).unwrap();
       setSaved(true);
     } catch (error) {
       const name = fieldErrorsFrom<"name">(error)?.name;
@@ -188,7 +193,14 @@ function GuestForm({ eventId, invitation }: { eventId: string; invitation: Invit
       />
 
       <PlusOnesField value={form.plusOne} onChange={(plusOne) => set({ plusOne })} />
-      <StatusField options={STATUSES} value={form.status} onChange={(status) => set({ status })} />
+      <StatusField
+        options={STATUSES}
+        value={form.status}
+        onChange={(status) => {
+          set({ status });
+          setStatusChanged(true);
+        }}
+      />
 
       <FormError message={errors.form} />
       <div className="flex items-center gap-3">
