@@ -5,8 +5,10 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { authClient } from "@/lib/auth-client";
 import { toAuthFormErrors, type AuthClientError } from "@/lib/auth-errors";
-import { FormError, SubmitButton } from "@/components/auth/auth-card";
-import { TextField } from "@/components/auth/text-field";
+import { FormError } from "@/components/auth/auth-card";
+import { PasswordField } from "@/components/auth/password-field";
+import { Button } from "@/components/ui/button";
+import { TextField } from "@/components/ui/text-field";
 
 export type EmailChange = "allowed" | "unavailable";
 
@@ -24,41 +26,52 @@ const settle = <T,>(call: Promise<T>) =>
 
 export function AccountSettings(props: AccountSettingsProps) {
   return (
-    <main className="min-h-screen bg-[#FFF9F4] px-4 py-8">
-      <div className="mx-auto w-full max-w-lg space-y-6">
-        <div className="flex items-center justify-between">
-          <h1 className="font-inter text-2xl font-bold text-black sm:text-3xl">Account</h1>
-          <Link
-            href="/dashboard"
-            className="font-inter text-sm font-medium text-[#C07A54] hover:underline"
-          >
+    <>
+      <div className="bg-ink px-6 text-paper">
+        <div className="mx-auto max-w-[1200px] pt-2 pb-7">
+          <Link href="/dashboard" className="inline-flex min-h-11 items-center font-medium">
             Your events
           </Link>
+          <h1 className="mt-3 font-display text-[clamp(2.5rem,5vw,3.75rem)] leading-none font-extrabold tracking-tight">
+            Account
+          </h1>
         </div>
-        <NameSection name={props.name} />
-        <EmailSection
-          email={props.email}
-          emailVerified={props.emailVerified}
-          emailChange={props.emailChange}
-        />
-        <PasswordSection hasPassword={props.hasPassword} />
       </div>
-    </main>
+      <main className="px-6 pt-8 pb-18">
+        <div className="mx-auto grid max-w-[1200px] items-start gap-4 md:grid-cols-2 lg:grid-cols-3">
+          <NameSection name={props.name} />
+          <EmailSection
+            email={props.email}
+            emailVerified={props.emailVerified}
+            emailChange={props.emailChange}
+          />
+          <PasswordSection hasPassword={props.hasPassword} />
+        </div>
+      </main>
+    </>
   );
 }
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <section className="rounded-lg bg-white p-6 shadow-[0_2px_8px_rgba(0,0,0,0.1)]">
-      <h2 className="font-inter mb-4 text-lg font-bold text-black">{title}</h2>
+    <section className="min-w-0 rounded-3xl bg-card p-7">
+      <h2 className="mb-4 font-display text-[26px] font-extrabold tracking-tight">{title}</h2>
       {children}
     </section>
   );
 }
 
+function Save({ loading, children }: { loading: boolean; children: string }) {
+  return (
+    <Button type="submit" variant="secondary" loading={loading} className="w-full">
+      {loading ? "Please wait..." : children}
+    </Button>
+  );
+}
+
 function Success({ message }: { message: string }) {
   return (
-    <p role="status" className="font-inter mt-3 text-sm text-[#2E7D32]">
+    <p role="status" className="mt-3 rounded-[14px] bg-lime px-4 py-3 font-medium">
       {message}
     </p>
   );
@@ -98,11 +111,15 @@ function NameSection({ name: initialName }: { name: string }) {
           label="Name"
           autoComplete="name"
           value={name}
-          onChange={(e) => setName(e.target.value)}
+          onChange={(e) => {
+            setName(e.target.value);
+            setError(undefined);
+            setSaved(false);
+          }}
           disabled={loading}
           error={error}
         />
-        <SubmitButton loading={loading}>Save name</SubmitButton>
+        <Save loading={loading}>Save name</Save>
       </form>
       {saved && <Success message="Name saved." />}
     </Section>
@@ -125,9 +142,9 @@ function EmailSection({
   const [loading, setLoading] = useState(false);
 
   const current = (
-    <p className="font-inter mb-4 text-sm text-[#333333]">
-      Current email: <span className="font-medium">{email}</span>
-      {!emailVerified && <span className="text-[#666666]"> (not verified)</span>}
+    <p className="mb-4 break-words">
+      Current email: <span className="font-semibold">{email}</span>
+      {!emailVerified && <span className="text-slate"> (not verified)</span>}
     </p>
   );
 
@@ -135,7 +152,7 @@ function EmailSection({
     return (
       <Section title="Email">
         {current}
-        <p className="font-inter text-sm text-[#666666]">
+        <p className="text-slate">
           {"Email changes are unavailable because email sending isn't set up."}
         </p>
       </Section>
@@ -170,12 +187,15 @@ function EmailSection({
           type="email"
           autoComplete="email"
           value={newEmail}
-          onChange={(e) => setNewEmail(e.target.value)}
+          onChange={(e) => {
+            setNewEmail(e.target.value);
+            setFieldError(undefined);
+          }}
           disabled={loading}
           error={fieldError}
         />
         <FormError message={formError} />
-        <SubmitButton loading={loading}>Change email</SubmitButton>
+        <Save loading={loading}>Change email</Save>
       </form>
       {sentTo && (
         <Success
@@ -203,9 +223,7 @@ function PasswordSection({ hasPassword }: { hasPassword: boolean }) {
   if (!hasPassword) {
     return (
       <Section title="Password">
-        <p className="font-inter text-sm text-[#666666]">
-          You sign in with Google, so this account has no password.
-        </p>
+        <p className="text-slate">You sign in with Google, so this account has no password.</p>
       </Section>
     );
   }
@@ -242,38 +260,48 @@ function PasswordSection({ hasPassword }: { hasPassword: boolean }) {
   return (
     <Section title="Password">
       <form onSubmit={handleSubmit} noValidate>
-        <TextField
+        <PasswordField
           id="currentPassword"
           label="Current password"
-          type="password"
           autoComplete="current-password"
           value={currentPassword}
-          onChange={(e) => setCurrentPassword(e.target.value)}
+          onChange={(e) => {
+            setCurrentPassword(e.target.value);
+            setErrors({});
+            setSaved(false);
+          }}
           disabled={loading}
           error={errors.current}
         />
-        <TextField
+        <PasswordField
           id="newPassword"
           label="New password"
-          type="password"
           autoComplete="new-password"
           minLength={8}
+          showProgress
           value={newPassword}
-          onChange={(e) => setNewPassword(e.target.value)}
+          onChange={(e) => {
+            setNewPassword(e.target.value);
+            setErrors({});
+            setSaved(false);
+          }}
           disabled={loading}
           error={errors.next}
         />
-        <TextField
+        <PasswordField
           id="confirmPassword"
           label="Confirm new password"
-          type="password"
           autoComplete="new-password"
           value={confirm}
-          onChange={(e) => setConfirm(e.target.value)}
+          onChange={(e) => {
+            setConfirm(e.target.value);
+            setErrors({});
+            setSaved(false);
+          }}
           disabled={loading}
         />
         <FormError message={errors.form} />
-        <SubmitButton loading={loading}>Change password</SubmitButton>
+        <Save loading={loading}>Change password</Save>
       </form>
       {saved && <Success message="Password changed. You've been logged out on other devices." />}
     </Section>

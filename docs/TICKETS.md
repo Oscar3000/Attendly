@@ -780,12 +780,13 @@ Restyle `/dashboard/events/[eventId]/door-helpers`: the create form, the lime "c
 - **Files:** ~2
 - **As built:** a restyle with the same behaviour. Revoke keeps its confirmation, because unlike undoing a check-in it can't be reversed, and now says so if it fails: it used to fail silently, leaving a host thinking a link was off. The "Check in guests" back link went, since the event tabs cover it.
 
-### T-618 · Account page · S
+### ✅ T-618 · Account page · S
 
 Three cards on `/account`: name, email and password, with the existing behaviour and messages.
 
 - **Depends on:** T-604
-- **Files:** ~3
+- **Files:** ~2
+- **As built:** the same three forms in a dark-headed page, three columns on wide screens. Password fields use `PasswordField`, so they gain show/hide, and the new password gets the 8-character hint. A field's error clears as it's edited. Saves use the ink button, keeping one ember action to a screen elsewhere.
 
 ### T-619 · Door scanner · M
 
