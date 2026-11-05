@@ -6,7 +6,8 @@ import { useSearchParams } from "next/navigation";
 import { authClient } from "@/lib/auth-client";
 import { toAuthFormErrors, type AuthFormErrors } from "@/lib/auth-errors";
 import { AuthCard, FormError, SubmitButton } from "@/components/auth/auth-card";
-import { TextField } from "@/components/auth/text-field";
+import { PasswordField } from "@/components/auth/password-field";
+import { buttonClasses } from "@/components/ui/button";
 
 /**
  * Better Auth's email link checks the token, then redirects here with ?token=... (valid)
@@ -23,7 +24,10 @@ export default function ResetPasswordPage() {
 
 const loginLink = (
   <p>
-    <Link href="/login" className="font-medium text-[#C07A54] hover:underline">
+    <Link
+      href="/login"
+      className="inline-flex min-h-11 items-center font-medium text-ink underline"
+    >
       Back to log in
     </Link>
   </p>
@@ -41,12 +45,12 @@ function ResetPassword() {
   if (!token || searchParams.get("error")) {
     return (
       <AuthCard title="Link expired" footer={loginLink}>
-        <p className="font-inter mb-4 text-sm text-[#333333]">
+        <p className="mb-4">
           This reset link is invalid or has expired. Links work once and only for 1 hour.
         </p>
         <Link
           href="/forgot-password"
-          className="font-inter block w-full rounded-lg bg-[#C07A54] px-4 py-2 text-center text-base font-medium text-white hover:opacity-90"
+          className={buttonClasses({ size: "lg", className: "w-full" })}
         >
           Request a new link
         </Link>
@@ -57,7 +61,7 @@ function ResetPassword() {
   if (done) {
     return (
       <AuthCard title="Password updated" footer={loginLink}>
-        <p className="font-inter text-sm text-[#333333]">
+        <p>
           Your password has been changed and you&apos;ve been logged out everywhere. Log in with
           your new password.
         </p>
@@ -90,22 +94,21 @@ function ResetPassword() {
   return (
     <AuthCard title="Choose a new password" footer={loginLink}>
       <form onSubmit={handleSubmit} noValidate>
-        <TextField
+        <PasswordField
           id="password"
           label="New password"
-          type="password"
           autoComplete="new-password"
           required
+          showProgress
           minLength={8}
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           disabled={loading}
           error={errors.fields.password}
         />
-        <TextField
+        <PasswordField
           id="confirm"
           label="Confirm new password"
-          type="password"
           autoComplete="new-password"
           required
           value={confirm}
