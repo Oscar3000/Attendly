@@ -2,17 +2,12 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import InvitationCounter from "@/components/admin/invitation-counter";
-import StatusUpdates from "@/components/admin/status-updates";
-import MetricsChart from "@/components/admin/metrics-chart";
 import InvitationsTable from "@/components/admin/invitations-table";
 import CheckInPanel from "@/components/admin/check-in-panel";
+import RepliesCard from "@/components/admin/replies-card";
+import { Button } from "@/components/ui/button";
 import { DashboardMetrics, InvitationTableEntry } from "@/lib/types";
-import {
-  useGetEventInvitationsQuery,
-  useGetEventMetricsQuery,
-  useGetEventStatusUpdatesQuery,
-} from "@/store/eventInvitationApi";
+import { useGetEventInvitationsQuery, useGetEventMetricsQuery } from "@/store/eventInvitationApi";
 
 export default function EventDashboard() {
   const router = useRouter();
@@ -43,7 +38,6 @@ export default function EventDashboard() {
     isLoading: metricsLoading,
     isError: metricsError,
   } = useGetEventMetricsQuery(eventId);
-  const { data: statusUpdatesData } = useGetEventStatusUpdatesQuery(eventId);
   const loading = listLoading || metricsLoading;
   const isError = listError || metricsError;
 
@@ -64,12 +58,7 @@ export default function EventDashboard() {
         rescindedCount: 0,
       };
 
-  const invitations: InvitationTableEntry[] = listData
-    ? listData.invitations.map((inv) => ({
-        ...inv,
-        status: inv.status === "declined" ? "rescinded" : inv.status, // Map declined to rescinded for UI
-      }))
-    : [];
+  const invitations: InvitationTableEntry[] = listData?.invitations ?? [];
 
   const handleEditInvitation = (id: string) => {
     router.push(`/dashboard/events/${eventId}/edit-invite/${id}`);
@@ -77,71 +66,43 @@ export default function EventDashboard() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading admin dashboard...</p>
-        </div>
+      <div className="flex min-h-[50vh] flex-col items-center justify-center gap-4 text-slate">
+        <span
+          aria-hidden="true"
+          className="size-11 animate-spin rounded-full border-4 border-sand border-t-ink"
+        />
+        Loading your event…
       </div>
     );
   }
 
   if (isError) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-red-600 mb-4">Failed to load admin data</p>
-          <button
-            onClick={() => window.location.reload()}
-            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-          >
-            Retry
-          </button>
-        </div>
+      <div role="alert" className="flex min-h-[50vh] flex-col items-center justify-center gap-4">
+        <p>Couldn&apos;t load this event.</p>
+        <Button variant="secondary" onClick={() => window.location.reload()}>
+          Try again
+        </Button>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen px-4 py-4 sm:p-6">
-      <div className="max-w-7xl mx-auto">
-        {/* Top Row - Counter and Status Updates */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-          {/* Left Column - Counter */}
-          <div>
-            <InvitationCounter
-              totalInvitations={metrics.totalInvitations}
-              totalGuests={metrics.totalGuests}
-            />
-          </div>
-
-          {/* Right Column - Status Updates */}
-          <div>
-            <StatusUpdates updates={statusUpdatesData?.statusUpdates || []} />
-          </div>
-        </div>
-
-        {/* Door check-ins (T-509) */}
-        <div className="mb-6">
+    <div className="px-6 pt-6 pb-18">
+      <div className="mx-auto flex max-w-[1200px] flex-col gap-4">
+        <div className="grid gap-4 lg:grid-cols-2">
+          <RepliesCard metrics={metrics} />
           <CheckInPanel eventId={eventId} />
         </div>
 
-        {/* Middle Row - Metrics Chart */}
-        <div className="mb-6">
-          <MetricsChart metrics={metrics} />
-        </div>
-
-        {/* Bottom Row - Invitations Table */}
-        <div>
-          <InvitationsTable
-            invitations={invitations}
-            onEdit={handleEditInvitation}
-            pagination={listData?.pagination}
-            onPageChange={setCurrentPage}
-            search={search}
-            onSearchChange={handleSearchChange}
-          />
-        </div>
+        <InvitationsTable
+          invitations={invitations}
+          onEdit={handleEditInvitation}
+          pagination={listData?.pagination}
+          onPageChange={setCurrentPage}
+          search={search}
+          onSearchChange={handleSearchChange}
+        />
       </div>
     </div>
   );

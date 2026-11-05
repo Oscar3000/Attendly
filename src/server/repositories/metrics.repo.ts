@@ -14,7 +14,8 @@ export const metricsRepo = {
       prisma.invitation.count({ where: { eventId } }),
       prisma.invitation.count({ where: { eventId, status: "CONFIRMED" } }),
       prisma.invitation.count({ where: { eventId, status: "PENDING" } }),
-      prisma.invitation.count({ where: { eventId, status: "DECLINED" } }),
+      // A cancelled invitation isn't coming either, so the three counts add up to the total
+      prisma.invitation.count({ where: { eventId, status: { in: ["DECLINED", "RESCINDED"] } } }),
       prisma.invitation.aggregate({ where: { eventId }, _sum: { plusOne: true } }),
     ]);
 

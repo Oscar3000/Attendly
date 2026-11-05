@@ -690,7 +690,7 @@ Turn `/dashboard/events/new` into three steps (kind, details, look) beside a liv
 - **Depends on:** T-602, T-603
 - **Files:** ~6
 
-### T-610 · Dashboard replies and check-ins · M
+### ✅ T-610 · Dashboard replies and check-ins · M
 
 Rebuild the top of the event dashboard: a dark Replies card and a restyled Check-ins panel.
 
@@ -701,6 +701,7 @@ Rebuild the top of the event dashboard: a dark Replies card and a restyled Check
 - Replace the page's loading and error screens with ones in the new style, without the blue Retry button.
 - **Depends on:** T-604
 - **Files:** ~7
+- **As built:** `RepliesCard` (`src/components/admin/replies-card.tsx`) takes optional `selected` and `onSelect`. Without them, as here, the bar and legend are plain text with hover detail, so nothing looks clickable before T-612 connects the filter. `metricsRepo` now counts `RESCINDED` in `declinedRsvps`, because those invitations were in no count and the bar didn't add up to the total. `CheckInPanel` scrolls past a few check-ins, keeping all 10, and tells the host if an undo fails. The page no longer rewrites `declined` to `rescinded`, so declined guests show as Declined. The hover detail is `min-h-6`, so the card doesn't jump.
 
 ### T-611 · Filter invitations by status in the API · S
 
@@ -716,6 +717,7 @@ Rebuild `InvitationsTable`: name, status chip, admits and Open ticket, with debo
 
 - The QR code column goes. The code and its download move to the guest panel (T-613).
 - Wide tables scroll inside their own box on phones.
+- Pass `selected` and `onSelect` to `RepliesCard`, which turns its bar and legend into filter buttons.
 - **Depends on:** T-610, T-611
 - **Files:** ~4
 
