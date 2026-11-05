@@ -22,6 +22,9 @@ export type Event = Omit<EventRow, "familyLines" | "colorPalette" | "theme"> & {
   theme: ThemeId;
 };
 
+// An event with how its guests have answered, for the events list (T-607)
+export type EventWithReplies = Event & { invited: number; replied: number };
+
 // Fields a host sets; id, ownerId and timestamps are managed here
 export interface EventInput {
   slug: string;
@@ -87,6 +90,28 @@ export const eventRepo = {
   async listByOwner(ownerId: string): Promise<Event[]> {
     const rows = await prisma.event.findMany({ where: { ownerId }, orderBy: { date: "asc" } });
     return rows.map(toEvent);
+  },
+
+  // Soonest first. Anything but PENDING counts as replied, like the event dashboard
+  async listByOwnerWithReplies(ownerId: string): Promise<EventWithReplies[]> {
+    const [events, counts] = await Promise.all([
+      eventRepo.listByOwner(ownerId),
+      prisma.invitation.groupBy({
+        by: ["eventId", "status"],
+        where: { event: { ownerId } },
+        _count: { _all: true },
+      }),
+    ]);
+
+    return events.map((event) => {
+      const rows = counts.filter((row) => row.eventId === event.id);
+      const total = (from: typeof rows) => from.reduce((sum, row) => sum + row._count._all, 0);
+      return {
+        ...event,
+        invited: total(rows),
+        replied: total(rows.filter((row) => row.status !== "PENDING")),
+      };
+    });
   },
 
   // Fields that are missing or undefined are left unchanged; null clears an optional field

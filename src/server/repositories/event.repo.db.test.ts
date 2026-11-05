@@ -1,5 +1,5 @@
-import { beforeEach, describe, expect, it } from "vitest";
-import { Prisma } from "@prisma/client";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { Prisma, type RsvpStatus } from "@prisma/client";
 import { prisma } from "@/server/db/client";
 import { eventRepo, type EventInput } from "./event.repo";
 
@@ -57,6 +57,72 @@ describe("eventRepo", () => {
 
     const events = await eventRepo.listByOwner(ownerId);
     expect(events.map((event) => event.slug)).toEqual(["sooner", "later"]);
+  });
+
+  describe("listByOwnerWithReplies (T-607)", () => {
+    const addGuests = (eventId: string, statuses: RsvpStatus[]) =>
+      prisma.invitation.createMany({
+        data: statuses.map((status) => ({
+          name: "Guest",
+          status,
+          eventId,
+          accessToken: crypto.randomUUID(),
+        })),
+      });
+
+    it("counts every invitation, and all but pending as replied", async () => {
+      const event = await eventRepo.create(ownerId, wedding);
+      await addGuests(event.id, ["PENDING", "PENDING", "CONFIRMED", "DECLINED", "RESCINDED"]);
+
+      const [listed] = await eventRepo.listByOwnerWithReplies(ownerId);
+      expect(listed).toMatchObject({ id: event.id, invited: 5, replied: 3 });
+    });
+
+    it("keeps each event's counts apart, soonest first", async () => {
+      const later = await eventRepo.create(ownerId, { ...wedding, slug: "later" });
+      const sooner = await eventRepo.create(ownerId, {
+        ...wedding,
+        slug: "sooner",
+        date: new Date("2026-01-01T00:00:00Z"),
+      });
+      await addGuests(later.id, ["CONFIRMED"]);
+      await addGuests(sooner.id, ["PENDING", "PENDING"]);
+
+      const events = await eventRepo.listByOwnerWithReplies(ownerId);
+      expect(events.map(({ slug, invited, replied }) => [slug, invited, replied])).toEqual([
+        ["sooner", 2, 0],
+        ["later", 1, 1],
+      ]);
+    });
+
+    it("gives zeros to an event with no invitations", async () => {
+      await eventRepo.create(ownerId, wedding);
+
+      const [listed] = await eventRepo.listByOwnerWithReplies(ownerId);
+      expect(listed).toMatchObject({ invited: 0, replied: 0 });
+    });
+
+    it("only returns the owner's events and counts", async () => {
+      const mine = await eventRepo.create(ownerId, wedding);
+      const theirs = await eventRepo.create(otherOwnerId, { ...wedding, slug: "not-mine" });
+      await addGuests(theirs.id, ["CONFIRMED", "CONFIRMED"]);
+
+      const events = await eventRepo.listByOwnerWithReplies(ownerId);
+      expect(events.map((event) => event.id)).toEqual([mine.id]);
+      expect(events[0]).toMatchObject({ invited: 0, replied: 0 });
+    });
+
+    it("counts with one query, however many events there are", async () => {
+      for (const slug of ["one", "two", "three"]) {
+        await eventRepo.create(ownerId, { ...wedding, slug });
+      }
+      // Prisma's models are proxies, so a spy can't call through; only the call count matters here
+      const groupBy = vi.spyOn(prisma.invitation, "groupBy").mockResolvedValue([] as never);
+
+      await eventRepo.listByOwnerWithReplies(ownerId);
+      expect(groupBy).toHaveBeenCalledTimes(1);
+      groupBy.mockRestore();
+    });
   });
 
   it("updates only the given fields, and null clears an optional one", async () => {
