@@ -25,6 +25,7 @@ export function QrCamera({
     let reported = false;
     const started = scanner.start(
       { facingMode: "environment" },
+      // The size of the frame drawn over the video
       { fps: 10, qrbox: { width: 240, height: 240 } },
       (text) => {
         if (reported) return;
@@ -44,5 +45,23 @@ export function QrCamera({
     };
   }, [id]);
 
-  return <div id={id} className="w-full overflow-hidden rounded-xl bg-black" />;
+  return (
+    <div className="relative min-h-88 flex-1 overflow-hidden rounded-[28px] bg-graphite">
+      {/* Out of the flow, so a tall video can't stretch the page. Centred, so the area the
+          scanner reads sits under the frame; the frame replaces the library's own overlay */}
+      <div className="absolute inset-0 flex items-center">
+        <div id={id} className="w-full [&_#qr-shaded-region]:hidden!" />
+      </div>
+      <div className="absolute inset-0 flex items-center justify-center" aria-hidden="true">
+        <div className="relative size-60 rounded-[28px] border-[3px] border-paper">
+          <div className="absolute inset-x-3 top-1/2 h-[3px] animate-sweep rounded-full bg-lime" />
+        </div>
+      </div>
+      <p className="absolute inset-x-3 bottom-4 text-center text-sm">
+        <span className="rounded-full bg-ink/75 px-3 py-1.5 text-paper">
+          Scan each guest&apos;s QR code at the entrance
+        </span>
+      </p>
+    </div>
+  );
 }

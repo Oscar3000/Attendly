@@ -8,6 +8,8 @@ const buttonVariants = {
   // For ink backgrounds
   light: "bg-paper text-ink",
   ghost: "border-[1.5px] border-slate bg-transparent text-paper",
+  // Lets people in at the door
+  admit: "bg-lime text-ink",
 } as const;
 
 const buttonSizes = {
