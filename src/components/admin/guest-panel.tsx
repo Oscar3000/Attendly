@@ -10,21 +10,14 @@ import { TicketCard } from "@/components/ui/ticket-card";
 import { downloadQRCode, shareQRCodeAsImage } from "@/lib/invitation-image";
 import { shareLinks } from "@/lib/share-links";
 import type { CreateInviteForm, InviteDetails, RsvpStatus } from "@/lib/types";
-import { cn } from "@/lib/utils";
 import {
   useGetEventInvitationQuery,
   useUpdateEventInvitationMutation,
 } from "@/store/eventInvitationApi";
 import { useEventCard } from "./event-card-context";
+import { PlusOnesField, StatusField } from "./guest-fields";
 
-const STATUSES: { value: RsvpStatus; label: string }[] = [
-  { value: "pending", label: "Pending" },
-  { value: "confirmed", label: "Confirmed" },
-  { value: "declined", label: "Declined" },
-  { value: "rescinded", label: "Rescinded" },
-];
-
-const MAX_PLUS_ONES = 50;
+const STATUSES: readonly RsvpStatus[] = ["pending", "confirmed", "declined", "rescinded"];
 
 interface GuestPanelProps {
   eventId: string;
@@ -194,48 +187,8 @@ function GuestForm({ eventId, invitation }: { eventId: string; invitation: Invit
         error={errors.name}
       />
 
-      <div className="mb-4 flex items-center justify-between gap-3">
-        <span id="plus-ones" className="text-[15px] font-semibold">
-          Plus-ones
-        </span>
-        <div role="group" aria-labelledby="plus-ones" className="flex items-center gap-2">
-          <Stepper
-            label="Fewer plus-ones"
-            disabled={form.plusOne <= 0}
-            onClick={() => set({ plusOne: form.plusOne - 1 })}
-          >
-            −
-          </Stepper>
-          <span className="min-w-7 text-center font-mono text-lg">{form.plusOne}</span>
-          <Stepper
-            label="More plus-ones"
-            disabled={form.plusOne >= MAX_PLUS_ONES}
-            onClick={() => set({ plusOne: form.plusOne + 1 })}
-          >
-            +
-          </Stepper>
-        </div>
-      </div>
-
-      <fieldset className="mb-4">
-        <legend className="mb-2 text-[15px] font-semibold">Status</legend>
-        <div className="flex flex-wrap gap-2">
-          {STATUSES.map(({ value, label }) => (
-            <button
-              key={value}
-              type="button"
-              aria-pressed={form.status === value}
-              onClick={() => set({ status: value })}
-              className={cn(
-                "min-h-11 rounded-full border-[1.5px] border-ink px-3.5 text-[15px] font-semibold",
-                form.status === value ? "bg-ink text-paper" : "text-ink",
-              )}
-            >
-              {label}
-            </button>
-          ))}
-        </div>
-      </fieldset>
+      <PlusOnesField value={form.plusOne} onChange={(plusOne) => set({ plusOne })} />
+      <StatusField options={STATUSES} value={form.status} onChange={(status) => set({ status })} />
 
       <FormError message={errors.form} />
       <div className="flex items-center gap-3">
@@ -247,29 +200,5 @@ function GuestForm({ eventId, invitation }: { eventId: string; invitation: Invit
         </span>
       </div>
     </form>
-  );
-}
-
-function Stepper({
-  label,
-  disabled,
-  onClick,
-  children,
-}: {
-  label: string;
-  disabled: boolean;
-  onClick: () => void;
-  children: string;
-}) {
-  return (
-    <button
-      type="button"
-      aria-label={label}
-      disabled={disabled}
-      onClick={onClick}
-      className="size-11 rounded-full border-[1.5px] border-ink text-xl text-ink disabled:opacity-40"
-    >
-      {children}
-    </button>
   );
 }

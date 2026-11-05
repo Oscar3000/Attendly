@@ -27,7 +27,8 @@ export function SidePanel({ open, onClose, label, children }: SidePanelProps) {
     <dialog
       ref={dialog}
       aria-label={label}
-      onClose={onClose}
+      // Also fires when `open` turning false closes it, which isn't the user asking to close
+      onClose={() => open && onClose()}
       // The padding is on the child, so a click that lands on the dialog itself is the backdrop
       onClick={(e) => e.target === dialog.current && onClose()}
       className="ml-auto h-dvh max-h-none w-[min(460px,100%)] max-w-none bg-paper text-ink backdrop:bg-ink/50 open:animate-panel-in"

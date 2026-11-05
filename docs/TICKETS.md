@@ -737,7 +737,7 @@ Opening a guest shows a `SidePanel` with their ticket and QR code, and replaces 
 - **Files:** ~7
 - **As built:** `GuestPanel` (`src/components/admin/guest-panel.tsx`) loads the guest by id, so a link to a guest in another event, or one who's gone, says "We couldn't find this guest" and shows nothing else. Opening a guest adds a history entry, so Back closes the panel. WhatsApp and Email are plain links built by `shareLinks()` (`src/lib/share-links.ts`). WhatsApp used to try a native image share first, which saved a file on desktop instead of opening WhatsApp, so that moved to its own Share image button. The success and edit pages stay until T-615, because the create flow still goes through them until T-614.
 
-### T-614 · Add guests panel · M
+### ✅ T-614 · Add guests panel · M
 
 A `SidePanel` with One guest and A whole list, replacing the create and bulk upload pages.
 
@@ -745,7 +745,8 @@ A `SidePanel` with One guest and A whole list, replacing the create and bulk upl
 - A whole list: paste CSV or choose a file, then preview the rows. Keep from the bulk upload page: initial status, the CSV format help, the warning for rows that can't be read, and the results for rows that succeeded or failed.
 - Add guests in the header (T-604) opens this panel, and the temporary Upload a list link goes.
 - **Depends on:** T-613
-- **Files:** ~6
+- **Files:** ~9
+- **As built:** Add guests in the header links to `?add=guests`, so it works from any tab and lands on Overview with `AddGuestsPanel` open, like `?guest=`. Paste and file both fill the same text box, so there's one preview. The CSV parser moved to `src/lib/guest-csv.ts` with tests, and now handles the byte order mark Excel adds, which used to turn the header into a guest named "name". It also skips a row with over 50 plus-ones, since the API rejects the whole list over one. `guest-fields.tsx` holds the plus-ones and status fields shared with `GuestPanel`. `SidePanel` only calls `onClose` for a close the user made: closing because `open` went false was clearing the URL, which lost `?guest=` when one panel handed over to the other. The old create and bulk pages are unlinked now, and T-615 deletes them.
 
 ### T-615 · Remove the old pages and dashboard code · S
 
