@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import { prisma } from "@/server/db/client";
-import { createEvent, slugify } from "./create-event";
+import { slugify } from "@/lib/slug";
+import { createEvent } from "./create-event";
 
 let ownerId = "";
 

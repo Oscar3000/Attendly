@@ -11,7 +11,17 @@ export const EVENT_TYPES: { value: CreateEventForm["type"]; label: string }[] = 
 ];
 
 export const selectClass =
-  "font-inter w-full rounded-lg border border-[#E0E0E0] bg-white px-4 py-2 text-sm text-[#333333] focus:ring-2 focus:outline-none";
+  "h-13 w-full rounded-[14px] border-[1.5px] border-line bg-card px-3 text-base text-ink";
+
+export const WIZARD_STEPS = ["Kind", "Details", "Look"];
+
+// The new event wizard's step for a field the server rejected: the first with an error
+export function firstStepWithError(errors: Partial<Record<keyof CreateEventForm, string>>): number {
+  if (errors.type) return 0;
+  const details = ["title", "date", "timezone", "venueName", "venueAddress", "rsvpDeadline"];
+  if (Object.keys(errors).some((field) => details.includes(field))) return 1;
+  return errors.theme ? 2 : 1;
+}
 
 // 400 responses carry zod's flattened errors: { details: { fieldErrors: { title: [...] } } }
 export function fieldErrorsFrom<Field extends string>(

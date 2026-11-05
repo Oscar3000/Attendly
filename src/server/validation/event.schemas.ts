@@ -66,6 +66,7 @@ export const createEventSchema = z
     ...scheduleFields,
     venueName: optionalText(200),
     venueAddress: optionalText(300),
+    theme: z.enum(THEME_IDS).default(DEFAULT_THEME),
   })
   .transform(toUtcTimes);
 
