@@ -771,13 +771,14 @@ Split the 445-line settings form into Details, Invitation page and Theme tabs, w
 - **Files:** ~13
 - **As built:** the form is split into `details-tab.tsx`, `invitation-page-tab.tsx`, `theme-tab.tsx` and `cover-image-field.tsx`, with the state kept in `settings-form.tsx`. Hidden tabs stay mounted, so the cover image, which saves on its own, survives switching. After a rejected save, `firstTabWithError()` picks the tab, it gets a red dot (`invalid` on `SegmentedControl`), and focus moves to the first invalid field, which may be below the fold. Each field's error clears as it's edited. Theme cards use the event's title and date in each preset's real colours and font, which needed `eventFontVariables` on this page. `formatEventDateShort()` is shared with the wizard's preview. The family placeholder no longer uses a real name, and new colours default to the current terracotta.
 
-### T-617 · Door helpers page · S
+### ✅ T-617 · Door helpers page · S
 
 Restyle `/dashboard/events/[eventId]/door-helpers`: the create form, the lime "copy it now" card with the link shown once, and the list with Revoke. It stays its own route under the event tabs, not a tab inside Settings as the prototype shows.
 
 - Keep each link's count of people checked in, which the prototype leaves out, and its expiry.
 - **Depends on:** T-604
 - **Files:** ~2
+- **As built:** a restyle with the same behaviour. Revoke keeps its confirmation, because unlike undoing a check-in it can't be reversed, and now says so if it fails: it used to fail silently, leaving a host thinking a link was off. The "Check in guests" back link went, since the event tabs cover it.
 
 ### ✅ T-618 · Account page · S
 
