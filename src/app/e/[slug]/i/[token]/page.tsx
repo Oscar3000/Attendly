@@ -8,7 +8,9 @@ import { copyFor } from "@/lib/event-copy";
 import { themeStyle } from "@/lib/themes";
 import { formatEventDate, formatEventTime } from "@/lib/timezones";
 import { absoluteUrl, ticketPath } from "@/lib/utils";
+import { TicketCard } from "@/components/ui/ticket-card";
 import { eventFontVariables } from "../../fonts";
+import { TicketFlip } from "./ticket-flip";
 
 interface TicketPageProps {
   params: Promise<{ slug: string; token: string }>;
@@ -28,8 +30,9 @@ export async function generateMetadata({ params }: TicketPageProps): Promise<Met
   };
 }
 
-const cardStyle = { borderColor: "var(--event-border)", backgroundColor: "var(--event-card)" };
 const headingStyle = { color: "var(--event-ink)", fontFamily: "var(--event-heading-font)" };
+const actionClass =
+  "flex min-h-13 items-center justify-center rounded-full px-6 font-semibold transition-transform hover:-translate-y-0.5";
 
 /**
  * A guest's ticket (T-502): the link is the credential, so no PIN or sign-in. Read-only: the
@@ -42,91 +45,106 @@ export default async function TicketPage({ params }: TicketPageProps) {
   if (!ticket) notFound();
   const { event, invitation } = ticket;
 
-  const venue = event.venueName ?? event.venueAddress;
   // Only valid invitations get a QR code. It encodes this page's own URL
   const valid = invitation.status !== "rescinded" && invitation.status !== "declined";
   const qrCode = valid
-    ? await QRCode.toDataURL(absoluteUrl(ticketPath(slug, token)), { width: 240, margin: 1 })
+    ? await QRCode.toDataURL(absoluteUrl(ticketPath(slug, token)), { width: 480, margin: 1 })
     : undefined;
 
   return (
     <main
-      className={`min-h-screen px-4 py-10 ${eventFontVariables}`}
-      style={themeStyle(event.theme)}
+      className={`flex min-h-dvh flex-col ${eventFontVariables}`}
+      style={{
+        ...themeStyle(event.theme),
+        backgroundColor: "var(--event-ink)",
+        color: "var(--event-bg)",
+      }}
     >
-      <div className="mx-auto max-w-md text-center">
-        <p
-          className="mb-2 text-xs tracking-[0.35em] uppercase"
-          style={{ color: "var(--event-muted)" }}
-        >
-          {copyFor(event.type).invitationSubtitle}
-        </p>
-        <h1 className="mb-8 text-3xl font-bold sm:text-4xl" style={headingStyle}>
-          {eventDisplayName(event)}
-        </h1>
-
-        <div className="rounded-2xl border p-6 shadow-sm" style={cardStyle}>
-          <p className="text-sm" style={{ color: "var(--event-muted)" }}>
-            This invitation is for
-          </p>
-          <h2 className="mt-1 text-2xl font-semibold" style={headingStyle}>
-            {invitation.name}
-          </h2>
-          <p
-            className="mt-1 text-sm font-semibold tracking-wide"
-            style={{ color: "var(--event-accent)" }}
+      <div className="mx-auto flex w-full max-w-md flex-1 flex-col gap-4 px-5 py-6">
+        <div className="text-center">
+          <p className="text-sm">{copyFor(event.type).invitationSubtitle}</p>
+          <h1
+            className="mt-0.5 text-[34px] leading-[1.1] font-bold break-words"
+            style={{ fontFamily: "var(--event-heading-font)" }}
           >
-            {admitsLabel(invitation.plusOne)}
-          </p>
-
-          <TicketPass status={invitation.status} qrCode={qrCode} />
-
-          <div
-            className="mt-6 border-t pt-5 text-sm"
-            style={{ borderColor: "var(--event-border)" }}
-          >
-            <p className="font-semibold" style={{ color: "var(--event-ink)" }}>
-              {formatEventDate(event.date, event.timezone)}
-            </p>
-            <p style={{ color: "var(--event-text)" }}>
-              {formatEventTime(event.date, event.timezone)}
-            </p>
-            {venue && (
-              <>
-                <p className="mt-3 font-semibold" style={{ color: "var(--event-ink)" }}>
-                  {venue}
-                </p>
-                {event.venueName && event.venueAddress && (
-                  <p className="whitespace-pre-line" style={{ color: "var(--event-text)" }}>
-                    {event.venueAddress}
-                  </p>
-                )}
-              </>
-            )}
-            {valid && (
-              // A file download, not a page: a plain link, so the browser hands it to the calendar
-              <a
-                href={`${ticketPath(slug, token)}/calendar.ics`}
-                download
-                className="mt-4 inline-block rounded-full border px-4 py-2 font-medium"
-                style={{ borderColor: "var(--event-accent)", color: "var(--event-accent)" }}
-              >
-                Add to calendar
-              </a>
-            )}
-          </div>
+            {eventDisplayName(event)}
+          </h1>
         </div>
 
-        <Link
-          href={`/e/${slug}`}
-          className="mt-6 inline-block text-sm font-medium underline-offset-2 hover:underline"
-          style={{ color: "var(--event-accent)" }}
-        >
-          See the event page
-        </Link>
-        <p className="mt-8 text-xs" style={{ color: "var(--event-muted)" }}>
-          Powered by Attendly
-        </p>
+        <TicketFlip
+          backLabel={valid ? "Date, venue and calendar" : "Date and venue"}
+          front={
+            <TicketCard
+              notchColor="var(--event-ink)"
+              lineColor="var(--event-border)"
+              cardColor="var(--event-card)"
+              className="h-full"
+              stub={<TicketPass status={invitation.status} qrCode={qrCode} />}
+            >
+              <div className="p-6 text-center">
+                <p className="text-sm" style={{ color: "var(--event-text)" }}>
+                  This invitation is for
+                </p>
+                <h2
+                  className="mt-0.5 text-[32px] leading-[1.15] font-bold break-words"
+                  style={headingStyle}
+                >
+                  {invitation.name}
+                </h2>
+                <p className="mt-1 font-semibold" style={{ color: "var(--event-accent)" }}>
+                  {admitsLabel(invitation.plusOne)}
+                </p>
+              </div>
+            </TicketCard>
+          }
+          back={
+            <div
+              className="flex h-full flex-col gap-5 rounded-3xl p-7"
+              style={{ backgroundColor: "var(--event-card)", color: "var(--event-text)" }}
+            >
+              <div>
+                <h2 className="text-3xl leading-[1.15] font-bold" style={headingStyle}>
+                  {formatEventDate(event.date, event.timezone)}
+                </h2>
+                <p className="mt-0.5">{formatEventTime(event.date, event.timezone)}</p>
+              </div>
+              {(event.venueName || event.venueAddress) && (
+                <div className="break-words">
+                  {event.venueName && (
+                    <p className="font-semibold" style={{ color: "var(--event-ink)" }}>
+                      {event.venueName}
+                    </p>
+                  )}
+                  {event.venueAddress && (
+                    <p className="whitespace-pre-line">{event.venueAddress}</p>
+                  )}
+                </div>
+              )}
+              <div className="mt-auto flex flex-col gap-2">
+                {valid && (
+                  // A file download, not a page: a plain link, so the browser hands it to the calendar
+                  <a
+                    href={`${ticketPath(slug, token)}/calendar.ics`}
+                    download
+                    className={actionClass}
+                    style={{ backgroundColor: "var(--event-accent)", color: "#FFFFFF" }}
+                  >
+                    Add to calendar
+                  </a>
+                )}
+                <Link
+                  href={`/e/${slug}`}
+                  className={`${actionClass} border-[1.5px]`}
+                  style={{ borderColor: "var(--event-accent)", color: "var(--event-accent)" }}
+                >
+                  See the event page
+                </Link>
+              </div>
+            </div>
+          }
+        />
+
+        <p className="text-center text-[13px]">Powered by Attendly</p>
       </div>
     </main>
   );
@@ -148,28 +166,30 @@ function TicketPass({
 }) {
   if (!qrCode) {
     return (
-      <div className="mt-6 rounded-xl bg-black/5 p-4 text-sm" style={{ color: "var(--event-ink)" }}>
-        {status === "rescinded"
-          ? "This invitation has been cancelled. If you think this is a mistake, please contact the host."
-          : "This invitation was declined. If your plans have changed, please contact the host."}
+      <div className="p-6">
+        <p
+          className="rounded-2xl p-5 text-center"
+          style={{ backgroundColor: "var(--event-bg-alt)", color: "var(--event-ink)" }}
+        >
+          {status === "rescinded"
+            ? "This invitation has been cancelled. If you think this is a mistake, please contact the host."
+            : "This invitation was declined. If your plans have changed, please contact the host."}
+        </p>
       </div>
     );
   }
 
   return (
-    <>
-      {/* eslint-disable-next-line @next/next/no-img-element -- a generated data: URL */}
-      <img
-        src={qrCode}
-        alt="Your entry QR code"
-        width={240}
-        height={240}
-        className="mx-auto mt-6 rounded-lg bg-white p-2"
-      />
-      <p className="mt-4 text-sm leading-6" style={{ color: "var(--event-text)" }}>
+    <div className="flex flex-col items-center gap-3.5 p-6">
+      {/* White whatever the theme, so scanners can read it */}
+      <div className="rounded-[14px] bg-white p-2.5">
+        {/* eslint-disable-next-line @next/next/no-img-element -- a generated data: URL */}
+        <img src={qrCode} alt="Your entry QR code" width={240} height={240} className="block" />
+      </div>
+      <p className="text-center text-[15px]" style={{ color: "var(--event-text)" }}>
         Show this QR code at the entrance. It&apos;s only for the people on this invitation, so
         please don&apos;t share it.
       </p>
-    </>
+    </div>
   );
 }

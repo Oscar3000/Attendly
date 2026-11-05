@@ -814,7 +814,7 @@ Rebuild `src/components/home/` for phones first: a dark hero with the cover imag
 
 **As built:** The words sit on solid ink below the cover, so any photo stays readable; with no cover the hero is the theme's accent glowing on ink. The heading shrinks until the longest word fits. The countdown renders on the server, shows `countdownToday` from `copyFor()` once the event starts, and goes away the day after, on the event's own calendar (`src/lib/countdown.ts`). The swatches list every name until one is tapped. The date stays in the hero, and the monogram and family lines stay though the prototype leaves them out; family lines are now a card. "Have your ticket?" stays without its button.
 
-### T-621 · Guest ticket page · M
+### T-621 · Guest ticket page · M ✅
 
 The ticket on `/e/[slug]/i/[token]` shows the guest, admits line and QR code on the front, and flips to the date, venue, Add to calendar and the event page link.
 
@@ -824,6 +824,8 @@ The ticket on `/e/[slug]/i/[token]` shows the guest, admits line and QR code on 
 - `noindex` and `no-referrer` stay.
 - **Depends on:** T-602, T-603
 - **Files:** ~4
+
+**As built:** `TicketFlip` holds both sides in one grid cell, so the card is as tall as its taller side, however long the address. The flip button sits below the card; for declined and cancelled invitations it says "Date and venue", as there's no calendar to add. The date and venue only show on the back, so guests need JavaScript to reach them. `TicketCard` gained `cardColor` for theme colours. The QR code is drawn at twice its display size so it stays sharp on phone screens.
 
 ### T-622 · Error pages and final pass · S
 
