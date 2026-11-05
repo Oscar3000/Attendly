@@ -2,8 +2,11 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/server/auth/current-user";
 import { eventRepo } from "@/server/repositories/event.repo";
+import { EventsList } from "@/components/admin/events-list";
+import { buttonClasses } from "@/components/ui/button";
 import { EVENT_TYPE_LABELS } from "@/lib/event-copy";
-import { formatEventDateTime } from "@/lib/timezones";
+import { THEMES } from "@/lib/themes";
+import { daysUntil, formatEventDateTime } from "@/lib/timezones";
 
 /**
  * The signed-in user's events, soonest first. Where sign-in and email links land
@@ -12,58 +15,32 @@ export default async function DashboardPage() {
   const user = await getCurrentUser();
   if (!user) redirect("/login");
 
-  const events = await eventRepo.listByOwner(user.id);
+  const events = await eventRepo.listByOwnerWithReplies(user.id);
 
   return (
-    <main className="min-h-screen bg-paper px-4 py-6 sm:p-8">
-      <div className="mx-auto max-w-3xl">
-        <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <h1 className="font-inter text-2xl font-bold text-gray-900 sm:text-4xl">Your events</h1>
-          <div className="flex gap-3">
-            <Link
-              href="/dashboard/events/new"
-              className="font-inter flex-1 rounded-lg bg-[#C07A54] px-4 py-2 text-center text-sm font-medium text-white hover:opacity-90 sm:flex-none sm:text-base"
-            >
-              New event
-            </Link>
-          </div>
+    <main className="px-6 pt-12 pb-18">
+      <div className="mx-auto max-w-[1200px]">
+        <div className="flex flex-wrap items-end justify-between gap-5">
+          <h1 className="font-display text-[clamp(2.75rem,6vw,4.5rem)] leading-none font-extrabold tracking-tight">
+            Your events
+          </h1>
+          <Link href="/dashboard/events/new" className={buttonClasses()}>
+            New event
+          </Link>
         </div>
-
-        {events.length === 0 ? (
-          <div className="rounded-lg bg-white p-8 text-center shadow-[0_2px_8px_rgba(0,0,0,0.1)]">
-            <h2 className="font-inter mb-2 text-lg font-bold text-black">No events yet</h2>
-            <p className="font-inter mb-6 text-sm text-[#666666]">
-              Create your first event, then add guests and send their invitations.
-            </p>
-            <Link
-              href="/dashboard/events/new"
-              className="font-inter inline-block rounded-lg bg-[#C07A54] px-6 py-2 font-medium text-white hover:opacity-90"
-            >
-              Create an event
-            </Link>
-          </div>
-        ) : (
-          <ul className="space-y-4">
-            {events.map((event) => (
-              <li key={event.id}>
-                <Link
-                  href={`/dashboard/events/${event.id}`}
-                  className="block rounded-lg bg-white p-5 shadow-[0_2px_8px_rgba(0,0,0,0.1)] transition-shadow hover:shadow-[0_4px_12px_rgba(0,0,0,0.15)]"
-                >
-                  <p className="font-inter mb-1 text-xs font-medium tracking-wide text-[#C07A54] uppercase">
-                    {EVENT_TYPE_LABELS[event.type]}
-                  </p>
-                  <h2 className="font-inter text-lg font-bold text-black">{event.title}</h2>
-                  <p className="font-inter mt-1 text-sm text-[#666666]">
-                    {formatEventDateTime(event.date, event.timezone)}
-                    {(event.venueName ?? event.venueAddress) &&
-                      ` · ${event.venueName ?? event.venueAddress}`}
-                  </p>
-                </Link>
-              </li>
-            ))}
-          </ul>
-        )}
+        <EventsList
+          events={events.map((event) => ({
+            id: event.id,
+            type: EVENT_TYPE_LABELS[event.type],
+            title: event.title,
+            when: formatEventDateTime(event.date, event.timezone),
+            venue: event.venueName ?? event.venueAddress,
+            color: THEMES[event.theme].colors.accent,
+            invited: event.invited,
+            replied: event.replied,
+            days: daysUntil(event.date, event.timezone),
+          }))}
+        />
       </div>
     </main>
   );
