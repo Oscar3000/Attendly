@@ -295,18 +295,17 @@ describe("another account attacking", () => {
   });
 });
 
-// Every string in a rendered element tree (text, hrefs, other props): what reaches the HTML
+// Every string in a rendered element tree (text, hrefs, other props, and data passed to client
+// components): what reaches the browser
 function stringsIn(node: unknown, seen = new WeakSet<object>()): string {
   if (typeof node === "string" || typeof node === "number") return `${node}\n`;
   if (!node || typeof node !== "object" || seen.has(node)) return "";
   seen.add(node);
   if (Array.isArray(node)) return node.map((child) => stringsIn(child, seen)).join("");
-  const props = (node as { props?: Record<string, unknown> }).props;
-  return props
-    ? Object.values(props)
-        .map((value) => stringsIn(value, seen))
-        .join("")
-    : "";
+  const { props } = node as { props?: object };
+  return Object.values(props ?? node)
+    .map((value) => stringsIn(value, seen))
+    .join("");
 }
 
 // The dashboard layout reads the session through next/headers

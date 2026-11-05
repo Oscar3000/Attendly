@@ -668,7 +668,7 @@ Event cards show "86 of 120 replied". Add `eventRepo.listByOwnerWithReplies(owne
 - **Files:** ~2
 - **As built:** the events and one `groupBy` on event and status run together, whatever the number of events; a test checks that. `RESCINDED` counts as replied, matching the dashboard's "total minus pending". Nothing calls it until T-608.
 
-### T-608 · Your events page · M
+### ✅ T-608 · Your events page · M
 
 Ticket cards with a tear-off stub showing days to go, on `/dashboard`: the type, title, date, venue and reply progress. Search and an Upcoming / Past switch run in the browser, since a host's events are already all loaded. Past events show "days ago".
 
@@ -676,7 +676,8 @@ Ticket cards with a tear-off stub showing days to go, on `/dashboard`: the type,
 - An event with no invitations shows no progress bar.
 - Keep the empty state for hosts with no events. Add one for a search with no matches.
 - **Depends on:** T-604, T-607
-- **Files:** ~5
+- **Files:** ~4
+- **As built:** the page prepares each card on the server and `EventsList` (`src/components/admin/events-list.tsx`) handles the switch and search. An event happening today counts as upcoming and its stub says "Today". The list opens on Past when nothing is coming up, and past events run most recent first. Dates use the existing long format, not the prototype's short one.
 
 ### T-609 · New event wizard · M
 
