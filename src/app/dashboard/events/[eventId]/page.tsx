@@ -1,9 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import InvitationsTable from "@/components/admin/invitations-table";
 import CheckInPanel from "@/components/admin/check-in-panel";
+import GuestPanel from "@/components/admin/guest-panel";
 import RepliesCard, { type ReplyGroup } from "@/components/admin/replies-card";
 import { Button } from "@/components/ui/button";
 import { DashboardMetrics, InvitationTableEntry } from "@/lib/types";
@@ -80,9 +81,12 @@ export default function EventDashboard() {
 
   const invitations: InvitationTableEntry[] = listData?.invitations ?? [];
 
-  const handleEditInvitation = (id: string) => {
-    router.push(`/dashboard/events/${eventId}/edit-invite/${id}`);
-  };
+  // The open guest is in the URL, so a refresh keeps it open and Back closes it
+  const base = `/dashboard/events/${eventId}`;
+  const guestId = useSearchParams().get("guest");
+  const openGuest = (id: string) =>
+    router.push(`${base}?guest=${encodeURIComponent(id)}`, { scroll: false });
+  const closeGuest = () => router.replace(base, { scroll: false });
 
   if (loading) {
     return (
@@ -117,7 +121,7 @@ export default function EventDashboard() {
 
         <InvitationsTable
           invitations={invitations}
-          onEdit={handleEditInvitation}
+          onOpen={openGuest}
           pagination={listData?.pagination}
           onPageChange={setCurrentPage}
           search={search}
@@ -126,6 +130,7 @@ export default function EventDashboard() {
           onClearFilter={() => handleSelectGroup(null)}
           loading={listFetching}
         />
+        <GuestPanel eventId={eventId} guestId={guestId} onClose={closeGuest} />
       </div>
     </div>
   );

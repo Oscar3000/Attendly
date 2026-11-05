@@ -1,13 +1,11 @@
 import { buttonClasses } from "@/components/ui/button";
 import { StatusChip } from "@/components/ui/status-chip";
-import { downloadQRCode } from "@/lib/invitation-image";
 import type { InvitationTableEntry } from "@/lib/types";
 import { cn } from "@/lib/utils";
-import { useEventCard } from "./event-card-context";
 
 interface InvitationsTableProps {
   invitations: InvitationTableEntry[];
-  onEdit: (id: string) => void;
+  onOpen: (id: string) => void;
   pagination?:
     | {
         page: number;
@@ -26,11 +24,9 @@ interface InvitationsTableProps {
   loading?: boolean;
 }
 
-const rowAction = "min-h-11 px-2 text-[15px] font-semibold underline";
-
 export default function InvitationsTable({
   invitations,
-  onEdit,
+  onOpen,
   pagination,
   onPageChange,
   search,
@@ -39,17 +35,6 @@ export default function InvitationsTable({
   onClearFilter,
   loading = false,
 }: InvitationsTableProps) {
-  const event = useEventCard();
-  const handleDownloadQR = (invitation: InvitationTableEntry) => {
-    if (invitation.qrCode) {
-      void downloadQRCode(
-        invitation.qrCode,
-        `invitation-qr-${invitation.name}`,
-        event && { guest: { name: invitation.name, plusOne: invitation.plusOne ?? 0 }, event },
-      );
-    }
-  };
-
   const narrowed = Boolean(filterLabel || search.trim());
   const total = pagination?.total ?? invitations.length;
 
@@ -119,7 +104,15 @@ export default function InvitationsTable({
                   key={invitation.id}
                   className="border-t border-sand transition-colors hover:bg-paper"
                 >
-                  <td className="px-3 py-1 font-semibold">{invitation.name}</td>
+                  <td className="px-3 py-1">
+                    <button
+                      type="button"
+                      onClick={() => onOpen(invitation.id)}
+                      className="min-h-11 text-left font-semibold"
+                    >
+                      {invitation.name}
+                    </button>
+                  </td>
                   <td className="px-3 py-1">
                     <StatusChip status={invitation.status} />
                   </td>
@@ -127,24 +120,13 @@ export default function InvitationsTable({
                     {(invitation.plusOne ?? 0) + 1}
                   </td>
                   <td className="px-3 py-1 text-right whitespace-nowrap">
-                    {/* Both move into the guest panel in T-613 */}
-                    {invitation.hasQrCode && (
-                      <button
-                        type="button"
-                        onClick={() => handleDownloadQR(invitation)}
-                        aria-label={`Download QR code for ${invitation.name}`}
-                        className={rowAction}
-                      >
-                        Download QR
-                      </button>
-                    )}
                     <button
                       type="button"
-                      onClick={() => onEdit(invitation.id)}
-                      aria-label={`Edit ${invitation.name}`}
-                      className={rowAction}
+                      onClick={() => onOpen(invitation.id)}
+                      aria-label={`Open ticket for ${invitation.name}`}
+                      className="min-h-11 px-2 text-[15px] font-semibold underline"
                     >
-                      Edit
+                      Open ticket
                     </button>
                   </td>
                 </tr>
