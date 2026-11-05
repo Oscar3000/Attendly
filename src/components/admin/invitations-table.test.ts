@@ -19,7 +19,7 @@ const render = (props: Partial<Parameters<typeof InvitationsTable>[0]> = {}) =>
   renderToStaticMarkup(
     createElement(InvitationsTable, {
       invitations: [guest()],
-      onEdit: vi.fn(),
+      onOpen: vi.fn(),
       onPageChange: vi.fn(),
       search: "",
       onSearchChange: vi.fn(),
@@ -38,10 +38,10 @@ describe("InvitationsTable", () => {
     expect(html).toMatch(/>2<\/td>/);
   });
 
-  it("keeps the QR download and editing, by name for screen readers", () => {
+  it("opens a guest from their name or Open ticket, named for screen readers", () => {
     const html = render();
-    expect(html).toContain('aria-label="Download QR code for Zelda Okafor"');
-    expect(html).toContain('aria-label="Edit Zelda Okafor"');
+    expect(html).toMatch(/<button[^>]*>Zelda Okafor<\/button>/);
+    expect(html).toContain('aria-label="Open ticket for Zelda Okafor"');
   });
 
   it("offers Clear filter only with a filter, and shows what's filtered", () => {
