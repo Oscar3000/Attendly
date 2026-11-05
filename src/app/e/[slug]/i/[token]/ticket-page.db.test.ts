@@ -87,6 +87,8 @@ describe("/e/[slug]/i/[token]", () => {
     const html = await render(base.slug, token);
 
     expect(html.match(/ inert=""/g)).toHaveLength(1);
+    // Not only turned away: WebKit can still show it, mirrored, over the QR code
+    expect(html).toMatch(/class="[^"]*\binvisible\b[^"]*" inert=""/);
     expect(html.indexOf("Your entry QR code")).toBeLessThan(html.indexOf(' inert=""'));
     expect(html.indexOf(' inert=""')).toBeLessThan(html.indexOf("Monday, May 24, 2027"));
   });

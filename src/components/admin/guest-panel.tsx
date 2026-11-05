@@ -63,7 +63,7 @@ function GuestDetails({ eventId, guestId }: { eventId: string; guestId: string }
       >
         <div className="p-6">
           <p className="font-mono text-[13px] text-slate">Admits {(invitation.plusOne ?? 0) + 1}</p>
-          <h2 className="mt-1 font-display text-[34px] leading-tight font-extrabold tracking-tight break-words">
+          <h2 className="mt-1 font-display text-[clamp(1.75rem,7vw,2.125rem)] leading-tight font-extrabold tracking-tight [overflow-wrap:anywhere]">
             {invitation.name}
           </h2>
         </div>
