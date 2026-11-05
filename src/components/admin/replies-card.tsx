@@ -68,7 +68,8 @@ export default function RepliesCard({ metrics, selected, onSelect }: RepliesCard
                   key={id}
                   {...itemProps(id)}
                   aria-label={onSelect ? `${label}: ${count}. Filter guests` : undefined}
-                  className="min-w-1 rounded transition-[filter] hover:brightness-110"
+                  // The bar is 24px tall; the pseudo-element makes a 44px target without changing its look
+                  className="relative min-w-1 rounded transition-[filter] before:absolute before:inset-x-0 before:-inset-y-2.5 hover:brightness-110"
                   style={{ flexGrow: count, flexBasis: 0, backgroundColor: color }}
                 />
               ))}
