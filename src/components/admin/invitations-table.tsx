@@ -1,6 +1,6 @@
 import { InvitationTableEntry } from "@/lib/types";
 import { QrCode } from "../qr-code";
-import { getTableStatusColor } from "@/lib/utils";
+import { StatusChip } from "../ui/status-chip";
 import { downloadQRCode } from "@/lib/invitation-image";
 import { useEventCard } from "./event-card-context";
 
@@ -96,11 +96,7 @@ export default function InvitationsTable({
                   </div>
                 </td>
                 <td className="py-3 sm:py-4 px-3 sm:px-4">
-                  <span
-                    className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${getTableStatusColor(invitation.status)}`}
-                  >
-                    {invitation.status.charAt(0).toUpperCase() + invitation.status.slice(1)}
-                  </span>
+                  <StatusChip status={invitation.status} />
                 </td>
                 <td className="py-3 sm:py-4 px-3 sm:px-4">
                   <button

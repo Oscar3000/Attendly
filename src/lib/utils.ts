@@ -116,28 +116,6 @@ export function getStatusColor(status: string): string {
 }
 
 /**
- * Gets status color classes with background for table badges
- * @param status - The RSVP status string
- * @returns CSS classes for text and background colors
- */
-export function getTableStatusColor(status: string): string {
-  const baseColor = getStatusColor(status);
-  // Map text colors to background variants for table badges
-  switch (status.toLowerCase()) {
-    case "confirmed":
-      return `${baseColor} bg-green-50`;
-    case "rescinded":
-      return `${baseColor} bg-red-50`;
-    case "pending":
-      return `${baseColor} bg-yellow-50`;
-    case "declined":
-      return `${baseColor} bg-gray-50`;
-    default:
-      return `${baseColor} bg-gray-50`;
-  }
-}
-
-/**
  * An absolute URL on this app, for links that leave the site (QR codes, shared links)
  * @param path - Starts with "/"
  */

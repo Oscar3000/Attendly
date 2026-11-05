@@ -137,7 +137,7 @@ export default function CreateInvitePage() {
 
           {/* Submit Button */}
           <div className="pt-4">
-            <Button variant="attendly" type="submit" disabled={isSubmitting} loading={isSubmitting}>
+            <Button variant="primary" type="submit" disabled={isSubmitting} loading={isSubmitting}>
               {isSubmitting ? "Saving..." : "Save"}
             </Button>
           </div>

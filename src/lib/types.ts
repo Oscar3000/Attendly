@@ -50,22 +50,6 @@ export interface BaseComponentProps {
   children?: React.ReactNode;
 }
 
-export interface ButtonProps extends BaseComponentProps {
-  variant?: "primary" | "secondary" | "danger" | "attendly";
-  size?: "sm" | "md" | "lg" | "custom";
-  disabled?: boolean;
-  loading?: boolean;
-  onClick?: () => void;
-  // Custom styling props for attendly variant
-  width?: string | number;
-  height?: string | number;
-  fontSize?: string | number;
-  fontWeight?: string | number;
-  borderRadius?: string | number;
-  backgroundColor?: string;
-  textColor?: string;
-}
-
 export interface InviteDetails extends WeddingInvitation {
   plusOne?: number;
   // The guest's ticket link (T-503), which qrCode encodes. Only in the event owner's responses

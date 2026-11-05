@@ -10,6 +10,7 @@
   --color-paper: #f6f4ef; /* App background */
   --color-card: #ffffff; /* Cards and tickets */
   --color-line: #e3dfd6; /* Borders */
+  --color-sand: #e9e5db; /* Tracks, switches and the pending chip */
   --color-slate: #5f5b68; /* Secondary text */
   --color-ember: #ff6a3d; /* Primary action; ink text on it, never white */
   --color-lime: #cdf25c; /* Confirmed and admitted; ink text on it */
@@ -18,6 +19,23 @@
   --font-sans: var(--font-instrument), ui-sans-serif, system-ui, sans-serif;
   --font-display: var(--font-bricolage), Georgia, serif;
   --font-mono: var(--font-dm-mono), ui-monospace, Menlo, monospace;
+
+  --animate-pop: pop 0.28s ease;
+  --animate-panel-in: panel-in 0.28s cubic-bezier(0.2, 0.8, 0.2, 1);
+
+  @keyframes pop {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+  }
+
+  @keyframes panel-in {
+    from {
+      opacity: 0;
+      transform: translateX(40px);
+    }
+  }
 }
 
 /*

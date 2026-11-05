@@ -34,14 +34,7 @@ export default function DashboardHeader({ eventId, onCreateInvite }: DashboardHe
         <h1 className="text-2xl sm:text-4xl font-bold text-gray-900">Dashboard</h1>
       </div>
       <div className="flex flex-wrap gap-3 sm:gap-4">
-        <Button
-          variant="attendly"
-          onClick={onCreateInvite}
-          width="auto"
-          height="44px"
-          fontSize="15px"
-          className="flex-1 sm:flex-none px-4"
-        >
+        <Button variant="primary" onClick={onCreateInvite} className="flex-1 sm:flex-none px-4">
           Create Invite
         </Button>
         <button

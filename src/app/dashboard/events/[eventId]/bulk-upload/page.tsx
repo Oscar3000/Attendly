@@ -230,7 +230,7 @@ export default function BulkUploadPage() {
 
           <div className="pt-2">
             <Button
-              variant="attendly"
+              variant="primary"
               type="submit"
               disabled={isSubmitting || rows.length === 0}
               loading={isSubmitting}
@@ -266,7 +266,7 @@ export default function BulkUploadPage() {
               </div>
             )}
 
-            <Button variant="secondary" onClick={() => router.push(dashboard)}>
+            <Button variant="outline" onClick={() => router.push(dashboard)}>
               Back to Dashboard
             </Button>
           </div>

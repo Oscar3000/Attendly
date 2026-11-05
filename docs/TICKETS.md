@@ -602,7 +602,7 @@ Add the design's tokens to `globals.css` with Tailwind 4's `@theme`: Ink `#16141
 - **Files:** ~10
 - **As built:** tokens are in an `@theme` block, so `bg-ink`, `text-slate`, `border-line`, `font-display` and `font-mono` are real utilities. `font-sans` is Instrument Sans. Only Instrument Sans is preloaded; Bricolage Grotesque and DM Mono load when a page uses them, so guest pages don't download them. The focus ring is an ink outline with a paper halo, so it shows on light and dark surfaces. `.font-inter` stays as an alias for the body font, because removing it touches 16 files of pages that are about to be rebuilt; T-622 removes it. The inline `fontFamily: "Inter"` on the create and edit pages had to go now, or they'd fall back to the browser's default font. Favicons, including `src/app/favicon.ico`, are an ember ticket on an ink tile.
 
-### T-602 · Shared UI components · M
+### ✅ T-602 · Shared UI components · M
 
 Build the pieces every screen reuses, in `src/components/ui/`:
 
@@ -615,7 +615,8 @@ Build the pieces every screen reuses, in `src/components/ui/`:
 - `Toast`: announced with `role="status"`.
 
 - **Depends on:** T-601
-- **Files:** ~14
+- **Files:** ~20
+- **As built:** all in `src/components/ui/`, with tests in `ui.test.ts`. `buttonClasses()` gives a link the button's look. The old custom-style `Button` props are gone; the gray `secondary` callers became `outline`, and `attendly` became `primary`. To stay under the file limit, `src/components/button.tsx` and `src/components/auth/text-field.tsx` re-export the new ones, so importers didn't have to change. `TicketCard` takes CSS colours, so guest pages can pass `var(--event-*)`. `SidePanel` unmounts its children when closed, so each opening starts fresh; its focus trap, Escape, focus return and backdrop click were tested in Chrome, since `<dialog>` doesn't run in the Node test setup. `Toast` stays mounted so its live region exists before a message arrives, and clears itself after 6 seconds. Added a `sand` colour token (`#E9E5DB`) for tracks, switches and the pending chip, and `animate-pop` and `animate-panel-in`.
 
 ### T-603 · Fix theme accent contrast · S
 
@@ -739,7 +740,7 @@ Delete what the redesign replaced:
 - The `create-invite` (and `success`), `edit-invite` and `bulk-upload` pages.
 - `invitation-counter.tsx`, `metrics-chart.tsx`, `status-updates.tsx` and `dashboard-header.tsx`.
 - The Status updates feed: `GET /api/events/[eventId]/status`, `metricsRepo.getRecentStatusUpdates()`, its test, its RTK Query hook and its `ROUTE_POLICY` entry.
-- `getTableStatusColor()` and the old `Button` file if T-602 left a re-export.
+- The `src/components/button.tsx` re-export (T-602).
 
 - **Depends on:** T-610, T-613, T-614
 - **Files:** ~14
@@ -808,6 +809,7 @@ Add `not-found.tsx` and `error.tsx` in the new style; the app has neither, and a
 
 - No leftover `#C07A54`, `#FFF9F4`, blue or gray classes outside `themes.ts` and test fixtures.
 - Remove the `.font-inter` alias (T-601) and any uses left.
+- Remove the `src/components/auth/text-field.tsx` re-export (T-602), importing from `src/components/ui/` instead.
 - Check every screen at phone width, by keyboard and with reduced motion on.
 - Update `CLAUDE.md`: stack, brand colours, project structure and the components list.
 - **Depends on:** T-605, T-606, T-608, T-609, T-615, T-616, T-617, T-618, T-619, T-620, T-621
