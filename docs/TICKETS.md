@@ -13,18 +13,20 @@ Goal: turn Attendly from a single hard-coded wedding into a product any host can
 
 ## Phase overview
 
-| Phase | Theme                                                | Tickets       | Status      |
-| ----- | ---------------------------------------------------- | ------------- | ----------- |
-| 0     | Foundations (server layer, validation, tests, CI)    | T-001 – T-010 | ✅ Done     |
-| 1     | Lock down security on the current app                | T-101 – T-108 | ✅ Done     |
-| 2     | Accounts with Better Auth (users, sign-up, sessions) | T-201 – T-209 | ✅ Done     |
-| 3     | Events & multi-tenancy                               | T-301 – T-312 | ✅ Done     |
-| 4     | Remove hard-coded content / theming                  | T-401 – T-410 | ✅ Done     |
-| 5     | Guest tickets & door check-in                        | T-501 – T-510 | ✅ Done     |
-| 6     | App redesign                                         | T-601 – T-622 | ✅ Done     |
-| 7     | Product features                                     | T-701 – T-711 | Not started |
-| 8     | Ops, compliance, launch                              | T-801 – T-810 | Not started |
-| 9     | Billing                                              | T-901 – T-905 | Not started |
+| Phase | Theme                                                   | Tickets         | Status      |
+| ----- | ------------------------------------------------------- | --------------- | ----------- |
+| 0     | Foundations (server layer, validation, tests, CI)       | T-001 – T-010   | ✅ Done     |
+| 1     | Lock down security on the current app                   | T-101 – T-108   | ✅ Done     |
+| 2     | Accounts with Better Auth (users, sign-up, sessions)    | T-201 – T-209   | ✅ Done     |
+| 3     | Events & multi-tenancy                                  | T-301 – T-312   | ✅ Done     |
+| 4     | Remove hard-coded content / theming                     | T-401 – T-410   | ✅ Done     |
+| 5     | Guest tickets & door check-in                           | T-501 – T-510   | ✅ Done     |
+| 6     | App redesign                                            | T-601 – T-622   | ✅ Done     |
+| 7     | Operator console (staff role, users, audit)             | T-701 – T-707   | Not started |
+| 8     | Vendors (directory, verification, calendar, placements) | T-801 – T-818   | Not started |
+| 9     | Product features                                        | T-901 – T-911   | Not started |
+| 10    | Ops, compliance, launch                                 | T-1001 – T-1010 | Not started |
+| 11    | Billing                                                 | T-1101 – T-1105 | Not started |
 
 Phases 0 and 1 can happen while the current wedding site is still live. Phase 2 onwards changes the data model.
 
@@ -175,7 +177,7 @@ Cover: forged cookie → 401, guest calling an admin route → 401/403, guest `P
 
 **Decision:** use **Better Auth** (`better-auth`) with its Prisma adapter. Users, sessions, and accounts live in our own Postgres database.
 
-**What Better Auth gives us (so we don't build it):** email + password sign-up and login, password hashing, database sessions, email verification, password reset, rate limiting on auth endpoints, social login, and an `organization` plugin we can use for co-hosts (T-708).
+**What Better Auth gives us (so we don't build it):** email + password sign-up and login, password hashing, database sessions, email verification, password reset, rate limiting on auth endpoints, social login, and an `organization` plugin we can use for co-hosts (T-908).
 
 **Design notes:**
 
@@ -278,7 +280,7 @@ Change name (`authClient.updateUser`), password (`authClient.changePassword`, cu
 
 Add an `Event` model: `id`, `ownerId → User`, `slug` (unique), `type` (enum: WEDDING, BIRTHDAY, CORPORATE, OTHER), `title`, `date`, `timezone`, `venueName`, `venueAddress`, `rsvpDeadline`, timestamps. Add `event.repo.ts`.
 
-- **As built:** `venueName`, `venueAddress` and `rsvpDeadline` are optional; deleting a user cascades to their events (T-806). `eventRepo` has `create`, `findById`, `findBySlug`, `listByOwner` (soonest first), `update` (undefined leaves a field unchanged, null clears it) and `delete`; only Prisma's not-found error maps to `undefined`/`false`, other errors are rethrown. A taken slug throws Prisma's unique-constraint error (`P2002`) for T-310 to handle.
+- **As built:** `venueName`, `venueAddress` and `rsvpDeadline` are optional; deleting a user cascades to their events (T-1006). `eventRepo` has `create`, `findById`, `findBySlug`, `listByOwner` (soonest first), `update` (undefined leaves a field unchanged, null clears it) and `delete`; only Prisma's not-found error maps to `undefined`/`false`, other errors are rethrown. A taken slug throws Prisma's unique-constraint error (`P2002`) for T-310 to handle.
 
 - **Depends on:** T-201
 - **Files:** ~4
@@ -475,7 +477,7 @@ Hosts had no way to find or share their event page (`/e/[slug]`, T-403): nothing
 
 An invitation is a ticket. The guest's link and QR code only show their invitation; they can't confirm or check themselves in. At the venue, the host or a door helper scans the QR code and admits the guest, and each invitation admits at most its number of people (the guest plus their plus-ones). If a guest sends their QR code to a friend outside after going in, the scan shows "Already checked in" with the time and who admitted them. Door helpers get a check-in link that does nothing else, so the host never shares their password or the dashboard.
 
-Online RSVP (guests confirming or declining before the event) is out of scope for now; see T-711.
+Online RSVP (guests confirming or declining before the event) is out of scope for now; see T-911.
 
 The original wedding has passed, so no live event depends on the shared PIN flow while these tickets land. Until T-508 removes it, the PIN flow keeps working for QR codes made before T-503.
 
@@ -509,7 +511,7 @@ Add `admittedCount` (default 0) to `Invitation` and a `CheckIn` table (invitatio
 
 - One conditional update, so two helpers scanning the same code at the same moment can't admit more than allowed: admit only if the invitation is in this event, isn't `DECLINED`/`RESCINDED`, and `admittedCount + count <= plusOne + 1`.
 - Results: admitted (name, now X of N), already full (when and by whom, from the last `CheckIn`), not valid (cancelled or declined), not found (unknown token or another event's).
-- Checking in sets the status to `CONFIRMED`, so the dashboard's "confirmed" keeps meaning "arrived", as it did with the PIN flow. Revisit when online RSVP lands (T-711).
+- Checking in sets the status to `CONFIRMED`, so the dashboard's "confirmed" keeps meaning "arrived", as it did with the PIN flow. Revisit when online RSVP lands (T-911).
 - **Depends on:** T-501
 - **Files:** ~7
 - **As built:** `checkInRepo.checkIn(eventId, token, count, by)` (`src/server/repositories/check-in.repo.ts`) reads the invitation for the result message, then admits with one raw SQL `UPDATE … WHERE "admittedCount" + n <= "plusOne" + 1 AND status NOT IN (DECLINED, RESCINDED)`. If a simultaneous scan got there first, the update matches nothing, nothing is written, and it reads again (up to 3 times), so the result reflects the other scan. The `CheckIn` row is written in the same transaction. Without `count`, everyone left on the invitation is admitted. The route takes `{ code, count? }`, where `code` is whatever the QR code held: `ticketTokenFrom()` in `utils.ts` accepts a ticket URL on any host or the bare token, and anything else is `not_found`. Responses always carry a `result`: `admitted` 200, `full` / `too_many` / `not_valid` 409, `not_found` 404. `CheckIn.checkedInByUserId` is set null if the account is deleted; T-506 adds the door link column. Tests cover concurrent scans (10 at once admit once; they fail if the SQL guard is removed), and the tenant isolation test also scans a victim's ticket through the attacker's own event.
@@ -844,71 +846,341 @@ Add `not-found.tsx` and `error.tsx` in the new style; the app has neither, and a
 
 ---
 
-## Phase 7 — Product features
+## Phase 7 — Operator console
 
-### T-701 · CSV export of guest list · S
+Attendly's own staff need a place to run the platform: approve vendor documents, suspend listings, grant placements, find a user who can't sign in, and see how the product is doing. Until now every account has had the same powers, so none of this exists. This phase adds an operator role, a staff console at `/dashboard/operator`, and staff roles.
 
-### T-702 · Email invitations to guests (single + bulk) · M — needs `email` on `Invitation`, uses T-206
+It is built in two halves. **The foundation (T-701 to T-703) comes before vendors**, because vendor registration (Phase 8) needs someone who can review verification documents. **The rest (T-704 to T-707) comes after vendors**, because staff roles, an audit viewer and platform metrics are pointless while the staff is one person. In calendar order: T-701 to T-703, then Phase 8, then T-704 to T-707.
 
-### T-703 · RSVP reminder emails (manual trigger) · S — needs T-711
+**Decisions:**
 
-### T-704 · Scheduled reminders (cron / job queue) · M
+- **Better Auth's `admin` plugin provides the role.** It adds `role`, `banned`, `banReason` and `banExpires` to `users`, with list-users, ban and impersonation endpoints and an access-control helper for custom roles. An env allowlist would be quicker but gives no roles, no impersonation and no column other features can check.
+- **Three staff roles**, defined once in `src/server/auth/operator-roles.ts` with the plugin's access control: **owner** (everything, plus managing staff, pricing and refunds), **admin** (verify, suspend, grant placements, ban users) and **support** (read everything, reply to reports, impersonate to reproduce a problem). Ordinary accounts have the plugin's default `user` role, which the app never checks for anything.
+- **One guard.** `requireOperator(permission?, headers?)` next to `requireUser()`: 401 signed out, 404 for a non-operator (a staff console shouldn't announce itself), 403 for an operator without the permission. Every operator page, server action and route handler calls it; permission checks never live in components.
+- **Every operator write is audited.** An `OperatorAction` row per action, written by the same code that performs it, so the trail can't be skipped.
 
-### T-705 · Notify host on new RSVP (email) · S — needs T-711
+**Rules for every ticket in this phase:**
 
-### T-706 · ~~Check-in mode~~ · moved to Phase 5 (T-504, T-505)
+- Console pages live under `/dashboard/operator/*` and their API under `/api/operator/*`. The middleware matcher gains `/api/operator` (session cookie present, like `/api/events`).
+- `ROUTE_POLICY` in `src/app/api/tenant-isolation.db.test.ts` gets a new value, `"operator"`: the test signs in as a plain account and expects a 404 from every route under `/api/operator/`.
+- Console screens use the design tokens and `src/components/ui/`; dense tables are fine, the console is a tool, not a brochure. Controls still meet the 44px rule. **Design reference:** the "Operator console" row of the [Attendly Redesign canvas](https://claude.ai/artifact/CvNvBPaDHDmbCG8esViPUX): verifications, users and staff, and overview with placements, reports and audit.
+- Impersonation is for support, time-limited, shows a banner on every page while active, and is audited with the target user. Operators can never impersonate another operator.
 
-### T-707 · ~~Check-in dashboard~~ · moved to Phase 5 (T-509)
+### T-701 · Operator role: Better Auth admin plugin, guard and first owner · M
 
-### T-708 · Co-hosts: invite another user to manage an event (consider Better Auth `organization` plugin vs own `EventMember` + roles) · L → split into model/API and UI tickets when started
+- Add the `admin` plugin to `getAuth()` (server) and `createAuthClient()` (client) with the three roles from the decisions. Migration adds the plugin's columns to `users`.
+- `requireOperator(permission?, headers?)` in `src/server/auth/`, plus `getOperator()` for pages that only change what they show.
+- `npm run db:seed` gains `OPERATOR_EMAIL`: when set, the matching account (created by the seed or already existing) becomes an `owner`. Documented in `README.md` and `CLAUDE.md` as a script input, not an app setting.
+- Middleware matcher gains `/api/operator/:path*`; `ROUTE_POLICY` gains the `"operator"` value and the test case for it.
+- Unit and DB tests for the guard: signed out, plain user, each role with and without the permission.
+- **Files:** ~9
+
+### T-702 · Console shell and the audit table · M
+
+- `/dashboard/operator/layout.tsx` calls `requireOperator()` (404 otherwise) and renders the console navigation: Overview, Users, Vendors, Verifications, Placements, Reports, Staff, Audit. Sections whose ticket hasn't landed are left out of the nav, not stubbed.
+- An empty Overview page with the operator's role and a note of what each role may do. The app header shows an "Operator" link to anyone with an operator role.
+- `OperatorAction` (`operator_actions`): id, operatorId → User (set null), role (at the time), targetType (USER | VENDOR | PLACEMENT | REVIEW | REPORT | STAFF), targetId, action (short verb, e.g. `vendor.verify`, `user.ban`), note?, metadata (Json), createdAt. Index on `(targetType, targetId)` and `(operatorId, createdAt)`. `recordOperatorAction()` in `src/server/operator/audit.ts` is the only writer, and later tickets call it inside the same transaction as the change.
+- **Depends on:** T-701
+- **Files:** ~10
+
+### T-703 · Users: search, ban and impersonate · M
+
+- `/dashboard/operator/users`: search by email or name (the plugin's list-users endpoint, paginated), each row showing sign-up date, verified email, number of events, whether they have a vendor profile and their role.
+- A user page with ban / unban (reason and optional expiry, through the plugin, audited), which signs the user out everywhere, and "Impersonate" for admin and owner: a one-hour session with a banner across the app and an "End" control, audited at start and end. Banned users see a plain message on sign-in, not the login error.
+- Support can search and view but not ban or impersonate.
+- **Depends on:** T-702
+- **Files:** ~10
+
+### T-704 · Staff: invite operators and set roles · M
+
+- `/dashboard/operator/staff` (owner only): the list of operators with their role and last sign-in; add a staff member by the email of an existing account, or send a sign-up link that grants the role on first sign-in (a `StaffInvite` table with a hashed token and expiry, like door links); change a role; remove the role. There must always be at least one owner, and an owner can't demote themself when they're the last.
+- Both sides get an email through `sendEmail()`. Every change is audited.
+- **Depends on:** T-702
+- **Files:** ~9
+
+### T-705 · Audit log viewer · S
+
+`/dashboard/operator/audit`: the `OperatorAction` table newest first, filtered by operator, target type, action and date range, with a link from each row to its target (user, vendor, placement). Paginated. Read-only for every role; nothing deletes audit rows, including account deletion (the operator id goes null, the row stays).
+
+- **Depends on:** T-702, T-703
+- **Files:** ~5
+
+### T-706 · Platform overview · S
+
+The Overview page gets numbers for the last 30 days against the 30 before: sign-ups, events created, invitations sent, replies, check-ins, vendor profiles by status, inquiries, active placements and placement revenue. Server-rendered from the repositories, no third-party script; charts are CSS bars, no chart library. Product analytics for behaviour (T-1008) is a separate concern.
+
+- **Depends on:** T-702, Phase 8
+- **Files:** ~6
+
+### T-707 · Reports queue · S
+
+A `Report` table (reporterUserId?, reporterEmail, targetType, targetId, reason, status NEW | RESOLVED | DISMISSED, resolution?, createdAt) replacing the email from "Report this listing" (T-813), with a queue at `/dashboard/operator/reports` that links to the target and offers the matching action (suspend the vendor, hide the review). Resolving is audited; the reporter gets a short email.
+
+- **Depends on:** T-702, T-813
+- **Files:** ~7
+
+---
+
+## Phase 8 — Vendors
+
+Attendly so far serves hosts and their guests. This phase adds the third party at every event: the photographer, caterer, DJ, planner, florist, venue, cake maker, MC. Vendors get a verified profile in a public directory, a dashboard with a calendar of their bookings, and inquiries from hosts. Hosts get a place to find vendors and attach them to an event. Paid placement on the landing page becomes the first vendor revenue. It comes before the remaining host features because the directory is the growth channel: vendors bring hosts.
+
+**Launch market:** Nigeria first, then the rest of Africa, then anywhere. Nothing in the schema is Nigeria-only, but the defaults are: country `NG`, currency `NGN`, a list of Nigerian states for the service area, and WhatsApp as the first contact method. Payment providers that work for a Nigerian business are not the same as elsewhere (see T-1101), which is why paid placement waits for Phase 10.
+
+**Scope decisions, made here so the tickets don't reopen them:**
+
+- **A vendor is a `User` with a `VendorProfile`, not a new kind of account.** Sign-up, sessions, password reset and Google sign-in stay as they are. The same person can host their own wedding and run a catering business, so "Become a vendor" is a page under the dashboard, not a second sign-up form. One profile per user to start; several people managing one vendor business (an owner plus staff) is T-818, after teams for hosts (T-908) settle the pattern.
+- **Operators come from Phase 7.** Attendly's own staff (not a vendor's staff) review verification documents, suspend listings, grant placements and handle reports, through the console and `requireOperator()` that T-701 to T-703 provide. Those three tickets are merged before T-806; the vendor screens in the console (verifications, vendors, placements) are built here and plug into that shell.
+- **Publishing requires verification.** A vendor uploads business proof (a CAC certificate for a registered business, or a government ID for a sole trader, see T-806), an operator approves it, and only then can the profile go live. This is a compliance and anti-fraud requirement, not a badge. Documents are stored privately and never served by `/uploads`.
+- **"Book" means "inquire" in v1.** A host sends a message with their event's date and venue, the vendor replies by email, and the vendor records the booking in their calendar themselves. Deposits, contracts and payments through Attendly are out of scope until there is demand and a payment provider (Phase 10).
+- **Placement is sold per category per month, and everyone who pays is shown.** The homepage section has a tab per category; each tab lists every vendor with an active placement in that category, in random order per request, so no paying vendor is ever hidden behind a cap. A `VendorPlacement` row (vendor, category, month, source) drives it. Today an operator creates placements by hand (launch partners, free months); later a successful payment creates the same row with `source: PAID`. The homepage never needs to know the difference and the schema doesn't change.
+- **Reviews come from anyone with an account, and Attendly bookings are marked.** Hosts who hired a vendor outside Attendly can still review them, so vendors aren't held back by a young platform. A review tied to an accepted Attendly booking on a past event carries a "Verified booking" label, sorts first, and is counted separately ("23 reviews, 9 from Attendly events"). T-817 has the rules.
+- **Public pages are indexable.** Unlike `/e/[slug]` (noindex, a private event), `/vendors` and `/vendors/[slug]` exist to be found. They get metadata, a sitemap entry and an Open Graph image.
+- **A vendor never sees guest data.** When a host attaches a vendor to an event, the vendor sees the event's title, date, venue and expected headcount. Never the guest list, replies or check-ins.
+
+**Rules that apply to every ticket in this phase:**
+
+- Every new API route goes into `ROUTE_POLICY` in `src/app/api/tenant-isolation.db.test.ts`, or the test fails. Vendor-owned routes (`/api/vendor/...`) are "victim" routes: another account must get a 404, exactly as `requireEventOwner()` does for events. Add `requireVendorProfile(headers?)` in `src/server/vendors/` as the one place that resolves the caller's profile (401 signed out, 404 no profile). Operator routes (`/api/operator/...`) use `requireOperator()` from T-701 and the `"operator"` policy value.
+- The vendor dashboard lives under `/dashboard/vendor/*` and its API under `/api/vendor/*`, so the middleware matcher only grows by one API prefix (Phase 7 added `/api/operator`). Vendor screens for staff go under `/dashboard/operator/*` inside the Phase 7 shell. Public reads (`/vendors`, `/api/vendors`) stay outside the middleware and never require a session.
+- App screens (dashboard, directory, landing section) use the design tokens and `src/components/ui/`, not `--event-*` theme variables. **Design reference:** the [Attendly Redesign canvas](https://claude.ai/artifact/CvNvBPaDHDmbCG8esViPUX) has two vendor rows: the public pages and the host's Vendors tab, and the vendor app (dashboard, onboarding and verification, calendar, inquiries and promote), plus the vendor section on the landing page and the Vendor card on Account. Its vendors and numbers are samples.
+- Links to a vendor's website or Instagram are plain `<a>` tags. Embedding anything external (maps, Instagram feeds, booking widgets) means a CSP change in `next.config.ts` and is its own decision.
+- Vendor times use the same UTC + IANA timezone pattern as events (`src/lib/timezones.ts`). Money is an integer amount in minor units plus an ISO currency code, never a float.
+- Wording: "vendor" in the UI everywhere (not "supplier" or "provider"). The directory copy must not assume weddings; categories, event types and country or state names come from tables in `src/lib/`, not hard-coded strings.
+
+**Order:** Two prerequisites come first: the Phase 7 foundation (T-701 to T-703), and T-1005 (privacy policy and terms), pulled forward from Phase 10 because T-803 asks vendors to accept the terms and T-806 collects identity documents, which needs a published privacy policy. Then T-801 → T-802 → T-803, and T-804 to T-813 in any order their dependencies allow. T-814 (paid placement) waits for Phase 11. T-815 to T-818 are follow-ups once the directory has real vendors.
+
+### T-801 · Decide the vendor data model · decision doc
+
+A short doc (`docs/decisions/vendors.md`) that settles:
+
+- **Categories.** A fixed `VendorCategory` enum (PHOTOGRAPHY, VIDEOGRAPHY, CATERING, VENUE, DJ_MUSIC, LIVE_BAND, PLANNING, DECOR_FLORALS, CAKE_DESSERTS, MAKEUP_HAIR, ATTIRE_TAILORING, ASO_EBI_FABRICS, TRANSPORT, MC_HOST, RENTALS, SECURITY_USHERS, OTHER) with a free-text `specialty`. A fixed enum keeps filters, placement sales and URLs clean; "other" plus specialty covers the long tail. A vendor picks one primary category (what their placement is sold in) and up to two secondary ones.
+- **Geography.** `country` as an ISO 3166 code with a dropdown that lists Nigeria first, `region` as free text validated against a list when the country has one (the 36 states plus FCT for `NG`), and `serviceArea` as free text ("Lagos, Ogun and destination weddings"). Radius or city-level search is a later ticket.
+- **Verification requirements by business kind.** Registered business: CAC certificate or status report, plus the RC or BN number. Sole trader: a government ID (NIN slip, driver's licence, passport or voter's card) and a selfie, or whatever the compliance adviser says. Other countries: the local registration document, so the document kind list is per country, not global. Decide retention: how long documents are kept after approval or after the account is deleted.
+- **Pricing display.** Optional price band (1–4) in the profile's currency, or a `priceFrom` amount. Recommendation: the band, since exact prices go stale and vendors dislike publishing them.
+- **Files:** 1
+
+### T-802 · Vendor schema: profile, images, documents, placements · M
+
+Additive migration, no code paths change yet.
+
+- `VendorProfile` (`vendor_profiles`): id (cuid), userId → User (unique, cascade delete), slug (unique), businessName, businessKind (REGISTERED | SOLE_TRADER), registrationNumber?, category (enum, primary), secondaryCategories (enum array), specialty?, description (text), country (ISO code), region?, serviceArea?, currency (ISO code, from the country), priceBand?, eventTypes (`EventType[]`, which event types they serve), phone?, whatsapp?, website?, instagram?, contactEmail? (shown to the vendor only; inquiries relay through Attendly), showPhonePublicly (boolean), status (DRAFT | PENDING_REVIEW | VERIFIED | PUBLISHED | REJECTED | SUSPENDED), verifiedAt?, verifiedByUserId? → User (set null), publishedAt?, createdAt, updatedAt. Index on `(status, category)` and `(status, country)`.
+- `VendorDocument` (`vendor_documents`): id (uuid), vendorId → VendorProfile (cascade), kind (CAC_CERTIFICATE | GOVERNMENT_ID | SELFIE | OTHER), bytes, contentType, reviewedAt?, reviewNote?, createdAt. Private: read only by the owner and operators through an authenticated route, never by `/uploads/[file]`. Images are re-encoded like covers; PDFs are kept as uploaded under a size limit.
+- `VendorImage` (`vendor_images`): mirrors `EventImage` (uuid, vendorId → VendorProfile cascade, bytes WebP, contentType, position, createdAt). The first image by position is the cover. Served by the existing `/uploads/[file]` route; extend `image.repo.ts` to look up both tables, or add a `vendor-image.repo.ts` and a second lookup.
+- `VendorPlacement` (`vendor_placements`): id, vendorId → VendorProfile (cascade), category (enum, the tab it appears in), startsAt, endsAt (a calendar month in v1), source (MANUAL | PAID), paymentRef?, amountPaid?, currency?, createdByUserId? → User (set null), createdAt. Index on `(category, startsAt, endsAt)`. "On the homepage now" is `startsAt <= now < endsAt` and the profile is PUBLISHED.
+- Repository: `vendor.repo.ts` with create, update, `getBySlug` (published only unless the caller owns it or is an operator), `getByUserId`, `list(filters, page)`, and `listPlacedNow(category?)`.
+- `User` gains `vendorProfile VendorProfile?`, and the account deletion ticket (T-1006) must note that a cascade removes the listing, images, documents, placements and inquiries.
+- **Depends on:** T-801
+- **Files:** ~9
+
+### T-803 · Become a vendor: registration and the vendor dashboard shell · M
+
+- `/dashboard/vendor/new`: a form for business name, business kind, primary category, country (Nigeria first) and region, a short description, and the event types served, plus acceptance of the vendor terms (T-1005). Creates a `DRAFT` profile (POST `/api/vendor`) and generates the slug from the business name the way events do from their title. Signed-out visitors land on `/signup?next=/dashboard/vendor/new`.
+- `/dashboard/vendor`: the vendor's home, with a status card that walks through the steps (Complete your profile → Submit for verification → Under review → Verified, publish when ready → Live), a "View public page" link once published, and navigation to Profile, Verification, Calendar, Inquiries. The app header shows "Vendor" next to "Your events" when the user has a profile, and the landing page's "Your events" link for signed-in users gets a "Vendor dashboard" sibling.
+- `/account` gets a "Vendor" section: a link to create or open the profile.
+- `requireVendorProfile()` and the `ROUTE_POLICY` entries.
+- **Depends on:** T-802, T-1005
+- **Files:** ~14
+
+### T-804 · Vendor profile editor · M
+
+`/dashboard/vendor/profile`: every public field from T-802 (description with a character limit, contacts and whether to show the phone, price band, event types, categories, specialty, service area). Server validation with zod, like event settings. PUT `/api/vendor/profile`.
+
+- Publish / Unpublish is only offered once the status is VERIFIED or PUBLISHED. Publishing requires a description, at least one image (after T-805) and at least one contact method. Unpublishing goes back to VERIFIED, not DRAFT, so re-publishing needs no new review.
+- Changing the business name or registration number after verification sets the status back to PENDING_REVIEW, with a warning before saving; other fields don't.
+- Slug is editable once, with a uniqueness check and a reserved-word list (`new`, `vendors`, `api`, and so on). Event slugs have no such list yet; add one in `src/lib/` that both use.
+- **Depends on:** T-803
+- **Files:** ~10
+
+### T-805 · Vendor gallery uploads · S
+
+Up to 12 images per profile through the existing `sharp` → WebP path in `src/server/uploads/`. Reorder (position), delete, pick the cover. POST / DELETE / PATCH under `/api/vendor/images`. Reuse the cover-image size limits; a profile gallery stays under a fixed total so the Postgres-stored bytes don't grow unbounded.
+
+- **Depends on:** T-803
+- **Files:** ~8
+
+### T-806 · Verification: document upload and the operator review queue · M
+
+- Vendor side, `/dashboard/vendor/verification`: shows which documents the country and business kind require (from T-801's table), uploads them (POST `/api/vendor/documents`, images and PDFs, size-limited, virus scanning noted as a follow-up), and a "Submit for review" button that moves the profile to PENDING_REVIEW and emails the operators. Documents are viewable by the owner at `/api/vendor/documents/[id]` only.
+- Operator side, `/dashboard/operator/verifications`: the queue of PENDING_REVIEW profiles, oldest first, with the profile summary and documents inline (`/api/operator/vendors/[id]/documents/[docId]`). Approve sets VERIFIED, `verifiedAt` and `verifiedByUserId`; reject sets REJECTED with a reason the vendor sees and can fix before resubmitting. Both email the vendor.
+- Every approval and rejection goes through `recordOperatorAction()` (T-702), with the `admin` permission.
+- Retention: a scheduled job (or a documented manual step until T-904's job runner exists) deletes documents N days after approval, per T-801's decision.
+- **Depends on:** T-702, T-804
+- **Files:** ~14, split into vendor side and operator side if it grows
+
+### T-807 · Public vendor directory `/vendors` · M
+
+Server-rendered, indexable list of PUBLISHED profiles with filters in the URL (`?category=&eventType=&country=&region=&q=`) and pagination (10 per page, the project default). Each card: cover, business name, category, region, price band, a "Verified" mark (every published vendor is verified, so the mark explains itself on hover rather than distinguishing vendors), and later the rating from T-817. Vendors with an active placement in the filtered category sort first with a small "Sponsored" label, so the ordering is honest; without a category filter the order is newest first.
+
+- `GET /api/vendors` for the same list (public, "not tenant data" in `ROUTE_POLICY`), used by the landing section and any future client-side filtering.
+- Empty states: no vendors yet in a category or region ("Be the first" linking to T-803), and no results for a search.
+- `robots`: index, follow. Add `/vendors` and each published profile to a `sitemap.ts`.
+- **Depends on:** T-804, T-805, T-806
+- **Files:** ~12
+
+### T-808 · Vendor detail page `/vendors/[slug]` · M
+
+Gallery, description, categories and event types, region and service area, price band, verified mark with the verification date, links (website, Instagram), WhatsApp and phone when `showPhonePublicly` is on, and a Contact button that opens the inquiry form (T-811). Anything but PUBLISHED is a 404 to everyone but its owner and operators, who see a "Preview, not published" banner.
+
+- `opengraph-image.tsx` like the event page's, on the design tokens.
+- An availability strip comes in T-810 if the vendor exposes it; reviews come in T-817.
+- **Depends on:** T-807
+- **Files:** ~8
+
+### T-809 · Homepage vendor section and manual placements · M
+
+- Landing page: a "Vendors for your day" section between How it works and the closing CTA. A row of category tabs (only categories with an active placement this month, plus "All"), each listing every placed vendor in that category in random order per request, as cards that link to the detail page. No cap and no tiers: a vendor who paid is shown. When no category has a placement yet, the section shows the newest PUBLISHED vendors with a "List your business" card; when there are no vendors at all, just the card. The section ends with "See all vendors" to `/vendors`.
+- Operator tool: `/dashboard/operator/placements`: create a placement for a vendor by slug with a category and a month, end one early, see what's active per category. Every placement is reversible and dated, so a launch partner's free month ends on its own. Actions are audited (T-702).
+- **Depends on:** T-806, T-807
+- **Files:** ~10
+
+### T-810 · Vendor calendar: bookings model and UI · M
+
+- `VendorBooking` (`vendor_bookings`): id, vendorId → VendorProfile (cascade), eventId? → Event (set null; an Attendly event when the booking came from T-812), title, startsAt, endsAt, timezone, venueName?, status (INQUIRY | TENTATIVE | CONFIRMED | CANCELLED), notes? (private to the vendor), createdAt, updatedAt. Index on `(vendorId, startsAt)`.
+- `/dashboard/vendor/calendar`: a month view (CSS grid, no calendar library) and a list view for the next 90 days. Add, edit and cancel bookings by hand, so gigs that didn't come through Attendly count too. Overlapping bookings on the same day get a warning, not a block (a DJ can't be in two places; a bakery can deliver twice).
+- `GET/POST/PUT/DELETE /api/vendor/bookings`.
+- Optional "Show my availability publicly" toggle on the profile: when on, the detail page (T-808) shows which days are taken in the next six months, with no titles or clients. Default off.
+- **Depends on:** T-803
+- **Files:** ~14
+
+### T-811 · Inquiries: hosts contact vendors, Attendly relays by email · M
+
+- `VendorInquiry` (`vendor_inquiries`): id, vendorId → VendorProfile (cascade), eventId? → Event (set null), fromUserId? → User (set null), name, email, phone?, eventDate?, message, status (NEW | REPLIED | ARCHIVED), createdAt. Index on `(vendorId, status)`.
+- The form on `/vendors/[slug]`: name, email, phone (WhatsApp is how most Nigerian vendors reply, so the field is encouraged, not required), event date, message; when the sender is signed in and has events, a picker pre-fills date, venue and expected headcount from one of them and sets `eventId`. POST `/api/vendors/[slug]/inquiries` (public, "not tenant data").
+- Anti-abuse: a honeypot field, a per-IP and per-vendor rate limit (an in-memory limiter is enough for one container; note the Redis follow-up for multi-instance), and a maximum message length.
+- Delivery: `sendEmail()` to the vendor's `contactEmail` (or account email) with the message and a `Reply-To` of the sender, so the conversation continues in email. The host gets a confirmation email. The vendor's address is never shown on the page.
+- `/dashboard/vendor/inquiries`: a list with status chips, mark as replied or archived, and "Add to calendar" which creates an INQUIRY booking (T-810) pre-filled from the inquiry.
+- **Depends on:** T-808, T-810
+- **Files:** ~14
+
+### T-812 · Attach vendors to an event (the host side) · M
+
+- `EventVendor` (`event_vendors`): eventId → Event (cascade), vendorId → VendorProfile (cascade), role? (free text: "Photographer", "Day-of coordinator"), status (INVITED | ACCEPTED | DECLINED), createdAt; unique on `(eventId, vendorId)`.
+- A "Vendors" tab in the event dashboard: search the directory, attach, set the role, remove. Attaching creates a TENTATIVE `VendorBooking` for the event's date and emails the vendor; the vendor confirms or declines from their calendar, which updates both sides. A vendor accepted on an event sees that event's title, date, venue and `confirmed + plusOne` headcount on their booking, and nothing else.
+- API under `/api/events/[eventId]/vendors` (owner only, "victim") and `/api/vendor/bookings/[id]/respond`.
+- Event deletion cascades the link and nulls the booking's `eventId`, so the vendor keeps their calendar history.
+- **Depends on:** T-810, T-811
+- **Files:** ~14
+
+### T-813 · Operator moderation: listings and reports · M
+
+- `/dashboard/operator/vendors`: every profile with status, country, created date, inquiry count; suspend / reinstate (SUSPENDED profiles vanish from the directory and the homepage, and the owner sees why on their dashboard); revoke verification, which sends the profile back to PENDING_REVIEW. Every action is audited (T-702).
+- A "Report this listing" link on `/vendors/[slug]` that emails the operator address with the slug and a reason, rate limited like inquiries. T-707 replaces the email with a queue.
+- Vendor terms: T-1005's terms page gains a vendor section (listing accuracy, document truthfulness, no guest-data misuse, placement refunds), which T-803's form links to.
+- **Depends on:** T-806, T-809
+- **Files:** ~10
+
+### T-814 · Paid placement: buy a month in a category · M
+
+- Vendors buy a placement for their primary (or a secondary) category for one or more calendar months from `/dashboard/vendor/promote`, through the payment provider chosen in T-1101 and integrated in T-1103. The webhook creates a `VendorPlacement` with `source: PAID`, `paymentRef`, the amount and currency, starting at the first month not already covered, so renewals stack instead of overlapping.
+- Pricing: a per-category, per-currency monthly price table in config (NGN for Nigeria), shown with the number of vendors currently in that tab so buyers know what they're joining. There is no inventory cap, by design: everyone who pays is shown.
+- A placement bought by a vendor who is later suspended ends early; the refund is an operator action in the provider's dashboard plus an audit note, documented, not automated.
+- The purchase page shows the vendor's own numbers from T-815 (profile views, homepage impressions, inquiries), or inquiries only until T-815 lands.
+- **Depends on:** T-1103, T-809, T-813
+- **Files:** ~12
+
+### T-815 · Vendor metrics: views, impressions, inquiries · S
+
+Daily counters per vendor (`vendor_stats_daily`: vendorId, day, profileViews, homepageImpressions, directoryImpressions, inquiries) incremented from the server-rendered pages, with no third-party script. A small "This month" card on the vendor dashboard and a 90-day sparkline. These are the numbers that sell T-814.
+
+- **Depends on:** T-808, T-809
+- **Files:** ~8
+
+### T-816 · ICS feed for the vendor calendar · S
+
+A tokened `/vendor-calendar/[token]/calendar.ics` the vendor subscribes to from Google or Apple Calendar, built on T-510's ICS code, listing CONFIRMED and TENTATIVE bookings. The token is stored hashed like door-link tokens and can be regenerated. Later the reverse (importing the vendor's own calendar for availability) can be considered.
+
+- **Depends on:** T-810
+- **Files:** ~6
+
+### T-817 · Reviews: open to any account, Attendly bookings marked · M
+
+- `VendorReview` (`vendor_reviews`): id, vendorId → VendorProfile (cascade), authorUserId → User (cascade), eventVendorId? → EventVendor (set null; present when the review comes from an Attendly booking), rating (1–5), text, eventDate?, vendorReply?, vendorRepliedAt?, hiddenAt?, hiddenReason?, createdAt, updatedAt. Unique on `(vendorId, authorUserId, eventVendorId)` so a person can review a vendor once in general and once per Attendly event they hired them for.
+- Who can review: any signed-in account with a verified email, except the vendor's own account. An outside review asks for the event date and type, so it reads like a real hire. A review is "Verified booking" when `eventVendorId` points at an ACCEPTED link on an event whose date has passed; the detail page offers to write one from the host's event dashboard after the event.
+- Display: average and count on directory cards and the detail page, with the verified count called out ("4.6 · 23 reviews · 9 verified Attendly bookings"). Verified reviews sort first, then newest. Vendors can reply once per review. Operators can hide a review with a reason; the author sees it was hidden, and the public doesn't.
+- Anti-abuse: rate limits per author, an automatic flag for operators when a vendor gets several reviews from accounts created the same week, and no reviews at all on an unpublished profile.
+- **Depends on:** T-808, T-812, T-813
+- **Files:** ~14
+
+### T-818 · Vendor teams: staff accounts for one vendor business · L → split when started
+
+An owner invites staff by email to manage the same vendor profile, calendar and inquiries, with roles (owner, manager, staff) deciding who can edit the profile, buy placements or only update the calendar. Waits for host co-hosts (T-908) so both use the same membership mechanism (Better Auth `organization` plugin or an own `Member` table). Vendor staff roles are separate from the operator roles in Phase 7: those are Attendly's staff. Until then, one account per vendor, and a business shares its login if it must.
+
+**Open questions for the owner** (none block T-801 to T-803):
+
+1. Which documents does the compliance adviser want for sole traders without a CAC registration, and how long may Attendly keep documents after approval? T-801 needs the answer.
+2. How much does a month in a category cost in NGN, and is it the same for every category? T-814 reads it from config, so it can change later.
+3. Do outside reviews need anything beyond a verified email (for example, an account older than a day), or is operator hiding plus the new-accounts flag enough to start?
+4. Does a host attaching a vendor to their event imply the vendor can see the public event page link? Harmless (it's public already), but worth deciding.
+
+---
+
+## Phase 9 — Product features
+
+### T-901 · CSV export of guest list · S
+
+### T-902 · Email invitations to guests (single + bulk) · M — needs `email` on `Invitation`, uses T-206
+
+### T-903 · RSVP reminder emails (manual trigger) · S — needs T-911
+
+### T-904 · Scheduled reminders (cron / job queue) · M
+
+### T-905 · Notify host on new RSVP (email) · S — needs T-911
+
+### T-906 · ~~Check-in mode~~ · moved to Phase 5 (T-504, T-505)
+
+### T-907 · ~~Check-in dashboard~~ · moved to Phase 5 (T-509)
+
+### T-908 · Co-hosts: invite another user to manage an event (consider Better Auth `organization` plugin vs own `EventMember` + roles) · L → split into model/API and UI tickets when started
 
 Door helpers who only check guests in use T-506 links, not co-host accounts.
 
-### T-709 · WhatsApp share link per guest · S
+### T-909 · WhatsApp share link per guest · S
 
-### T-710 · Duplicate event / archive event · S
+### T-910 · Duplicate event / archive event · S
 
-### T-711 · Online RSVP from the ticket page · L → split when started
+### T-911 · Online RSVP from the ticket page · L → split when started
 
 Guests confirm or decline before the event from their ticket page (`PATCH /api/rsvp/[token]`), optionally with how many are coming, meal choice and dietary notes, and the form turns read-only after `rsvpDeadline`. Check-in (T-504) currently sets `CONFIRMED` to mean "arrived"; with online RSVP, "confirmed" (intends to come) and "checked in" (arrived) become separate counts in the dashboard and metrics.
 
 ---
 
-## Phase 8 — Ops, compliance, launch
+## Phase 10 — Ops, compliance, launch
 
-### T-801 · Managed Postgres + hosting setup (Neon/Supabase + Vercel/Fly) · M
+### T-1001 · Managed Postgres + hosting setup (Neon/Supabase + Vercel/Fly) · M
 
-### T-802 · Sentry error tracking (client + server) · S
+### T-1002 · Sentry error tracking (client + server) · S
 
-### T-803 · Structured logging (pino), remove `console.error` · S
+### T-1003 · Structured logging (pino), remove `console.error` · S
 
-### T-804 · Automated DB backups + restore runbook · S
+### T-1004 · Automated DB backups + restore runbook · S
 
-### T-805 · Privacy policy + terms pages · S
+### T-1005 · Privacy policy + terms pages · S
 
-### T-806 · Account deletion (cascades events/invitations) · S
+### T-1006 · Account deletion (cascades events/invitations) · S
 
-### T-807 · Guest data deletion on request / event auto-purge after N months · M
+### T-1007 · Guest data deletion on request / event auto-purge after N months · M
 
-### T-808 · Basic analytics (PostHog/Plausible) · S
+### T-1008 · Basic analytics (PostHog/Plausible) · S
 
-### T-809 · Health check includes DB + migrations status · S
+### T-1009 · Health check includes DB + migrations status · S
 
-### T-810 · Update README, DEPLOYMENT.md, CLAUDE.md for new architecture · S
+### T-1010 · Update README, DEPLOYMENT.md, CLAUDE.md for new architecture · S
 
 ---
 
-## Phase 9 — Billing
+## Phase 11 — Billing
 
-### T-901 · Decide pricing model (per-event vs subscription, free tier limits) · decision doc
+### T-1101 · Decide pricing model and payment provider · decision doc
 
-### T-902 · `Plan`/`Subscription` fields + plan limits helper (`assertCanAddGuests`) · M
+Per-event vs subscription and free tier limits for hosts, plus the price of a vendor placement (T-814). Also the provider: Stripe does not list Nigeria as a supported business country at the time of writing (confirm before deciding), so a Nigerian entity means Paystack or Flutterwave (both do card, bank transfer and USSD in NGN, with webhooks); an entity elsewhere can use Stripe. Pick one, and keep the checkout and webhook behind a small `payments` module so the other can be added for a second market.
 
-### T-903 · Stripe Checkout + webhook · M
+### T-1102 · `Plan`/`Subscription` fields + plan limits helper (`assertCanAddGuests`) · M
 
-### T-904 · Enforce limits in create/bulk-create invitation and create event · S
+### T-1103 · Payment provider checkout + webhook (per T-1101) · M
 
-### T-905 · Billing page (current plan, upgrade, Stripe portal link) · S
+### T-1104 · Enforce limits in create/bulk-create invitation and create event · S
+
+### T-1105 · Billing page (current plan, upgrade, payment history) · S
 
 ---
 
